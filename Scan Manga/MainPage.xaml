@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Scan_Manga.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
+    xmlns:droid="clr-namespace:CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;assembly=CommunityToolkit.Maui"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+    droid:NavigationBar.Color="{AppThemeBinding Dark=Black,
+                                                Light=White}"
+    droid:NavigationBar.Style="{AppThemeBinding Dark=LightContent,
+                                                Light=DarkContent,
+                                                Default=Default}">
+
+    <ContentPage.Behaviors>
+        <toolkit:StatusBarBehavior StatusBarColor="{StaticResource Primary}" StatusBarStyle="Default" />
+    </ContentPage.Behaviors>
+
+    <RefreshView
+        x:Name="WebRefreshView"
+        BackgroundColor="{AppThemeBinding Dark=#393b3c,
+                                          Light=#d5e8f6,
+                                          Default=#393b3c}"
+        IsRefreshing="False"
+        RefreshColor="{AppThemeBinding Dark={StaticResource Primary},
+                                       Light={StaticResource Primary},
+                                       Default={StaticResource Primary}}"
+        Refreshing="OnRefresh">
+        <Grid x:Name="MainRoot">
+            <WebView
+                x:Name="MainWebView"
+                android:WebView.DisplayZoomControls="False"
+                android:WebView.EnableZoomControls="True"
+                HorizontalOptions="Fill"
+                VerticalOptions="Fill" />
+
+            <Grid
+                x:Name="OfflineOverlay"
+                BackgroundColor="{AppThemeBinding Light={StaticResource White},
+                                                  Dark={StaticResource OffBlack}}"
+                IsVisible="False">
+                <VerticalStackLayout
+                    HorizontalOptions="Center"
+                    Spacing="10"
+                    VerticalOptions="Center">
+                    <Label
+                        FontAttributes="Bold"
+                        FontSize="18"
+                        HorizontalOptions="Center"
+                        HorizontalTextAlignment="Center"
+                        Text="⚠️ Impossible de charger la page.\nVérifiez votre connexion Internet."
+                        TextColor="Red"
+                        VerticalOptions="Center" />
+                    <Button Clicked="OnRefresh" Text="Réessayer" />
+                </VerticalStackLayout>
+            </Grid>
+        </Grid>
+    </RefreshView>
+
+</ContentPage>
