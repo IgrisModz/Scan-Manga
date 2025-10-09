@@ -54,11 +54,6 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<ISystemBarsService, SystemBarsService>();
 
-        builder.ConfigureMauiHandlers(handlers =>
-        {
-            handlers.AddHandler<WebView, Handlers.SelectableWebViewHandler>();
-        });
-
 #if DEBUG
             builder.Logging.AddDebug();
 #endif
