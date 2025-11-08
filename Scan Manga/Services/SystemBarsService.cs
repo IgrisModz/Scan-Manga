@@ -1,8 +1,6 @@
-﻿#if ANDROID
-using Android.Views;
+﻿using Android.Views;
 using AndroidX.Core.View;
 using System.Runtime.Versioning;
-#endif
 
 namespace Scan_Manga.Services;
 
@@ -14,8 +12,6 @@ public class SystemBarsService : ISystemBarsService
     [SupportedOSPlatform("android30.0")]
     public void SetLectureMode(bool enable)
     {
-
-#if ANDROID
         if (IsInitialized && (!IsInitialized || PreviousMode == enable))
         {
             return;
@@ -53,6 +49,5 @@ public class SystemBarsService : ISystemBarsService
             PreviousMode = enable;
             IsInitialized = true;
         }
-#endif
     }
 }
