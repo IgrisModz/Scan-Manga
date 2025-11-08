@@ -104,7 +104,14 @@ public partial class MainPage : ContentPage
                     var visited = ['{visitedJoined}'];
                     var anchors = document.querySelectorAll('a');
                     anchors.forEach(function(a) {{
-                        if (visited.includes(a.href) && !a.closest('.lelHgSerie')) {{
+                        var isTargeted = 
+                            a.closest('div.chapitre_nom') ||
+                            a.classList.contains('telecharger') ||
+                            a.classList.contains('lecture_en_ligne') ||
+                            a.classList.contains('telechargement') ||
+                            a.classList.contains('lel_tchapt') ||
+                            a.classList.contains('lecture_online');
+                        if (visited.includes(a.href) && isTargeted) {{
                             a.style.color = '#e4adaa';
                         }}
                     }});
