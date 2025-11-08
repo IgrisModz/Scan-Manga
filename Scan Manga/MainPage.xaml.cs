@@ -94,7 +94,6 @@ public partial class MainPage : ContentPage
 
             Preferences.Set("VisitedUrls", string.Join(";", _visitedUrls));
 
-#if ANDROID
             // Recolorer les liens visités
             if (MainWebView.Handler?.PlatformView is Android.Webkit.WebView webView)
             {
@@ -113,7 +112,6 @@ public partial class MainPage : ContentPage
 
                 webView.EvaluateJavascript(jsCode, null);
             }
-#endif
         }
     }
 }
