@@ -101,6 +101,42 @@ public partial class MainPage : ContentPage
 
                 string jsCode = $@"
                 (function() {{
+                    const selectors = [
+                        'div.BDPFGA[id^=""pf-""]',
+                        'div.PUBFUTURE[id^=""pf-""]',
+                        'div[data-unit]',
+                        'script[src*=""richardghain.com""]',
+                        'script[src*=""adschill.com""]',
+                        'script[src*=""acscdn.com""]'
+                    ];
+                    // --- 1. Suppression des publicités ---
+                    function removeAds() {{
+                        // Supprime toutes les classes connues
+                        selectors.forEach(sel => {{
+                            document.querySelectorAll(sel).forEach(el => el.remove());
+                        }});
+
+                        // Supprime les balises in-page-message
+                        document.querySelectorAll('in-page-message').forEach(e => {{
+                            if (e.shadowRoot) e.shadowRoot.innerHTML = '';
+                            e.remove();
+                        }});
+
+                        // Supprime les iframes de type publicitaire
+                        document.querySelectorAll('iframe').forEach(iframe => {{
+                            const src = iframe.src || '';
+                            if (src.includes('crcdn.org') || src.includes('adexchangeclear') || iframe.title === 'offer') {{
+                                iframe.remove();
+                            }}
+                        }});
+                    }}
+
+                    removeAds();
+                    const adObserver = new MutationObserver(removeAds);
+                    adObserver.observe(document.body, {{ childList: true, subtree: true }});
+                    // setInterval(removeAds, 500);
+                   
+                    // --- 2. Mise en couleur des chapitres visités ---
                     var visited = ['{visitedJoined}'];
                     var anchors = document.querySelectorAll('a');
                     anchors.forEach(function(a) {{
