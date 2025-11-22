@@ -1,11 +1,13 @@
-﻿using Scan_Manga.Services;
+﻿using Java.Net;
+using Scan_Manga.Services;
+using System.Text.Json;
 
 namespace Scan_Manga;
 
 public partial class MainPage : ContentPage
 {
     private readonly ISystemBarsService _systemBars;
-    private readonly HashSet<string> _visitedUrls = [];
+    private HashSet<string> _visitedLinks = [];
     private string? _lastUrl;
 
     public MainPage(ISystemBarsService systemBars)
@@ -13,6 +15,7 @@ public partial class MainPage : ContentPage
         InitializeComponent();
         _systemBars = systemBars;
 
+        // 🔑 Brancher Navigated
         MainWebView.Navigated += MainWebView_Navigated;
     }
 
@@ -25,9 +28,11 @@ public partial class MainPage : ContentPage
         MainWebView.Source = _lastUrl;
 
         // Charger URLs déjà visitées
-        var savedVisited = Preferences.Get("VisitedUrls", "");
-        if (!string.IsNullOrEmpty(savedVisited))
-            _visitedUrls.UnionWith(savedVisited.Split(';', StringSplitOptions.RemoveEmptyEntries));
+
+        var saved = Preferences.Get("VisitedLinks", string.Empty);
+        _visitedLinks = string.IsNullOrEmpty(saved)
+            ? []
+            : JsonSerializer.Deserialize<HashSet<string>>(saved) ?? [];
     }
 
     protected override void OnDisappearing()
@@ -37,7 +42,7 @@ public partial class MainPage : ContentPage
         if (_lastUrl != null)
             Preferences.Set("LastUrl", _lastUrl);
 
-        Preferences.Set("VisitedUrls", string.Join(";", _visitedUrls));
+        Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
     }
 
     private void OnRefresh(object sender, EventArgs e)
@@ -56,7 +61,7 @@ public partial class MainPage : ContentPage
         return base.OnBackButtonPressed();
     }
 
-    private void MainWebView_Navigated(object? sender, WebNavigatedEventArgs e)
+    private async void MainWebView_Navigated(object? sender, WebNavigatedEventArgs e)
     {
         // Arrêter le refresh si actif
         if (WebRefreshView.IsRefreshing)
@@ -81,80 +86,82 @@ public partial class MainPage : ContentPage
             if (_lastUrl != null)
                 Preferences.Set("LastUrl", _lastUrl);
 
-            if (!_visitedUrls.Add(e.Url))
+            if (!_visitedLinks.Add(e.Url))
             {
                 // ✅ Limiter à 2000 liens max
-                if (_visitedUrls.Count > 2000)
+                if (_visitedLinks.Count > 2000)
                 {
-                    var toKeep = _visitedUrls.Skip(_visitedUrls.Count - 2000).ToList();
-                    _visitedUrls.Clear();
-                    foreach (var url in toKeep) _visitedUrls.Add(url);
+                    var toKeep = _visitedLinks.Skip(_visitedLinks.Count - 2000).ToList();
+                    _visitedLinks.Clear();
+                    foreach (var url in toKeep) _visitedLinks.Add(url);
                 }
             }
 
-            Preferences.Set("VisitedUrls", string.Join(";", _visitedUrls));
+            Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
 
             // Recolorer les liens visités
-            if (MainWebView.Handler?.PlatformView is Android.Webkit.WebView webView)
-            {
-                string visitedJoined = string.Join("','", _visitedUrls);
+            string visitedJoined = JsonSerializer.Serialize(_visitedLinks);
 
-                string jsCode = $@"
-                (function() {{
-                    const selectors = [
-                        'div.BDPFGA[id^=""pf-""]',
-                        'div.PUBFUTURE[id^=""pf-""]',
-                        'div[data-unit]',
-                        'script[src*=""richardghain.com""]',
-                        'script[src*=""adschill.com""]',
-                        'script[src*=""acscdn.com""]'
-                    ];
-                    // --- 1. Suppression des publicités ---
-                    function removeAds() {{
-                        // Supprime toutes les classes connues
-                        selectors.forEach(sel => {{
-                            document.querySelectorAll(sel).forEach(el => el.remove());
-                        }});
+            string js = $@"
+            (function() {{
+                const selectors = [
+                    'div.BDPFGA[id^=""pf-""]',
+                    'div.PUBFUTURE[id^=""pf-""]',
+                    'div[data-unit]',
+                    'script[src*=""richardghain.com""]',
+                    'script[src*=""adschill.com""]',
+                    'script[src*=""acscdn.com""]'
+                ];
+                // --- 1. Suppression des publicités ---
+                function removeAds() {{
+                    // Supprime toutes les classes connues
+                    selectors.forEach(sel => {{
+                        document.querySelectorAll(sel).forEach(el => el.remove());
+                    }});
 
-                        // Supprime les balises in-page-message
-                        document.querySelectorAll('in-page-message').forEach(e => {{
-                            if (e.shadowRoot) e.shadowRoot.innerHTML = '';
-                            e.remove();
-                        }});
+                    // Supprime les balises in-page-message
+                    document.querySelectorAll('in-page-message').forEach(e => {{
+                        if (e.shadowRoot) e.shadowRoot.innerHTML = '';
+                        e.remove();
+                    }});
 
-                        // Supprime les iframes de type publicitaire
-                        document.querySelectorAll('iframe').forEach(iframe => {{
-                            const src = iframe.src || '';
-                            if (src.includes('crcdn.org') || src.includes('adexchangeclear') || iframe.title === 'offer') {{
-                                iframe.remove();
-                            }}
-                        }});
-                    }}
-
-                    removeAds();
-                    const adObserver = new MutationObserver(removeAds);
-                    adObserver.observe(document.body, {{ childList: true, subtree: true }});
-                    // setInterval(removeAds, 500);
-                   
-                    // --- 2. Mise en couleur des chapitres visités ---
-                    var visited = ['{visitedJoined}'];
-                    var anchors = document.querySelectorAll('a');
-                    anchors.forEach(function(a) {{
-                        var isTargeted = 
-                            a.closest('div.chapitre_nom') ||
-                            a.classList.contains('telecharger') ||
-                            a.classList.contains('lecture_en_ligne') ||
-                            a.classList.contains('telechargement') ||
-                            a.classList.contains('lel_tchapt') ||
-                            a.classList.contains('lecture_online');
-                        if (visited.includes(a.href) && isTargeted) {{
-                            a.style.color = '#e4adaa';
+                    // Supprime les iframes de type publicitaire
+                    document.querySelectorAll('iframe').forEach(iframe => {{
+                        const src = iframe.src || '';
+                        if (src.includes('crcdn.org') || src.includes('adexchangeclear') || iframe.title === 'offer') {{
+                            iframe.remove();
                         }}
                     }});
-                }})();";
+                }}
 
-                webView.EvaluateJavascript(jsCode, null);
-            }
+                removeAds();
+                const adObserver = new MutationObserver(removeAds);
+                adObserver.observe(document.body, {{ childList: true, subtree: true }});
+                // setInterval(removeAds, 500);
+
+                // --- 2. Mise en couleur des chapitres visités ---
+
+                // Injection CSS ciblé
+                const style = document.createElement('style');
+                style.textContent = `
+                    span.i a.visited,
+                    a.l_read.visited,
+                    div.top a.atop.visited {{
+                        color: #e0a19d !important;
+                    }}
+                `;
+                document.head.appendChild(style);
+
+                var visited = {visitedJoined};
+                var anchors = document.querySelectorAll('span.i a, a.l_read, div.top a.atop');
+                anchors.forEach(function(link) {{
+                    if (visited.includes(link.href)) {{
+                        link.classList.add('visited');
+                    }}
+                }});
+            }})();";
+
+            await MainWebView.EvaluateJavaScriptAsync(js);
         }
     }
 }
