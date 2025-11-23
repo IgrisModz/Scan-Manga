@@ -19,13 +19,7 @@
 
     <RefreshView
         x:Name="WebRefreshView"
-        BackgroundColor="{AppThemeBinding Dark=#393b3c,
-                                          Light=#d5e8f6,
-                                          Default=#393b3c}"
         IsRefreshing="False"
-        RefreshColor="{AppThemeBinding Dark={StaticResource Primary},
-                                       Light={StaticResource Primary},
-                                       Default={StaticResource Primary}}"
         Refreshing="OnRefresh">
         <Grid x:Name="MainRoot">
             <WebView
