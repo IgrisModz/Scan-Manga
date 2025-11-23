@@ -9,7 +9,7 @@ public class SystemBarsService : ISystemBarsService
     public bool IsInitialized { get; private set; }
     public bool PreviousMode { get; private set; }
 
-    [SupportedOSPlatform("android30.0")]
+    [SupportedOSPlatform("android23.0")]
     public void SetLectureMode(bool enable)
     {
         if (IsInitialized && (!IsInitialized || PreviousMode == enable))
@@ -17,37 +17,87 @@ public class SystemBarsService : ISystemBarsService
             return;
         }
 
-        var activity = Platform.CurrentActivity;
-        var window = activity?.Window;
 
-        if (window == null)
+        if (enable ? HideSystemBars() : ShowSystemBars())
         {
-            return;
-        }
-
-        var controller = WindowCompat.GetInsetsController(window, window.DecorView);
-        if (controller != null)
-        {
-
-            if (enable)
-            {
-                controller.Hide(WindowInsets.Type.SystemBars());
-                window.Attributes?.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
-                window.AddFlags(WindowManagerFlags.LayoutNoLimits | WindowManagerFlags.Fullscreen);
-                window.SetFlags(WindowManagerFlags.Fullscreen, WindowManagerFlags.Fullscreen);
-                controller.SystemBarsBehavior = (int)WindowInsetsControllerBehavior.ShowTransientBarsBySwipe;
-            }
-            else
-            {
-                controller.Show(WindowInsets.Type.SystemBars());
-                window.ClearFlags(WindowManagerFlags.LayoutNoLimits | WindowManagerFlags.Fullscreen);
-                window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
-                window.Attributes?.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.Default;
-                controller.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
-            }
-
             PreviousMode = enable;
             IsInitialized = true;
         }
+    }
+
+    [SupportedOSPlatform("android23.0")]
+    private static bool ShowSystemBars()
+    {
+        var activity = Platform.CurrentActivity;
+        var window = activity?.Window;
+        var decorView = window?.DecorView;
+
+        if (activity is null || window is null || decorView is null) return false;
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(30))
+        {
+            var controller = WindowCompat.GetInsetsController(window, window.DecorView);
+
+            if (controller is null) return false;
+
+            controller.Show(WindowInsets.Type.SystemBars());
+            controller.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+
+            window.ClearFlags(WindowManagerFlags.LayoutNoLimits | WindowManagerFlags.Fullscreen);
+
+            WindowCompat.SetDecorFitsSystemWindows(window, true);
+
+        }
+        else
+        {
+#pragma warning disable CS0618
+
+            decorView.SystemUiVisibility = StatusBarVisibility.Visible;
+#pragma warning restore CS0618
+        }
+
+        return true;
+    }
+
+    [SupportedOSPlatform("android23.0")]
+    private static bool HideSystemBars()
+    {
+        var activity = Platform.CurrentActivity;
+        var window = activity?.Window;
+        var decorView = window?.DecorView;
+
+        if (activity is null || window is null || decorView is null) return false;
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(30))
+        {
+            var controller = WindowCompat.GetInsetsController(window, window.DecorView);
+
+            if (controller is null) return false;
+
+            controller?.Hide(WindowInsets.Type.SystemBars());
+            controller?.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
+
+            window.Attributes?.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
+            window.AddFlags(WindowManagerFlags.LayoutNoLimits | WindowManagerFlags.Fullscreen);
+
+            WindowCompat.SetDecorFitsSystemWindows(window, false);
+        }
+        else
+        {
+#pragma warning disable CS0618
+            decorView.SystemUiVisibility =
+                StatusBarVisibility.Visible & ~StatusBarVisibility.Visible; // safe hide
+            decorView.SystemUiVisibility =
+                    (StatusBarVisibility)(
+                        SystemUiFlags.LayoutStable |
+                        SystemUiFlags.LayoutFullscreen |
+                        SystemUiFlags.Fullscreen |
+                        SystemUiFlags.HideNavigation |
+                        SystemUiFlags.ImmersiveSticky
+                    );
+#pragma warning restore CS0618
+        }
+
+        return true;
     }
 }
