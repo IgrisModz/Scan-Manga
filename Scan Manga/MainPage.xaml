@@ -35,6 +35,7 @@
                                                   Dark={StaticResource OffBlack}}"
                 IsVisible="False">
                 <VerticalStackLayout
+                    Margin="20"
                     HorizontalOptions="Center"
                     Spacing="10"
                     VerticalOptions="Center">
@@ -43,7 +44,7 @@
                         FontSize="18"
                         HorizontalOptions="Center"
                         HorizontalTextAlignment="Center"
-                        Text="⚠️ Impossible de charger la page.\nVérifiez votre connexion Internet."
+                        Text="⚠️ Impossible de charger la page.&#x0d;&#x0a;Vérifiez votre connexion Internet."
                         TextColor="Red"
                         VerticalOptions="Center" />
                     <Button Clicked="OnRefresh" Text="Réessayer" />
