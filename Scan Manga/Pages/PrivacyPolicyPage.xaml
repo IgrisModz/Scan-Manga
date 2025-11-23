@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Scan_Manga.Pages.PrivacyPolicyPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Confidentialité">
+
+    <ScrollView>
+        <Grid>
+            <Border
+                Margin="20"
+                Padding="10"
+                Background="{AppThemeBinding Dark={StaticResource OffBlack},
+                                             Light={StaticResource White}}"
+                HorizontalOptions="Fill"
+                StrokeShape="RoundRectangle 20"
+                StrokeThickness="0"
+                VerticalOptions="Start">
+                <Border.Shadow>
+                    <Shadow
+                        Brush="Black"
+                        Opacity=".8"
+                        Radius="18"
+                        Offset="0,2" />
+                </Border.Shadow>
+                <VerticalStackLayout Padding="20" Spacing="10">
+
+                    <Label
+                        FontSize="Title"
+                        Style="{StaticResource Headline}"
+                        Text="Politique de confidentialité" />
+
+                    <Label Style="{StaticResource SubHeadline}" Text="Collecte de données" />
+                    <Label Text="Aucune donnée personnelle n’est collectée, stockée ou transmise." />
+
+                    <Label Style="{StaticResource SubHeadline}" Text="Historique local" />
+                    <Label Text="L’application enregistre uniquement l’historique des liens visités sur l’appareil de l’utilisateur afin de marquer les liens déjà consultés." />
+
+                    <Label Style="{StaticResource SubHeadline}" Text="Publicités" />
+                    <Label Text="L'application tente de masquer certains éléments du site affiché (publicités) via du JavaScript local.                           Aucune analyse n’est réalisée et rien n’est envoyé." />
+
+                    <Label Style="{StaticResource SubHeadline}" Text="Partage des données" />
+                    <Label Text="Aucune donnée n’est partagée avec des tiers." />
+
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </ScrollView>
+
+</ContentPage>

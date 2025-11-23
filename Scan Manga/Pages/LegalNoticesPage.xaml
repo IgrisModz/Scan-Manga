@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Scan_Manga.Pages.LegalNoticesPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Mentions légales">
+    <ScrollView>
+        <Grid>
+            <Border
+                Margin="20"
+                Padding="10"
+                Background="{AppThemeBinding Dark={StaticResource OffBlack},
+                                             Light={StaticResource White}}"
+                HorizontalOptions="Fill"
+                StrokeShape="RoundRectangle 20"
+                StrokeThickness="0"
+                VerticalOptions="Start">
+                <Border.Shadow>
+                    <Shadow
+                        Brush="Black"
+                        Opacity=".8"
+                        Radius="18"
+                        Offset="0,2" />
+                </Border.Shadow>
+                <VerticalStackLayout Padding="20" Spacing="10">
+
+                    <Label
+                        FontSize="Title"
+                        Style="{StaticResource Headline}"
+                        Text="Mentions légales" />
+
+                    <Label Style="{StaticResource SubHeadline}" Text="Éditeur de l’application" />
+                    <Label>
+                        <Label.FormattedText>
+                            <FormattedString>
+                                <Span Text="Nom : " />
+                                <Span FontAttributes="Bold" Text="IgrisModz" />
+                                <Span Text=" (développeur indépendant). Application open-source distribuée gratuitement." />
+                            </FormattedString>
+                        </Label.FormattedText>
+                    </Label>
+
+                    <Label Style="{StaticResource SubHeadline}" Text="Contact" />
+                    <Label Text="Adresse e-mail : igrisprod.contact@proton.me" />
+
+                    <Label Style="{StaticResource SubHeadline}" Text="Hébergement" />
+                    <Label Text="L'application est installée localement sur l’appareil de l’utilisateur et ne possède aucun serveur propre." />
+
+                    <Label Style="{StaticResource SubHeadline}" Text="Collecte de données" />
+                    <Label Text="Aucune donnée personnelle n’est collectée ni envoyée. L’application fonctionne en local et n’envoie aucune information à son développeur ou à un tiers." />
+
+                    <Label Style="{StaticResource SubHeadline}" Text="WebView et site externe" />
+                    <Label Text="L’application affiche un site tiers via WebView. Le contenu de ce site reste sous la responsabilité de son éditeur." />
+
+                </VerticalStackLayout>
+            </Border>
+        </Grid>
+    </ScrollView>
+</ContentPage>
