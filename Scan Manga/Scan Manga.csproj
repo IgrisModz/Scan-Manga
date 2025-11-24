@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net9.0-android</TargetFrameworks>
+		<TargetFrameworks>net9.0-android;net9.0-ios</TargetFrameworks>
 
 		<OutputType>Exe</OutputType>
 		<RootNamespace>Scan_Manga</RootNamespace>
@@ -23,13 +23,15 @@
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
 
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
 		<LangVersion>preview</LangVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" ForegroundScale="0.65" />
+		<MauiIcon Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'" Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" ForegroundScale="0.65" />
+		<MauiIcon Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'" Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" TintColor="White" />
 		
 		<!-- Splash Screen -->
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#ffffff" BaseSize="128,128" />
@@ -57,6 +59,9 @@
 	  </Compile>
 	  <Compile Update="Pages\LegalNoticesPage.xaml.cs">
 	    <DependentUpon>LegalNoticesPage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Platforms\iOS\CustomWebViewHandler.cs">
+	    <ExcludeFromCurrentConfiguration>false</ExcludeFromCurrentConfiguration>
 	  </Compile>
 	</ItemGroup>
 
