@@ -1,5 +1,4 @@
-﻿using Android.Util;
-using Android.Webkit;
+﻿using Android.Webkit;
 using Microsoft.Maui.Handlers;
 using Scan_Manga.Controls;
 using Webkit = Android.Webkit;
