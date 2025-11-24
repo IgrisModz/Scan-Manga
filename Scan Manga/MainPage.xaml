@@ -29,6 +29,15 @@
                 HorizontalOptions="Fill"
                 VerticalOptions="Fill" />
 
+        <!--  ProgressBar  -->
+        <ProgressBar
+            HeightRequest="4"
+            HorizontalOptions="Fill"
+            IsVisible="{Binding Source={x:Reference MainWebView}, Path=IsLoading}"
+            Progress="{Binding Source={x:Reference MainWebView}, Path=Progress}"
+            VerticalOptions="Start" />
+
+        <!--  Offline overlay  -->
             <Grid
                 x:Name="OfflineOverlay"
                 BackgroundColor="{AppThemeBinding Light={StaticResource White},

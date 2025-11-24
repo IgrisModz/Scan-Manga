@@ -2,6 +2,8 @@
 using Scan_Manga.Services;
 using MauiIcons.Material;
 using MauiIcons.FontAwesome.Brand;
+using Scan_Manga.Controls;
+using Scan_Manga.Platforms.Android;
 
 #if DEBUG
 using Microsoft.Extensions.Logging;
@@ -23,6 +25,10 @@ public static class MauiProgram
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+            })
+            .ConfigureMauiHandlers(handlers =>
+            {
+                handlers.AddHandler<CustomWebView, CustomWebViewHandler>();
             });
 
         builder.Services.AddSingleton<ISystemBarsService, SystemBarsService>();
