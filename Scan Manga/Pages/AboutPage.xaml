@@ -5,74 +5,104 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
     Title="À propos">
+    <Grid RowDefinitions="Auto,*" RowSpacing="10">
+        <Border
+            Margin="0"
+            Padding="20,10"
+            Background="{AppThemeBinding Dark={StaticResource OffBlack},
+                                         Light={StaticResource White}}"
+            HorizontalOptions="Fill"
+            StrokeShape="Rectangle"
+            StrokeThickness="0"
+            VerticalOptions="Fill">
+            <Border.Shadow>
+                <Shadow
+                    Brush="Black"
+                    Opacity=".8"
+                    Radius="18"
+                    Offset="10,10" />
+            </Border.Shadow>
+            <HorizontalStackLayout>
+                <Image
+                    Margin="10"
+                    HeightRequest="50"
+                    Source="scan_manga_icon.svg"
+                    WidthRequest="50" />
+                <Label
+                    FontSize="Title"
+                    Style="{StaticResource Headline}"
+                    Text="Scan-Manga"
+                    VerticalOptions="Center"
+                    VerticalTextAlignment="Center" />
+            </HorizontalStackLayout>
+        </Border>
+        <ScrollView Grid.Row="1">
+            <Grid>
+                <Border
+                    Margin="20"
+                    Padding="10"
+                    Background="{AppThemeBinding Dark={StaticResource OffBlack},
+                                                 Light={StaticResource White}}"
+                    HorizontalOptions="Fill"
+                    StrokeShape="RoundRectangle 20"
+                    StrokeThickness="0"
+                    VerticalOptions="Start">
+                    <Border.Shadow>
+                        <Shadow
+                            Brush="Black"
+                            Opacity=".8"
+                            Radius="18"
+                            Offset="0,2" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Padding="20" Spacing="10">
 
-    <ScrollView>
-        <Grid>
-            <Border
-                Margin="20"
-                Padding="10"
-                Background="{AppThemeBinding Dark={StaticResource OffBlack},
-                                             Light={StaticResource White}}"
-                HorizontalOptions="Fill"
-                StrokeShape="RoundRectangle 20"
-                StrokeThickness="0"
-                VerticalOptions="Start">
-                <Border.Shadow>
-                    <Shadow
-                        Brush="Black"
-                        Opacity=".8"
-                        Radius="18"
-                        Offset="0,2" />
-                </Border.Shadow>
-                <VerticalStackLayout Padding="20" Spacing="10">
+                        <Label
+                            FontSize="Title"
+                            Style="{StaticResource Headline}"
+                            Text="À propos" />
 
-                    <Label
-                        FontSize="Title"
-                        Style="{StaticResource Headline}"
-                        Text="À propos" />
-
-                    <Label>
-                        <Label.FormattedText>
-                            <FormattedString>
-                                <Span Text="Cette application est open-source et gratuite. Développée par " />
-                                <Span FontAttributes="Bold" Text="IgrisModz" />
-                                <Span Text=". Aucune donnée personnelle n’est collectée." />
-                            </FormattedString>
-                        </Label.FormattedText>
-                    </Label>
-                    <Label
-                        FontAttributes="Bold"
-                        FontSize="Subtitle"
-                        Style="{StaticResource SubHeadline}"
-                        Text="Code source" />
-                    <VerticalStackLayout Spacing="8">
-                        <Label Text="Le code source est disponible sur" />
                         <Label>
                             <Label.FormattedText>
                                 <FormattedString>
-                                    <Span Text="{mi:FontAwesomeBrand Icon=Github, FontOverride=False, IconSize=28, IconColor=#536DFE}">
-                                        <Span.GestureRecognizers>
-                                            <TapGestureRecognizer Command="{Binding TapCommand}" CommandParameter="https://github.com/IgrisModz" />
-                                        </Span.GestureRecognizers>
-                                    </Span>
-                                    <Span
-                                        FontAttributes="Bold"
-                                        FontSize="20"
-                                        Text=" GitHub"
-                                        TextColor="#536DFE"
-                                        TextDecorations="None">
-                                        <Span.GestureRecognizers>
-                                            <TapGestureRecognizer Command="{Binding TapCommand}" CommandParameter="https://github.com/IgrisModz" />
-                                        </Span.GestureRecognizers>
-                                    </Span>
+                                    <Span Text="Cette application est open-source et gratuite. Développée par " />
+                                    <Span FontAttributes="Bold" Text="IgrisModz" />
+                                    <Span Text=". Aucune donnée personnelle n’est collectée." />
                                 </FormattedString>
                             </Label.FormattedText>
                         </Label>
+                        <Label
+                            FontAttributes="Bold"
+                            FontSize="Subtitle"
+                            Style="{StaticResource SubHeadline}"
+                            Text="Code source" />
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Le code source est disponible sur" />
+                            <Label>
+                                <Label.FormattedText>
+                                    <FormattedString>
+                                        <Span Text="{mi:FontAwesomeBrand Icon=Github, FontOverride=False, IconSize=28, IconColor=#536DFE}">
+                                            <Span.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding TapCommand}" CommandParameter="https://github.com/IgrisModz" />
+                                            </Span.GestureRecognizers>
+                                        </Span>
+                                        <Span
+                                            FontAttributes="Bold"
+                                            FontSize="20"
+                                            Text=" GitHub"
+                                            TextColor="#536DFE"
+                                            TextDecorations="None">
+                                            <Span.GestureRecognizers>
+                                                <TapGestureRecognizer Command="{Binding TapCommand}" CommandParameter="https://github.com/IgrisModz" />
+                                            </Span.GestureRecognizers>
+                                        </Span>
+                                    </FormattedString>
+                                </Label.FormattedText>
+                            </Label>
+                        </VerticalStackLayout>
+
                     </VerticalStackLayout>
-
-                </VerticalStackLayout>
-            </Border>
-        </Grid>
-    </ScrollView>
-
+                </Border>
+            </Grid>
+        </ScrollView>
+    </Grid>
 </ContentPage>

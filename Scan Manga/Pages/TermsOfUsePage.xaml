@@ -4,44 +4,74 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     Title="Conditions d’utilisation">
+    <Grid RowDefinitions="Auto,*" RowSpacing="10">
+        <Border
+            Margin="0"
+            Padding="20,10"
+            Background="{AppThemeBinding Dark={StaticResource OffBlack},
+                                         Light={StaticResource White}}"
+            HorizontalOptions="Fill"
+            StrokeShape="Rectangle"
+            StrokeThickness="0"
+            VerticalOptions="Fill">
+            <Border.Shadow>
+                <Shadow
+                    Brush="Black"
+                    Opacity=".8"
+                    Radius="18"
+                    Offset="10,10" />
+            </Border.Shadow>
+            <HorizontalStackLayout>
+                <Image
+                    Margin="10"
+                    HeightRequest="50"
+                    Source="scan_manga_icon.svg"
+                    WidthRequest="50" />
+                <Label
+                    FontSize="Title"
+                    Style="{StaticResource Headline}"
+                    Text="Scan-Manga"
+                    VerticalOptions="Center"
+                    VerticalTextAlignment="Center" />
+            </HorizontalStackLayout>
+        </Border>
+        <ScrollView Grid.Row="1">
+            <Grid>
+                <Border
+                    Margin="20"
+                    Padding="10"
+                    Background="{AppThemeBinding Dark={StaticResource OffBlack},
+                                                 Light={StaticResource White}}"
+                    HorizontalOptions="Fill"
+                    StrokeShape="RoundRectangle 20"
+                    StrokeThickness="0"
+                    VerticalOptions="Start">
+                    <Border.Shadow>
+                        <Shadow
+                            Brush="Black"
+                            Opacity=".8"
+                            Radius="18"
+                            Offset="0,2" />
+                    </Border.Shadow>
+                    <VerticalStackLayout Padding="20" Spacing="10">
 
-    <ScrollView>
-        <Grid>
-            <Border
-                Margin="20"
-                Padding="10"
-                Background="{AppThemeBinding Dark={StaticResource OffBlack},
-                                             Light={StaticResource White}}"
-                HorizontalOptions="Fill"
-                StrokeShape="RoundRectangle 20"
-                StrokeThickness="0"
-                VerticalOptions="Start">
-                <Border.Shadow>
-                    <Shadow
-                        Brush="Black"
-                        Opacity=".8"
-                        Radius="18"
-                        Offset="0,2" />
-                </Border.Shadow>
-                <VerticalStackLayout Padding="20" Spacing="10">
+                        <Label
+                            FontSize="Title"
+                            Style="{StaticResource Headline}"
+                            Text="Conditions générales d’utilisation" />
 
-                    <Label
-                        FontSize="Title"
-                        Style="{StaticResource Headline}"
-                        Text="Conditions générales d’utilisation" />
+                        <Label Style="{StaticResource SubHeadline}" Text="Utilisation de l’application" />
+                        <Label Text="L'application affiche uniquement un site externe dans un WebView." />
 
-                    <Label Style="{StaticResource SubHeadline}" Text="Utilisation de l’application" />
-                    <Label Text="L'application affiche uniquement un site externe dans un WebView." />
+                        <Label Style="{StaticResource SubHeadline}" Text="Responsabilité" />
+                        <Label Text="Le développeur n’est pas responsable du contenu du site externe ni de ses changements." />
 
-                    <Label Style="{StaticResource SubHeadline}" Text="Responsabilité" />
-                    <Label Text="Le développeur n’est pas responsable du contenu du site externe ni de ses changements." />
+                        <Label Style="{StaticResource SubHeadline}" Text="Modifications" />
+                        <Label Text="L'auteur peut modifier l'application à tout moment sans préavis." />
 
-                    <Label Style="{StaticResource SubHeadline}" Text="Modifications" />
-                    <Label Text="L'auteur peut modifier l'application à tout moment sans préavis." />
-
-                </VerticalStackLayout>
-            </Border>
-        </Grid>
-    </ScrollView>
-
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+        </ScrollView>
+    </Grid>
 </ContentPage>
