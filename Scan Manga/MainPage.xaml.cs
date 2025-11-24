@@ -1,4 +1,9 @@
-﻿using Java.Net;
+﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Extensions;
+using MauiIcons.Core;
+using MauiIcons.Material;
+using Microsoft.Maui.Controls.Shapes;
+using Scan_Manga.Pages;
 using Scan_Manga.Services;
 using System.Text.Json;
 
@@ -9,6 +14,8 @@ public partial class MainPage : ContentPage
     private readonly ISystemBarsService _systemBars;
     private HashSet<string> _visitedLinks = [];
     private string? _lastUrl;
+    private bool _isFirstAppear = true;
+    private bool _infoExpanded = false;
 
     public MainPage(ISystemBarsService systemBars)
     {
@@ -23,16 +30,20 @@ public partial class MainPage : ContentPage
     {
         base.OnAppearing();
 
-        // Charger dernière URL
-        _lastUrl = Preferences.Get("LastUrl", "https://www.scan-manga.com/?home");
-        MainWebView.Source = _lastUrl;
+        if (_isFirstAppear)
+        {
+            _isFirstAppear = false;
+            // Charger dernière URL
+            _lastUrl = Preferences.Get("LastUrl", "https://www.scan-manga.com/?home");
+            MainWebView.Source = _lastUrl;
 
-        // Charger URLs déjà visitées
+            // Charger URLs déjà visitées
 
-        var saved = Preferences.Get("VisitedLinks", string.Empty);
-        _visitedLinks = string.IsNullOrEmpty(saved)
-            ? []
-            : JsonSerializer.Deserialize<HashSet<string>>(saved) ?? [];
+            var saved = Preferences.Get("VisitedLinks", string.Empty);
+            _visitedLinks = string.IsNullOrEmpty(saved)
+                ? []
+                : JsonSerializer.Deserialize<HashSet<string>>(saved) ?? [];
+        }
     }
 
     protected override void OnDisappearing()
@@ -45,8 +56,18 @@ public partial class MainPage : ContentPage
         Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
     }
 
-    private void OnRefresh(object sender, EventArgs e)
+    private async void OnRefresh(object sender, EventArgs e)
     {
+        if (sender is VerticalStackLayout refreshBtn)
+        {
+            await refreshBtn.ScaleTo(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
+            await refreshBtn.ScaleTo(1, 100, Easing.CubicInOut);    // Reviens à la taille normale
+            var refreshLabel = refreshBtn.Children.OfType<Label>().First();
+            refreshLabel.Rotation = 0;
+            await refreshLabel.RotateTo(360, 500, Easing.CubicInOut);
+            OnOverlayTapped(null, EventArgs.Empty);
+        }
+
         MainWebView.Reload();
     }
 
@@ -73,36 +94,36 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        if (!string.IsNullOrEmpty(e.Url) && e.Result == WebNavigationResult.Success)
+        if (string.IsNullOrEmpty(e.Url) || e.Result != WebNavigationResult.Success) return;
+        
+        OfflineOverlay.IsVisible = false;
+
+        bool isLecturePage = e.Url.Contains("/lecture-en-ligne");
+        _systemBars.SetLectureMode(isLecturePage);
+
+        // Sauvegarder en mémoire
+        _lastUrl = e.Url;
+
+        if (_lastUrl != null)
+            Preferences.Set("LastUrl", _lastUrl);
+
+        if (!_visitedLinks.Add(e.Url))
         {
-            OfflineOverlay.IsVisible = false;
-
-            bool isLecturePage = e.Url.Contains("/lecture-en-ligne");
-            _systemBars.SetLectureMode(isLecturePage);
-
-            // Sauvegarder en mémoire
-            _lastUrl = e.Url;
-
-            if (_lastUrl != null)
-                Preferences.Set("LastUrl", _lastUrl);
-
-            if (!_visitedLinks.Add(e.Url))
+            // ✅ Limiter à 2000 liens max
+            if (_visitedLinks.Count > 2000)
             {
-                // ✅ Limiter à 2000 liens max
-                if (_visitedLinks.Count > 2000)
-                {
-                    var toKeep = _visitedLinks.Skip(_visitedLinks.Count - 2000).ToList();
-                    _visitedLinks.Clear();
-                    foreach (var url in toKeep) _visitedLinks.Add(url);
-                }
+                var toKeep = _visitedLinks.Skip(_visitedLinks.Count - 2000).ToList();
+                _visitedLinks.Clear();
+                foreach (var url in toKeep) _visitedLinks.Add(url);
             }
+        }
 
-            Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
+        Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
 
-            // Recolorer les liens visités
-            string visitedJoined = JsonSerializer.Serialize(_visitedLinks);
+        // Recolorer les liens visités
+        string visitedJoined = JsonSerializer.Serialize(_visitedLinks);
 
-            string js = $@"
+        string js = $@"
             (function() {{
                 const selectors = [
                     'div.BDPFGA[id^=""pf-""]',
@@ -161,7 +182,128 @@ public partial class MainPage : ContentPage
                 }});
             }})();";
 
-            await MainWebView.EvaluateJavaScriptAsync(js);
+        await MainWebView.EvaluateJavaScriptAsync(js);
+    }
+
+    public static Task AnimateWidth(VisualElement view, double from, double to, uint length = 250)
+    {
+        var taskCompletionSource = new TaskCompletionSource<bool>();
+
+        var animation = new Animation(v => view.WidthRequest = v, from, to, Easing.CubicInOut);
+        animation.Commit(view, "WidthAnimation", 16, length, finished: (v, c) => taskCompletionSource.SetResult(true));
+
+        return taskCompletionSource.Task;
+    }
+
+    public static Task AnimateHeight(VisualElement view, double from, double to, uint length = 250)
+    {
+        var taskCompletionSource = new TaskCompletionSource<bool>();
+
+        var animation = new Animation(v => view.HeightRequest = v, from, to, Easing.CubicInOut);
+        animation.Commit(view, "HeightAnimation", 16, length, finished: (v, c) => taskCompletionSource.SetResult(true));
+
+        return taskCompletionSource.Task;
+    }
+
+    private async void OnExpandClicked(object? sender, EventArgs e)
+    {
+        double screenWidth = MainRoot.Width > 0 ? MainRoot.Width :
+                             DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
+        double maxWidth = Math.Min(screenWidth - 20, 500);
+        double minWidth = 50;
+
+        if (!_infoExpanded)
+        {
+            ClickOutsideOverlay.IsVisible = true;
+
+            // Rotation label
+            var rotationTask = ExpandBtn.RotateTo(360, 500, Easing.CubicInOut);
+
+            // Animate width et height
+            await AnimateWidth(NavBar, NavBar.Width, maxWidth, 200);
+            await AnimateHeight(NavBar, NavBar.Height, 80, 300);
+
+            await rotationTask;
+
+            // Change label Icon
+            ExpandBtn.Icon(MaterialIcons.Close);
+
+            // Afficher les boutons
+            NavBarContent.IsVisible = true;
+            await InfoBtn.FadeTo(1, 180);
+            await RefreshBtn.FadeTo(1, 180);
+
+            _infoExpanded = true;
+        }
+        else
+        {
+            ClickOutsideOverlay.IsVisible = false;
+
+            // Masquer boutons
+            await RefreshBtn.FadeTo(0, 140);
+            await InfoBtn.FadeTo(0, 140);
+            NavBarContent.IsVisible = false;
+
+            // Revenir rotation
+            var rotationTask = ExpandBtn.RotateTo(0, 450, Easing.CubicInOut);
+
+            // Réduire width et height
+            await AnimateHeight(NavBar, NavBar.Height, 50, 250);
+            await AnimateWidth(NavBar, NavBar.Width, minWidth, 200);
+
+            await rotationTask;
+
+            // Revenir label Icon
+            ExpandBtn.Icon(MaterialIcons.Notes);
+
+            _infoExpanded = false;
+        }
+    }
+
+    private async void OnInfoClicked(object sender, EventArgs e)
+    {
+        await InfoBtn.ScaleTo(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
+        await InfoBtn.ScaleTo(1, 100, Easing.CubicInOut);    // Reviens à la taille normale
+
+        OnOverlayTapped(null, EventArgs.Empty);
+
+        var popupOptions = new PopupOptions
+        {
+            Shape = new RoundRectangle
+            {
+                CornerRadius = new CornerRadius(20, 20, 20, 20),
+                StrokeThickness = 0
+            }
+        };
+
+        var popup = new InfoPopup();
+        var popupResult = await this.ShowPopupAsync<ILegalPage>(popup, popupOptions);
+
+        if (popupResult.WasDismissedByTappingOutsideOfPopup) return;
+
+        await Navigation.PushAsync(popupResult.Result as Page);
+    }
+
+    private void OnOverlayTapped(object? sender, EventArgs e)
+    {
+        CloseInfoIfOpen();
+    }
+
+    private void OnOverlayPan(object sender, PanUpdatedEventArgs e)
+    {
+        CloseInfoIfOpen();
+    }
+
+    private void OnOverlayPinch(object sender, PinchGestureUpdatedEventArgs e)
+    {
+        CloseInfoIfOpen();
+    }
+
+    private void CloseInfoIfOpen()
+    {
+        if (_infoExpanded)
+        {
+            OnExpandClicked(null, EventArgs.Empty);
         }
     }
 }
