@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Grid
+    x:Class="Scan_Manga.Controls.ExpandableNavBar"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons">
+
+    <!--  Overlay  -->
+    <Grid
+        x:Name="ClickOutsideOverlay"
+        BackgroundColor="#40000000"
+        IsVisible="False">
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnOverlayTapped" />
+            <PanGestureRecognizer PanUpdated="OnOverlayPan" />
+            <PinchGestureRecognizer PinchUpdated="OnOverlayPinch" />
+        </Grid.GestureRecognizers>
+    </Grid>
+
+    <!--  Barre + contenu  -->
+    <Border
+        x:Name="NavBar"
+        Margin="10"
+        Padding="5,3,5,5"
+        Background="{AppThemeBinding Dark=#EE000000,
+                                     Light=#E0FFFFFF}"
+        HeightRequest="50"
+        HorizontalOptions="End"
+        StrokeShape="RoundRectangle 25"
+        StrokeThickness="0"
+        VerticalOptions="End"
+        WidthRequest="50">
+        <Border.Shadow>
+            <Shadow
+                Brush="{AppThemeBinding Dark={StaticResource WhiteBrush},
+                                        Light={StaticResource BlackBrush}}"
+                Opacity="0.8"
+                Radius="8"
+                Offset="0,2" />
+        </Border.Shadow>
+
+        <Grid x:Name="NavBarRoot" ColumnDefinitions="*,40">
+
+            <!--  Contenu (caché)  -->
+            <HorizontalStackLayout
+                x:Name="NavBarContent"
+                Padding="20,0"
+                IsVisible="False"
+                Spacing="20"
+                VerticalOptions="Center">
+
+                <VerticalStackLayout>
+                    <Label
+                        x:Name="InfoBtn"
+                        FontSize="28"
+                        HorizontalOptions="Center"
+                        Text="{mi:Material Icon=Info}"
+                        TextColor="{AppThemeBinding Dark=White,
+                                                    Light=Black}" />
+                    <Label FontSize="12" Text="Informations" />
+
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnInfoTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+                <VerticalStackLayout>
+                    <Label
+                        x:Name="RefreshBtn"
+                        FontSize="28"
+                        HorizontalOptions="Center"
+                        Text="{mi:Material Icon=Refresh}"
+                        TextColor="{AppThemeBinding Dark=White,
+                                                    Light=Black}" />
+                    <Label FontSize="12" Text="Rafraîchir" />
+
+                    <VerticalStackLayout.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRefreshTapped" />
+                    </VerticalStackLayout.GestureRecognizers>
+                </VerticalStackLayout>
+
+            </HorizontalStackLayout>
+
+            <!--  Bouton principal  -->
+            <Label
+                x:Name="ExpandBtn"
+                Grid.Column="1"
+                FontSize="Title"
+                HorizontalOptions="Center"
+                Text="{mi:Material Icon=Notes}"
+                VerticalOptions="Center">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnExpandClicked" />
+                </Label.GestureRecognizers>
+            </Label>
+        </Grid>
+    </Border>
+</Grid>

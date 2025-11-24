@@ -52,16 +52,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Update="Controls\ExpandableNavBar.xaml.cs">
+	    <DependentUpon>ExpandableNavBar.xaml</DependentUpon>
+	  </Compile>
 	  <Compile Update="Pages\LegalNoticesPage.xaml.cs">
 	    <DependentUpon>LegalNoticesPage.xaml</DependentUpon>
 	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Pages\AboutPage.xaml">
+	  <MauiXaml Update="Controls\ExpandableNavBar.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Pages\InfoPopup.xaml">
+	  <MauiXaml Update="Pages\AboutPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\LegalNoticesPage.xaml">

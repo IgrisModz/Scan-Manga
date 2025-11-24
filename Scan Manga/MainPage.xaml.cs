@@ -1,8 +1,4 @@
-﻿using CommunityToolkit.Maui;
-using CommunityToolkit.Maui.Extensions;
-using MauiIcons.Core;
-using MauiIcons.Material;
-using Microsoft.Maui.Controls.Shapes;
+﻿using Scan_Manga.Controls;
 using Scan_Manga.Pages;
 using Scan_Manga.Services;
 using System.Text.Json;
@@ -15,7 +11,6 @@ public partial class MainPage : ContentPage
     private HashSet<string> _visitedLinks = [];
     private string? _lastUrl;
     private bool _isFirstAppear = true;
-    private bool _infoExpanded = false;
 
     public MainPage(ISystemBarsService systemBars)
     {
@@ -56,18 +51,8 @@ public partial class MainPage : ContentPage
         Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
     }
 
-    private async void OnRefresh(object sender, EventArgs e)
+    private void OnRefresh(object sender, EventArgs e)
     {
-        if (sender is VerticalStackLayout refreshBtn)
-        {
-            await refreshBtn.ScaleTo(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
-            await refreshBtn.ScaleTo(1, 100, Easing.CubicInOut);    // Reviens à la taille normale
-            var refreshLabel = refreshBtn.Children.OfType<Label>().First();
-            refreshLabel.Rotation = 0;
-            await refreshLabel.RotateTo(360, 500, Easing.CubicInOut);
-            OnOverlayTapped(null, EventArgs.Empty);
-        }
-
         MainWebView.Reload();
     }
 
@@ -185,125 +170,48 @@ public partial class MainPage : ContentPage
         await MainWebView.EvaluateJavaScriptAsync(js);
     }
 
-    public static Task AnimateWidth(VisualElement view, double from, double to, uint length = 250)
-    {
-        var taskCompletionSource = new TaskCompletionSource<bool>();
-
-        var animation = new Animation(v => view.WidthRequest = v, from, to, Easing.CubicInOut);
-        animation.Commit(view, "WidthAnimation", 16, length, finished: (v, c) => taskCompletionSource.SetResult(true));
-
-        return taskCompletionSource.Task;
-    }
-
-    public static Task AnimateHeight(VisualElement view, double from, double to, uint length = 250)
-    {
-        var taskCompletionSource = new TaskCompletionSource<bool>();
-
-        var animation = new Animation(v => view.HeightRequest = v, from, to, Easing.CubicInOut);
-        animation.Commit(view, "HeightAnimation", 16, length, finished: (v, c) => taskCompletionSource.SetResult(true));
-
-        return taskCompletionSource.Task;
-    }
-
-    private async void OnExpandClicked(object? sender, EventArgs e)
-    {
-        double screenWidth = MainRoot.Width > 0 ? MainRoot.Width :
-                             DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
-        double maxWidth = Math.Min(screenWidth - 20, 500);
-        double minWidth = 50;
-
-        if (!_infoExpanded)
-        {
-            ClickOutsideOverlay.IsVisible = true;
-
-            // Rotation label
-            var rotationTask = ExpandBtn.RotateTo(360, 500, Easing.CubicInOut);
-
-            // Animate width et height
-            await AnimateWidth(NavBar, NavBar.Width, maxWidth, 200);
-            await AnimateHeight(NavBar, NavBar.Height, 80, 300);
-
-            await rotationTask;
-
-            // Change label Icon
-            ExpandBtn.Icon(MaterialIcons.Close);
-
-            // Afficher les boutons
-            NavBarContent.IsVisible = true;
-            await InfoBtn.FadeTo(1, 180);
-            await RefreshBtn.FadeTo(1, 180);
-
-            _infoExpanded = true;
-        }
-        else
-        {
-            ClickOutsideOverlay.IsVisible = false;
-
-            // Masquer boutons
-            await RefreshBtn.FadeTo(0, 140);
-            await InfoBtn.FadeTo(0, 140);
-            NavBarContent.IsVisible = false;
-
-            // Revenir rotation
-            var rotationTask = ExpandBtn.RotateTo(0, 450, Easing.CubicInOut);
-
-            // Réduire width et height
-            await AnimateHeight(NavBar, NavBar.Height, 50, 250);
-            await AnimateWidth(NavBar, NavBar.Width, minWidth, 200);
-
-            await rotationTask;
-
-            // Revenir label Icon
-            ExpandBtn.Icon(MaterialIcons.Notes);
-
-            _infoExpanded = false;
-        }
-    }
-
     private async void OnInfoClicked(object sender, EventArgs e)
     {
-        await InfoBtn.ScaleTo(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
-        await InfoBtn.ScaleTo(1, 100, Easing.CubicInOut);    // Reviens à la taille normale
+        var popup = new DynamicPopup<ILegalPage>();
 
-        OnOverlayTapped(null, EventArgs.Empty);
-
-        var popupOptions = new PopupOptions
-        {
-            Shape = new RoundRectangle
+        popup.SetContent(
+            "Informations",
+            new Dictionary<string, ILegalPage>
             {
-                CornerRadius = new CornerRadius(20, 20, 20, 20),
-                StrokeThickness = 0
+        { "Mentions légales", new LegalNoticesPage() },
+        { "Politique de confidentialité", new PrivacyPolicyPage() },
+        { "Conditions générales d’utilisation", new TermsOfUsePage() },
+        { "À propos", new AboutPage() }
             }
-        };
+        );
 
-        var popup = new InfoPopup();
-        var popupResult = await this.ShowPopupAsync<ILegalPage>(popup, popupOptions);
+        var result = await popup.ShowAsync(this);
 
-        if (popupResult.WasDismissedByTappingOutsideOfPopup) return;
+        if (result.WasDismissedByTappingOutsideOfPopup)
+            return;
 
-        await Navigation.PushAsync(popupResult.Result as Page);
-    }
-
-    private void OnOverlayTapped(object? sender, EventArgs e)
-    {
-        CloseInfoIfOpen();
-    }
-
-    private void OnOverlayPan(object sender, PanUpdatedEventArgs e)
-    {
-        CloseInfoIfOpen();
-    }
-
-    private void OnOverlayPinch(object sender, PinchGestureUpdatedEventArgs e)
-    {
-        CloseInfoIfOpen();
-    }
-
-    private void CloseInfoIfOpen()
-    {
-        if (_infoExpanded)
+        if (result != null)
         {
-            OnExpandClicked(null, EventArgs.Empty);
+            // 🔑 mémoriser si le mode lecture est actif avant de naviguer
+            bool lectureModeBeforeNavigation = _lastUrl?.Contains("/lecture-en-ligne") ?? false;
+
+            // Naviguer vers la page externe
+            await Navigation.PushAsync(result.Value as ContentPage);
+
+            // Désactiver le mode lecture seulement si on était en lecture avant
+            if (lectureModeBeforeNavigation)
+            {
+                _systemBars.SetLectureMode(false);
+
+                // Réactiver le mode lecture uniquement au retour de cette page
+                void OnPageDisappearing(object? s, EventArgs args)
+                {
+                    _systemBars.SetLectureMode(true);
+                    ((ContentPage)result.Value).Disappearing -= OnPageDisappearing;
+                }
+
+                ((ContentPage)result.Value).Disappearing += OnPageDisappearing;
+            }
         }
     }
 }
