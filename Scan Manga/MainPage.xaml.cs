@@ -7,7 +7,7 @@ namespace Scan_Manga;
 
 public partial class MainPage : ContentPage
 {
-    private readonly ISystemBarsService _systemBars;
+    private readonly ISystemBarsService? _systemBars;
     private HashSet<string> _visitedLinks = [];
     private string? _lastUrl;
     private bool _isFirstAppear = true;
@@ -38,6 +38,19 @@ public partial class MainPage : ContentPage
             _visitedLinks = string.IsNullOrEmpty(saved)
                 ? []
                 : JsonSerializer.Deserialize<HashSet<string>>(saved) ?? [];
+        }
+    }
+
+    protected override async void OnHandlerChanged()
+    {
+        base.OnHandlerChanged();
+        if (Handler?.MauiContext != null)
+        {
+            if (_lastUrl?.Contains("/lecture-en-ligne") ?? false)
+            {
+                await Task.Delay(50);
+                _systemBars?.SetLectureMode(true);
+            }
         }
     }
 
@@ -84,7 +97,7 @@ public partial class MainPage : ContentPage
         OfflineOverlay.IsVisible = false;
 
         bool isLecturePage = e.Url.Contains("/lecture-en-ligne");
-        _systemBars.SetLectureMode(isLecturePage);
+        _systemBars?.SetLectureMode(isLecturePage);
 
         // Sauvegarder en mémoire
         _lastUrl = e.Url;
@@ -201,12 +214,12 @@ public partial class MainPage : ContentPage
             // Désactiver le mode lecture seulement si on était en lecture avant
             if (lectureModeBeforeNavigation)
             {
-                _systemBars.SetLectureMode(false);
+                _systemBars?.SetLectureMode(false);
 
                 // Réactiver le mode lecture uniquement au retour de cette page
                 void OnPageDisappearing(object? s, EventArgs args)
                 {
-                    _systemBars.SetLectureMode(true);
+                    _systemBars?.SetLectureMode(true);
                     ((ContentPage)result.Value).Disappearing -= OnPageDisappearing;
                 }
 
