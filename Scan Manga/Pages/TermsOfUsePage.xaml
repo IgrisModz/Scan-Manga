@@ -7,7 +7,7 @@
     <Grid RowDefinitions="Auto,*">
         <Border
             Margin="0"
-            Padding="20,10"
+            Padding="20,0"
             Background="{AppThemeBinding Dark={StaticResource OffBlack},
                                          Light={StaticResource White}}"
             HorizontalOptions="Fill"
@@ -16,14 +16,14 @@
             VerticalOptions="Fill">
             <Border.Shadow>
                 <Shadow
-                    Brush="Black"
+                    Brush="{StaticResource Primary}"
                     Opacity=".8"
-                    Radius="18"
-                    Offset="10,10" />
+                    Radius="14"
+                    Offset="0,0" />
             </Border.Shadow>
             <HorizontalStackLayout>
                 <Image
-                    Margin="10"
+                    Margin="10,6"
                     HeightRequest="50"
                     Source="scan_manga_icon.svg"
                     WidthRequest="50" />
@@ -38,7 +38,7 @@
         <ScrollView Grid.Row="1">
             <Grid>
                 <Border
-                    Margin="20"
+                    Margin="20,15,20,20"
                     Padding="10"
                     Background="{AppThemeBinding Dark={StaticResource OffBlack},
                                                  Light={StaticResource White}}"
@@ -48,10 +48,10 @@
                     VerticalOptions="Start">
                     <Border.Shadow>
                         <Shadow
-                            Brush="Black"
+                            Brush="{StaticResource Primary}"
                             Opacity=".8"
-                            Radius="18"
-                            Offset="0,2" />
+                            Radius="14"
+                            Offset="0,7" />
                     </Border.Shadow>
                     <VerticalStackLayout Padding="20" Spacing="10">
 
