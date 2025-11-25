@@ -1,9 +1,14 @@
 ﻿using CommunityToolkit.Maui;
-using Scan_Manga.Services;
 using MauiIcons.Material;
 using MauiIcons.FontAwesome.Brand;
 using Scan_Manga.Controls;
+using Scan_Manga.Services;
+
+#if ANDROID
 using Scan_Manga.Platforms.Android;
+#elif IOS
+using Scan_Manga.Platforms.iOS;
+#endif
 
 #if DEBUG
 using Microsoft.Extensions.Logging;
@@ -28,15 +33,25 @@ public static class MauiProgram
             })
             .ConfigureMauiHandlers(handlers =>
             {
+#if ANDROID
                 handlers.AddHandler<CustomWebView, CustomWebViewHandler>();
+#elif IOS
+                handlers.AddHandler<CustomWebView, CustomWebViewHandler>();
+#endif
             });
 
+#if ANDROID
         builder.Services.AddSingleton<ISystemBarsService, SystemBarsService>();
+#endif
 
 #if DEBUG
         builder.Logging.AddDebug();
 #endif
 
-        return builder.Build();
+        var app = builder.Build();
+
+        ServiceHelper.Services = app.Services;
+
+        return app;
     }
 }

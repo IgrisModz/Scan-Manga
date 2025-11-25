@@ -1,5 +1,7 @@
-﻿using Microsoft.Maui.Controls.Shapes;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Layouts;
+using Scan_Manga.Services;
 
 namespace Scan_Manga.Controls;
 
@@ -9,8 +11,6 @@ public class DynamicPopup<T> : ContentView
     private readonly Label _titleLabel;
     private readonly VerticalStackLayout _contentStack;
     private readonly Border _popupBorder;
-
-
 
     #region Bindable Properties
 
@@ -77,40 +77,29 @@ public class DynamicPopup<T> : ContentView
             VerticalOptions = LayoutOptions.Fill,
         };
 
-        var overlayTapGesture = new TapGestureRecognizer();
-        var overlayPanGesture = new PanGestureRecognizer();
-        var overlayPinchGesture = new PinchGestureRecognizer();
-
-        overlayTapGesture.Tapped += (_, _) =>
+        void OnClose(object? sender, EventArgs e)
         {
             MainThread.BeginInvokeOnMainThread(async () =>
             {
                 await Task.Delay(1); // éviter la fermeture pendant le geste
                 await CloseAsync(default!, true);
             });
-        };
+        }
 
-        overlayPanGesture.PanUpdated += (_, _) =>
+        var systemBars = ServiceHelper.Services.GetRequiredService<ISystemBarsService>();
+
+        if (systemBars == null || systemBars.CurrentMode == SystemBarsMode.Default)
         {
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await Task.Delay(1);
-                await CloseAsync(default!, true);
-            });
-        };
+            var overlayPanGesture = new PanGestureRecognizer();
+            overlayPanGesture.PanUpdated += (_, _) => OnClose(null, EventArgs.Empty);
+            overlay.GestureRecognizers.Add(overlayPanGesture);
 
-        overlayPinchGesture.PinchUpdated += (_, _) =>
-        {
-            MainThread.BeginInvokeOnMainThread(async () =>
-            {
-                await Task.Delay(1);
-                await CloseAsync(default!, true);
-            });
-        };
+            var overlayPinchGesture = new PinchGestureRecognizer();
+            overlayPinchGesture.PinchUpdated += (_, _) => OnClose(null, EventArgs.Empty);
+            overlay.GestureRecognizers.Add(overlayPinchGesture);
+        }
 
-        overlay.GestureRecognizers.Add(overlayPanGesture);
-        overlay.GestureRecognizers.Add(overlayTapGesture);
-        overlay.GestureRecognizers.Add(overlayPinchGesture);
+        overlay.GestureRecognizers.Add(new TapGestureRecognizer() { Command = new Command(() => OnClose(null, EventArgs.Empty))});
 
         _popupBorder = new Border
         {
@@ -119,7 +108,6 @@ public class DynamicPopup<T> : ContentView
             Padding = new Thickness(20),
             Shadow = new Shadow
             {
-                Brush = Brush.White,
                 Offset = new Point(0, 2),
                 Opacity = 0.8f,
                 Radius = 8
@@ -127,6 +115,14 @@ public class DynamicPopup<T> : ContentView
             StrokeThickness = 0,
             StrokeShape = new RoundRectangle { CornerRadius = 20 }
         };
+
+        const double horizontalMargin = 20; // ta marge souhaitée
+
+        var maxWidth = GetAndroidMaxWidth(horizontalMargin);
+        if (!double.IsNaN(maxWidth))
+        {
+            _popupBorder.MaximumWidthRequest = maxWidth;
+        }
 
         var popupBorderTapGesture = new TapGestureRecognizer();
         popupBorderTapGesture.Tapped += (_, _) => { };
@@ -162,6 +158,7 @@ public class DynamicPopup<T> : ContentView
         this.SetAppThemeColor(BackgroundColorProperty, Color.FromArgb("#80000000"), Color.FromArgb("#80000000"));
         _popupBorder.SetAppThemeColor(BackgroundColorProperty, Color.FromArgb("#E0FFFFFF"), Color.FromArgb("#EE000000"));
         _titleLabel.SetAppThemeColor(Label.TextColorProperty, Colors.Black, Colors.White);
+        _popupBorder.Shadow.SetAppThemeColor(Shadow.BrushProperty, Colors.Black, Colors.White);
     }
 
     /// <summary>
@@ -280,5 +277,16 @@ public class DynamicPopup<T> : ContentView
             btn.FadeTo(1, 300, Easing.CubicInOut),
             btn.ScaleTo(1, 300, Easing.CubicOut)
         );
+    }
+
+    private double GetAndroidMaxWidth(double horizontalMargin)
+    {
+        if (DeviceInfo.Platform != DevicePlatform.Android)
+            return double.NaN; // laisse MAUI gérer automatiquement pour les autres plateformes
+
+        var display = DeviceDisplay.MainDisplayInfo;
+        var screenWidthDip = display.Width / display.Density;
+
+        return screenWidthDip - (horizontalMargin * 2);
     }
 }
