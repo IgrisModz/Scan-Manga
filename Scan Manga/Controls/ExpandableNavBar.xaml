@@ -88,6 +88,8 @@
                 FontSize="Title"
                 HorizontalOptions="Center"
                 Text="{mi:Material Icon=Notes}"
+                TextColor="{AppThemeBinding Dark=White,
+                                            Light=Black}"
                 VerticalOptions="Center">
                 <Label.GestureRecognizers>
                     <TapGestureRecognizer Tapped="OnExpandClicked" />
