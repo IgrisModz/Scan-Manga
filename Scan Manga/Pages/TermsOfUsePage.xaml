@@ -3,57 +3,23 @@
     x:Class="Scan_Manga.Pages.TermsOfUsePage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:controls="clr-namespace:Scan_Manga.Controls"
+    xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     Title="Conditions d’utilisation">
+
+    <ContentPage.Behaviors>
+        <toolkit:StatusBarBehavior StatusBarColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}" StatusBarStyle="Default" />
+    </ContentPage.Behaviors>
+
     <Grid RowDefinitions="Auto,*">
-        <Border
-            Margin="0"
-            Padding="20,0"
-            Background="{AppThemeBinding Dark={StaticResource OffBlack},
-                                         Light={StaticResource White}}"
-            HorizontalOptions="Fill"
-            StrokeShape="Rectangle"
-            StrokeThickness="0"
-            VerticalOptions="Fill">
-            <Border.Shadow>
-                <Shadow
-                    Brush="{StaticResource Primary}"
-                    Opacity=".8"
-                    Radius="14"
-                    Offset="0,0" />
-            </Border.Shadow>
-            <HorizontalStackLayout>
-                <Image
-                    Margin="10,6"
-                    HeightRequest="50"
-                    Source="scan_manga_icon.svg"
-                    WidthRequest="50" />
-                <Label
-                    FontSize="Title"
-                    Style="{StaticResource Headline}"
-                    Text="Scan-Manga"
-                    VerticalOptions="Center"
-                    VerticalTextAlignment="Center" />
-            </HorizontalStackLayout>
-        </Border>
+        <controls:PageHeader />
         <ScrollView Grid.Row="1">
             <Grid>
                 <Border
-                    Margin="20,15,20,20"
-                    Padding="10"
-                    Background="{AppThemeBinding Dark={StaticResource OffBlack},
-                                                 Light={StaticResource White}}"
-                    HorizontalOptions="Fill"
-                    StrokeShape="RoundRectangle 20"
-                    StrokeThickness="0"
+                    Margin="20"
+                    Shadow="{StaticResource BubbleShadow}"
                     VerticalOptions="Start">
-                    <Border.Shadow>
-                        <Shadow
-                            Brush="{StaticResource Primary}"
-                            Opacity=".8"
-                            Radius="14"
-                            Offset="0,7" />
-                    </Border.Shadow>
-                    <VerticalStackLayout Padding="20" Spacing="10">
+                    <VerticalStackLayout Padding="25" Spacing="10">
 
                         <Label
                             FontSize="Title"
