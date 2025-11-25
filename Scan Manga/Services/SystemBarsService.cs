@@ -1,4 +1,5 @@
-﻿using Android.Views;
+﻿#if ANDROID
+using Android.Views;
 using AndroidX.Core.View;
 using System.Runtime.Versioning;
 
@@ -8,6 +9,9 @@ public class SystemBarsService : ISystemBarsService
 {
     public bool IsInitialized { get; private set; }
     public bool PreviousMode { get; private set; }
+
+    public SystemBarsMode CurrentMode =>
+        IsInitialized ? (PreviousMode ? SystemBarsMode.Lecture : SystemBarsMode.Default) : SystemBarsMode.Default;
 
     [SupportedOSPlatform("android23.0")]
     public void SetLectureMode(bool enable)
@@ -45,8 +49,6 @@ public class SystemBarsService : ISystemBarsService
 
             window.ClearFlags(WindowManagerFlags.LayoutNoLimits | WindowManagerFlags.Fullscreen);
 
-            WindowCompat.SetDecorFitsSystemWindows(window, true);
-
         }
         else
         {
@@ -79,14 +81,10 @@ public class SystemBarsService : ISystemBarsService
 
             window.Attributes?.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
             window.AddFlags(WindowManagerFlags.LayoutNoLimits | WindowManagerFlags.Fullscreen);
-
-            WindowCompat.SetDecorFitsSystemWindows(window, false);
         }
         else
         {
 #pragma warning disable CS0618
-            decorView.SystemUiVisibility =
-                StatusBarVisibility.Visible & ~StatusBarVisibility.Visible; // safe hide
             decorView.SystemUiVisibility =
                     (StatusBarVisibility)(
                         SystemUiFlags.LayoutStable |
@@ -101,3 +99,4 @@ public class SystemBarsService : ISystemBarsService
         return true;
     }
 }
+#endif
