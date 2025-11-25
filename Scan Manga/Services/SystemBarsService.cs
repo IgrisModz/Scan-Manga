@@ -16,11 +16,10 @@ public class SystemBarsService : ISystemBarsService
     [SupportedOSPlatform("android23.0")]
     public void SetLectureMode(bool enable)
     {
-        if (IsInitialized && (!IsInitialized || PreviousMode == enable))
+        if (IsInitialized && PreviousMode == enable)
         {
             return;
         }
-
 
         if (enable ? HideSystemBars() : ShowSystemBars())
         {

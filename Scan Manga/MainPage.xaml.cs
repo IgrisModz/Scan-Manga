@@ -1,6 +1,9 @@
-﻿using Scan_Manga.Controls;
+﻿using CommunityToolkit.Maui.Core;
+using CommunityToolkit.Maui.Core.Platform;
+using Scan_Manga.Controls;
 using Scan_Manga.Pages;
 using Scan_Manga.Services;
+using System.Runtime.Versioning;
 using System.Text.Json;
 
 namespace Scan_Manga;
@@ -36,6 +39,7 @@ public partial class MainPage : ContentPage
         };
     }
 
+    [SupportedOSPlatform("android23.0")]
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -54,6 +58,12 @@ public partial class MainPage : ContentPage
                 ? []
                 : JsonSerializer.Deserialize<HashSet<string>>(saved) ?? [];
         }
+        else
+        {
+            var color = (Color)Application.Current!.Resources["Primary"];
+            StatusBar.SetColor(color);
+            StatusBar.SetStyle(StatusBarStyle.Default);
+        }
     }
 
     protected override async void OnHandlerChanged()
@@ -63,7 +73,7 @@ public partial class MainPage : ContentPage
         {
             if (_lastUrl?.Contains("/lecture-en-ligne") ?? false)
             {
-                await Task.Delay(50);
+                await Task.Delay(80);
                 _systemBars?.SetLectureMode(true);
             }
         }
@@ -200,6 +210,9 @@ public partial class MainPage : ContentPage
 
     private async void OnInfoClicked(object sender, EventArgs e)
     {
+        // 🔑 mémoriser si le mode lecture est actif avant de naviguer
+        bool lectureModeBeforeNavigation = _lastUrl?.Contains("/lecture-en-ligne") ?? false;
+
         var popup = new DynamicPopup<ILegalPage>();
 
         popup.SetContent(
@@ -213,33 +226,47 @@ public partial class MainPage : ContentPage
             }
         );
 
+        // Désactiver momentanément le mode lecture
+        _systemBars?.SetLectureMode(false);
+
         var result = await popup.ShowAsync(this);
 
-        if (result.WasDismissedByTappingOutsideOfPopup)
-            return;
-
-        if (result != null)
+        // Fermeture par tap extérieur → réactiver si nécessaire et quitter
+        if (result?.WasDismissedByTappingOutsideOfPopup == true)
         {
-            // 🔑 mémoriser si le mode lecture est actif avant de naviguer
-            bool lectureModeBeforeNavigation = _lastUrl?.Contains("/lecture-en-ligne") ?? false;
-
-            // Naviguer vers la page externe
-            await Navigation.PushAsync(result.Value as ContentPage);
-
-            // Désactiver le mode lecture seulement si on était en lecture avant
             if (lectureModeBeforeNavigation)
+                _systemBars?.SetLectureMode(true);
+            return;
+        }
+
+        // Rien sélectionné → restaurer éventuellement
+        if (result == null)
+        {
+            if (lectureModeBeforeNavigation)
+                _systemBars?.SetLectureMode(true);
+            return;
+        }
+
+        // Navigation vers la page choisie
+        if (result.Value is not ContentPage targetPage)
+        {
+            if (lectureModeBeforeNavigation)
+                _systemBars?.SetLectureMode(true);
+            return;
+        }
+
+        await Navigation.PushAsync(targetPage);
+
+        // Réactivation automatique du mode lecture uniquement si nécessaire
+        if (lectureModeBeforeNavigation)
+        {
+            void OnPageDisappearing(object? s, EventArgs args)
             {
-                _systemBars?.SetLectureMode(false);
-
-                // Réactiver le mode lecture uniquement au retour de cette page
-                void OnPageDisappearing(object? s, EventArgs args)
-                {
-                    _systemBars?.SetLectureMode(true);
-                    ((ContentPage)result.Value).Disappearing -= OnPageDisappearing;
-                }
-
-                ((ContentPage)result.Value).Disappearing += OnPageDisappearing;
+                _systemBars?.SetLectureMode(true);
+                targetPage.Disappearing -= OnPageDisappearing;
             }
+
+            targetPage.Disappearing += OnPageDisappearing;
         }
     }
 }
