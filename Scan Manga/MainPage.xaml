@@ -18,11 +18,11 @@
         <toolkit:StatusBarBehavior StatusBarColor="{StaticResource Primary}" StatusBarStyle="Default" />
     </ContentPage.Behaviors>
 
-    <Grid x:Name="MainRoot">
-
+    <Grid x:Name="MainRoot" RowDefinitions="Auto,*">
         <!--  Refresh uniquement sur le WebView  -->
         <RefreshView
             x:Name="WebRefreshView"
+            Grid.Row="1"
             IsRefreshing="False"
             Refreshing="OnRefresh">
             <controls:CustomWebView
@@ -44,6 +44,7 @@
         <!--  Offline overlay  -->
         <Grid
             x:Name="OfflineOverlay"
+            Grid.Row="1"
             BackgroundColor="{AppThemeBinding Light={StaticResource White},
                                               Dark={StaticResource OffBlack}}"
             IsVisible="False">
@@ -53,6 +54,7 @@
                 Spacing="10"
                 VerticalOptions="Center">
                 <Label
+                    x:Name="ErrorLabel"
                     FontAttributes="Bold"
                     FontSize="18"
                     HorizontalOptions="Center"
@@ -67,6 +69,7 @@
         <!--  Ta navbar n’est plus absorbée par RefreshView  -->
         <controls:ExpandableNavBar
             x:Name="NavBar"
+            Grid.RowSpan="2"
             InfoTapped="OnInfoClicked"
             RefreshTapped="OnRefresh" />
 

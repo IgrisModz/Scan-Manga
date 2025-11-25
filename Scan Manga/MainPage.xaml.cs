@@ -15,10 +15,25 @@ public partial class MainPage : ContentPage
     public MainPage(ISystemBarsService systemBars)
     {
         InitializeComponent();
+
         _systemBars = systemBars;
 
         // 🔑 Brancher Navigated
         MainWebView.Navigated += MainWebView_Navigated;
+        MainWebView.HttpErrorOccurred += (s, e) =>
+        {
+            OfflineOverlay.IsVisible = true;
+            ErrorLabel.Text = $"{e.Code} : {e.Message}";
+
+        };
+
+        Connectivity.Current.ConnectivityChanged += (s, args) =>
+        {
+            if (args.NetworkAccess == NetworkAccess.Internet && MainWebView.HasError)
+            {
+                OnRefresh(null, EventArgs.Empty);
+            }
+        };
     }
 
     protected override void OnAppearing()
@@ -64,9 +79,9 @@ public partial class MainPage : ContentPage
         Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
     }
 
-    private void OnRefresh(object sender, EventArgs e)
+    private void OnRefresh(object? sender, EventArgs e)
     {
-        MainWebView.Reload();
+        MainWebView.ReloadPage();
     }
 
     protected override bool OnBackButtonPressed()
@@ -86,13 +101,13 @@ public partial class MainPage : ContentPage
         if (WebRefreshView.IsRefreshing)
             WebRefreshView.IsRefreshing = false;
 
-        if (e.Result == WebNavigationResult.Failure)
+        if (MainWebView.HasError)
         {
             OfflineOverlay.IsVisible = true;
             return;
         }
 
-        if (string.IsNullOrEmpty(e.Url) || e.Result != WebNavigationResult.Success) return;
+        if (string.IsNullOrEmpty(e.Url)) return;
         
         OfflineOverlay.IsVisible = false;
 
