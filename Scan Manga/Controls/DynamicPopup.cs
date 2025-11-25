@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using CommunityToolkit.Maui.Behaviors;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Layouts;
 using Scan_Manga.Services;
@@ -159,6 +159,7 @@ public class DynamicPopup<T> : ContentView
         _popupBorder.SetAppThemeColor(BackgroundColorProperty, Color.FromArgb("#E0FFFFFF"), Color.FromArgb("#EE000000"));
         _titleLabel.SetAppThemeColor(Label.TextColorProperty, Colors.Black, Colors.White);
         _popupBorder.Shadow.SetAppThemeColor(Shadow.BrushProperty, Colors.Black, Colors.White);
+
     }
 
     /// <summary>
@@ -167,6 +168,15 @@ public class DynamicPopup<T> : ContentView
     public async Task<PopupResult<T>> ShowAsync(Page page)
     {
         ArgumentNullException.ThrowIfNull(page, nameof(page));
+
+        if (OperatingSystem.IsAndroid() || OperatingSystem.IsIOSVersionAtLeast(15))
+        {
+            page.Behaviors.Add(new StatusBarBehavior
+            {
+                StatusBarColor = (Color)Application.Current!.Resources["Primary"],
+                StatusBarStyle = CommunityToolkit.Maui.Core.StatusBarStyle.Default
+            });
+        }
 
         _tcs = new TaskCompletionSource<PopupResult<T>>();
 
