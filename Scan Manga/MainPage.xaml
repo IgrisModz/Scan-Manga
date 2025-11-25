@@ -18,11 +18,10 @@
         <toolkit:StatusBarBehavior StatusBarColor="{StaticResource Primary}" StatusBarStyle="Default" />
     </ContentPage.Behaviors>
 
-    <Grid x:Name="MainRoot" RowDefinitions="Auto,*">
+    <Grid x:Name="MainRoot">
         <!--  Refresh uniquement sur le WebView  -->
         <RefreshView
             x:Name="WebRefreshView"
-            Grid.Row="1"
             IsRefreshing="False"
             Refreshing="OnRefresh">
             <controls:CustomWebView
@@ -33,18 +32,9 @@
                 VerticalOptions="Fill" />
         </RefreshView>
 
-        <!--  ProgressBar  -->
-        <ProgressBar
-            HeightRequest="4"
-            HorizontalOptions="Fill"
-            IsVisible="{Binding Source={x:Reference MainWebView}, Path=IsLoading}"
-            Progress="{Binding Source={x:Reference MainWebView}, Path=Progress}"
-            VerticalOptions="Start" />
-
         <!--  Offline overlay  -->
         <Grid
             x:Name="OfflineOverlay"
-            Grid.Row="1"
             BackgroundColor="{AppThemeBinding Light={StaticResource White},
                                               Dark={StaticResource OffBlack}}"
             IsVisible="False">
@@ -66,10 +56,17 @@
             </VerticalStackLayout>
         </Grid>
 
+        <!--  ProgressBar  -->
+        <ProgressBar
+            HeightRequest="4"
+            HorizontalOptions="Fill"
+            IsVisible="{Binding Source={x:Reference MainWebView}, Path=IsLoading}"
+            Progress="{Binding Source={x:Reference MainWebView}, Path=Progress}"
+            VerticalOptions="Start" />
+
         <!--  Ta navbar n’est plus absorbée par RefreshView  -->
         <controls:ExpandableNavBar
             x:Name="NavBar"
-            Grid.RowSpan="2"
             InfoTapped="OnInfoClicked"
             RefreshTapped="OnRefresh" />
 
