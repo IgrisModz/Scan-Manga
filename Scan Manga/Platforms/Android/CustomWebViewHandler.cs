@@ -32,10 +32,14 @@ public class CustomWebViewHandler : WebViewHandler
         // Injecter le WebViewClient pour les erreurs HTTP
         CustomMapper.AppendToMapping("WebViewClient", (handler, view) =>
         {
+            WebViewClient? defaultClient = null;
+            if (OperatingSystem.IsAndroidVersionAtLeast(26)) // Android 8.0 (API 26)
+            {
+                defaultClient = handler.PlatformView?.WebViewClient;
+            }
 
             if (view is CustomWebView customWebView)
             {
-                var defaultClient = handler.PlatformView.WebViewClient;
                 handler.PlatformView?.SetWebViewClient(new ErrorClient(defaultClient, view));
             }
         });
@@ -59,10 +63,10 @@ public class CustomWebViewHandler : WebViewHandler
         }
     }
 
-    private class ErrorClient(WebViewClient baseClient, CustomWebView handler) : WebViewClient
+    private class ErrorClient(WebViewClient? baseClient, CustomWebView customWebView) : WebViewClient
     {
         private readonly WebViewClient? _baseClient = baseClient;
-        private readonly CustomWebView _customWebView = handler;
+        private readonly CustomWebView _customWebView = customWebView;
 
         public override void OnPageFinished(Webkit.WebView? view, string? url)
         {
@@ -75,14 +79,10 @@ public class CustomWebViewHandler : WebViewHandler
                 IWebResourceRequest? request,
                 WebResourceError? error)
         {
-            if (_baseClient == null)
-            {
+            if (_baseClient is null)
                 base.OnReceivedError(view, request, error);
-            }
             else
-            {
                 _baseClient?.OnReceivedError(view, request, error);
-            }
 
             if (request?.IsForMainFrame != true || error == null)
                 return;
@@ -99,14 +99,10 @@ public class CustomWebViewHandler : WebViewHandler
             IWebResourceRequest? request,
             WebResourceResponse? errorResponse)
         {
-            if (_baseClient == null)
-            {
+            if (_baseClient is null)
                 base.OnReceivedHttpError(view, request, errorResponse);
-            }
             else
-            {
-                _baseClient?.OnReceivedHttpError(view, request, errorResponse);
-            }
+                _baseClient.OnReceivedHttpError(view, request, errorResponse);
 
             if (request?.IsForMainFrame != true || errorResponse == null)
                 return;
@@ -138,7 +134,9 @@ public class CustomWebViewHandler : WebViewHandler
             -3 => "Schéma d'authentification non supporté",
             -2 => "Hôte introuvable",
             -1 => "Erreur inconnue",
-        _ => $"Erreur inconnue ({errorCode})" }; }
+        _ => $"Erreur inconnue ({errorCode})"
+        };
+    }
 
     public static string GetHttpErrorMessage(int statusCode)
     {
