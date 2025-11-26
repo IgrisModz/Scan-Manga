@@ -58,10 +58,11 @@
 
         <!--  ProgressBar  -->
         <ProgressBar
+            x:DataType="controls:CustomWebView"
             HeightRequest="4"
             HorizontalOptions="Fill"
-            IsVisible="{Binding Source={x:Reference MainWebView}, Path=IsLoading}"
-            Progress="{Binding Source={x:Reference MainWebView}, Path=Progress}"
+            IsVisible="{Binding IsLoading, Source={x:Reference MainWebView}}"
+            Progress="{Binding Progress, Source={x:Reference MainWebView}}"
             VerticalOptions="Start" />
 
         <!--  Ta navbar n’est plus absorbée par RefreshView  -->
