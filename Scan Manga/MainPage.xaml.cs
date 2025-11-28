@@ -1,7 +1,8 @@
-﻿using CommunityToolkit.Maui.Core;
+﻿using CommunityToolkit.Maui;
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Platform;
+using CommunityToolkit.Maui.Extensions;
 using Scan_Manga.Controls;
-using Scan_Manga.Pages;
 using Scan_Manga.Services;
 using System.Runtime.Versioning;
 using System.Text.Json;
@@ -10,16 +11,16 @@ namespace Scan_Manga;
 
 public partial class MainPage : ContentPage
 {
-    private readonly ISystemBarsService? _systemBars;
+    private readonly IFullScreenService _fullScreenService;
     private HashSet<string> _visitedLinks = [];
     private string? _lastUrl;
     private bool _isFirstAppear = true;
 
-    public MainPage(ISystemBarsService systemBars)
+    public MainPage(IFullScreenService fullScreenService)
     {
         InitializeComponent();
 
-        _systemBars = systemBars;
+        _fullScreenService = fullScreenService;
 
         // 🔑 Brancher Navigated
         MainWebView.Navigated += MainWebView_Navigated;
@@ -48,7 +49,7 @@ public partial class MainPage : ContentPage
         {
             _isFirstAppear = false;
             // Charger dernière URL
-            _lastUrl = Preferences.Get("LastUrl", "https://www.scan-manga.com/?home");
+            _lastUrl = Preferences.Get("LastUrl", "https://m.scan-manga.com/?home");
             MainWebView.Source = _lastUrl;
 
             // Charger URLs déjà visitées
@@ -60,6 +61,7 @@ public partial class MainPage : ContentPage
         }
         else
         {
+            OnHandlerChanged();
             var color = (Color)Application.Current!.Resources["Primary"];
             StatusBar.SetColor(color);
             StatusBar.SetStyle(StatusBarStyle.Default);
@@ -74,7 +76,8 @@ public partial class MainPage : ContentPage
             if (_lastUrl?.Contains("/lecture-en-ligne") ?? false)
             {
                 await Task.Delay(80);
-                _systemBars?.SetLectureMode(true);
+                _fullScreenService?.EnterFullScreen();
+
             }
         }
     }
@@ -122,7 +125,7 @@ public partial class MainPage : ContentPage
         OfflineOverlay.IsVisible = false;
 
         bool isLecturePage = e.Url.Contains("/lecture-en-ligne");
-        _systemBars?.SetLectureMode(isLecturePage);
+        _fullScreenService.SetFullScreen(isLecturePage);
 
         // Sauvegarder en mémoire
         _lastUrl = e.Url;
@@ -210,63 +213,26 @@ public partial class MainPage : ContentPage
 
     private async void OnInfoClicked(object sender, EventArgs e)
     {
-        // 🔑 mémoriser si le mode lecture est actif avant de naviguer
-        bool lectureModeBeforeNavigation = _lastUrl?.Contains("/lecture-en-ligne") ?? false;
+        var infoPopup = new InfoPopup();
 
-        var popup = new DynamicPopup<ILegalPage>();
-
-        popup.SetContent(
-            "Informations",
-            new Dictionary<string, ILegalPage>
+        var popupOptions = new PopupOptions
+        {
+            Shadow = new Shadow
             {
-        { "Mentions légales", new LegalNoticesPage() },
-        { "Politique de confidentialité", new PrivacyPolicyPage() },
-        { "Conditions générales d’utilisation", new TermsOfUsePage() },
-        { "À propos", new AboutPage() }
-            }
-        );
+                Brush = Brush.White,
+                Offset = new Point(0, 2),
+                Opacity = 0.8f,
+                Radius = 8
+            },
+        };
+        var popupResult = await this.ShowPopupAsync<string>(infoPopup, popupOptions);
 
-        // Désactiver momentanément le mode lecture
-        _systemBars?.SetLectureMode(false);
-
-        var result = await popup.ShowAsync(this);
-
-        // Fermeture par tap extérieur → réactiver si nécessaire et quitter
-        if (result?.WasDismissedByTappingOutsideOfPopup == true)
-        {
-            if (lectureModeBeforeNavigation)
-                _systemBars?.SetLectureMode(true);
+        if (popupResult.WasDismissedByTappingOutsideOfPopup)
             return;
-        }
 
-        // Rien sélectionné → restaurer éventuellement
-        if (result == null)
-        {
-            if (lectureModeBeforeNavigation)
-                _systemBars?.SetLectureMode(true);
+        if (popupResult.Result == null)
             return;
-        }
 
-        // Navigation vers la page choisie
-        if (result.Value is not ContentPage targetPage)
-        {
-            if (lectureModeBeforeNavigation)
-                _systemBars?.SetLectureMode(true);
-            return;
-        }
-
-        await Navigation.PushAsync(targetPage);
-
-        // Réactivation automatique du mode lecture uniquement si nécessaire
-        if (lectureModeBeforeNavigation)
-        {
-            void OnPageDisappearing(object? s, EventArgs args)
-            {
-                _systemBars?.SetLectureMode(true);
-                targetPage.Disappearing -= OnPageDisappearing;
-            }
-
-            targetPage.Disappearing += OnPageDisappearing;
-        }
+        await Shell.Current.GoToAsync(popupResult.Result);
     }
 }
