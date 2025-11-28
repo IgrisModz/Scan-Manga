@@ -6,13 +6,15 @@
     xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
     xmlns:controls="clr-namespace:Scan_Manga.Controls"
     xmlns:droid="clr-namespace:CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;assembly=CommunityToolkit.Maui"
+    xmlns:local="clr-namespace:Scan_Manga"
     xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
     xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
     droid:NavigationBar.Color="{AppThemeBinding Dark={StaticResource OffBlack},
                                                 Light={StaticResource White}}"
     droid:NavigationBar.Style="{AppThemeBinding Dark=LightContent,
                                                 Light=DarkContent,
-                                                Default=Default}">
+                                                Default=Default}"
+    x:DataType="local:MainPage">
 
     <ContentPage.Behaviors>
         <toolkit:StatusBarBehavior StatusBarColor="{StaticResource Primary}" StatusBarStyle="Default" />
@@ -65,7 +67,6 @@
             Progress="{Binding Progress, Source={x:Reference MainWebView}}"
             VerticalOptions="Start" />
 
-        <!--  Ta navbar n’est plus absorbée par RefreshView  -->
         <controls:ExpandableNavBar
             x:Name="NavBar"
             InfoTapped="OnInfoClicked"
