@@ -128,7 +128,7 @@ public class AndroidFullscreenService : IFullScreenService
                     catch { /* Ignorer si non supporté */ }
                 }
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine($"ExitFullScreen error: {ex.Message}");
             }

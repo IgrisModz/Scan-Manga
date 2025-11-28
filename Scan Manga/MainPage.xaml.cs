@@ -19,6 +19,7 @@ public partial class MainPage : ContentPage
     public MainPage(IFullScreenService fullScreenService)
     {
         InitializeComponent();
+        BindingContext = this;
 
         _fullScreenService = fullScreenService;
 
@@ -26,9 +27,7 @@ public partial class MainPage : ContentPage
         MainWebView.Navigated += MainWebView_Navigated;
         MainWebView.HttpErrorOccurred += (s, e) =>
         {
-            OfflineOverlay.IsVisible = true;
             ErrorLabel.Text = $"{e.Code} : {e.Message}";
-
         };
 
         Connectivity.Current.ConnectivityChanged += (s, args) =>
@@ -77,6 +76,8 @@ public partial class MainPage : ContentPage
             {
                 await Task.Delay(80);
                 _fullScreenService?.EnterFullScreen();
+                SafeAreaEdges = SafeAreaEdges.None;
+                MainRoot.SafeAreaEdges = SafeAreaEdges.None;
 
             }
         }
@@ -126,6 +127,8 @@ public partial class MainPage : ContentPage
 
         bool isLecturePage = e.Url.Contains("/lecture-en-ligne");
         _fullScreenService.SetFullScreen(isLecturePage);
+        SafeAreaEdges = isLecturePage ? SafeAreaEdges.None : SafeAreaEdges.Default;
+        MainRoot.SafeAreaEdges = isLecturePage ? SafeAreaEdges.None : SafeAreaEdges.Default;
 
         // Sauvegarder en mémoire
         _lastUrl = e.Url;

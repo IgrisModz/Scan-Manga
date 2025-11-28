@@ -17,8 +17,8 @@ public partial class InfoPopup : Popup<string>
 
 
         await Task.WhenAll(
-            PopupBorder.FadeTo(1, 250, Easing.CubicInOut),
-            PopupBorder.ScaleTo(1, 250, Easing.CubicOut)
+            PopupBorder.FadeToAsync(1, 250, Easing.CubicInOut),
+            PopupBorder.ScaleToAsync(1, 250, Easing.CubicOut)
         );
 
 		foreach (var btn in ContentStack.Children.OfType<Button>())
@@ -31,8 +31,8 @@ public partial class InfoPopup : Popup<string>
     {
         await Task.Delay(Random.Shared.Next(50, 150)); // léger décalage aléatoire pour effet naturel
         await Task.WhenAll(
-            btn.FadeTo(1, 300, Easing.CubicInOut),
-            btn.ScaleTo(1, 300, Easing.CubicOut)
+            btn.FadeToAsync(1, 300, Easing.CubicInOut),
+            btn.ScaleToAsync(1, 300, Easing.CubicOut)
         );
     }
 
@@ -64,12 +64,12 @@ public partial class InfoPopup : Popup<string>
     {
         foreach (var btn in ContentStack.Children.OfType<Button>())
         {
-            _ = await btn.FadeTo(0, 150);
+            _ = await btn.FadeToAsync(0, 150);
         }
 
         await Task.WhenAll(
-                PopupBorder.FadeTo(0, 250),
-                PopupBorder.ScaleTo(0.8, 250)
+                PopupBorder.FadeToAsync(0, 250),
+                PopupBorder.ScaleToAsync(0.8, 250)
             );
     }
 }

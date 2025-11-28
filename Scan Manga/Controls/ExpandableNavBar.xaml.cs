@@ -50,7 +50,7 @@ public partial class ExpandableNavBar : Grid
         {
             ClickOutsideOverlay.IsVisible = true;
 
-            var rotation = ExpandBtn.RotateTo(360, 500);
+            var rotation = ExpandBtn.RotateToAsync(360, 500);
 
             await AnimateWidth(NavBar, NavBar.Width, maxWidth, 200);
             await AnimateHeight(NavBar, NavBar.Height, 80, 300);
@@ -59,9 +59,9 @@ public partial class ExpandableNavBar : Grid
             ExpandBtn.Icon(MaterialIcons.Close);
 
             NavBarContent.IsVisible = true;
-            await InfoBtn.FadeTo(1, 150);
-            await DonateBtn.FadeTo(1, 150);
-            await RefreshBtn.FadeTo(1, 150);
+            await InfoBtn.FadeToAsync(1, 150);
+            await DonateBtn.FadeToAsync(1, 150);
+            await RefreshBtn.FadeToAsync(1, 150);
 
             _navBarExpanded = true;
         }
@@ -69,12 +69,12 @@ public partial class ExpandableNavBar : Grid
         {
             ClickOutsideOverlay.IsVisible = false;
 
-            await RefreshBtn.FadeTo(0, 120);
-            await DonateBtn.FadeTo(0, 120);
-            await InfoBtn.FadeTo(0, 120);
+            await RefreshBtn.FadeToAsync(0, 120);
+            await DonateBtn.FadeToAsync(0, 120);
+            await InfoBtn.FadeToAsync(0, 120);
             NavBarContent.IsVisible = false;
 
-            var rotation = ExpandBtn.RotateTo(0, 450);
+            var rotation = ExpandBtn.RotateToAsync(0, 450);
 
             await AnimateHeight(NavBar, NavBar.Height, 50, 250);
             await AnimateWidth(NavBar, NavBar.Width, minWidth, 200);
@@ -92,8 +92,8 @@ public partial class ExpandableNavBar : Grid
 
     private async void OnInfoTapped(object sender, EventArgs e)
     {
-        await InfoBtn.ScaleTo(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
-        await InfoBtn.ScaleTo(1, 100, Easing.CubicInOut);
+        await InfoBtn.ScaleToAsync(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
+        await InfoBtn.ScaleToAsync(1, 100, Easing.CubicInOut);
 
         // Reviens à la taille normale
         OnOverlayTapped(null, EventArgs.Empty);
@@ -105,11 +105,11 @@ public partial class ExpandableNavBar : Grid
     {
         if (sender is VerticalStackLayout refreshBtn)
         {
-            await refreshBtn.ScaleTo(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
-            await refreshBtn.ScaleTo(1, 100, Easing.CubicInOut);    // Reviens à la taille normale
+            await refreshBtn.ScaleToAsync(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
+            await refreshBtn.ScaleToAsync(1, 100, Easing.CubicInOut);    // Reviens à la taille normale
             var refreshLabel = refreshBtn.Children.OfType<Label>().First();
             refreshLabel.Rotation = 0;
-            await refreshLabel.RotateTo(360, 500, Easing.CubicInOut);
+            await refreshLabel.RotateToAsync(360, 500, Easing.CubicInOut);
             OnOverlayTapped(null, EventArgs.Empty);
         }
 
@@ -126,8 +126,8 @@ public partial class ExpandableNavBar : Grid
 
     private async void OnDonateTapped(object sender, TappedEventArgs e)
     {
-        await DonateIcon.ScaleTo(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
-        await DonateIcon.ScaleTo(1, 100, Easing.CubicInOut);
+        await DonateIcon.ScaleToAsync(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
+        await DonateIcon.ScaleToAsync(1, 100, Easing.CubicInOut);
 
         // Reviens à la taille normale
         OnOverlayTapped(null, EventArgs.Empty);
