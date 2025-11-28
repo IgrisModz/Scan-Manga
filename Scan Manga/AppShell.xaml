@@ -5,7 +5,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:Scan_Manga"
     Title="Scan-Manga"
-    Shell.NavBarIsVisible="False">
+    Shell.NavBarIsVisible="False"
+    Shell.TabBarIsVisible="False">
 
     <ShellContent ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
 

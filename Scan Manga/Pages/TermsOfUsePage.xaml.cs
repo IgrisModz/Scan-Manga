@@ -1,9 +1,11 @@
+using Scan_Manga.Controls;
+
 namespace Scan_Manga.Pages;
 
-public partial class TermsOfUsePage : ContentPage, ILegalPage
+public partial class TermsOfUsePage : InfoPageBase
 {
-	public TermsOfUsePage()
+    public TermsOfUsePage()
 	{
 		InitializeComponent();
-	}
+    }
 }

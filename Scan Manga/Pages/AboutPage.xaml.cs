@@ -1,8 +1,9 @@
+using Scan_Manga.Controls;
 using System.Windows.Input;
 
 namespace Scan_Manga.Pages;
 
-public partial class AboutPage : ContentPage, ILegalPage
+public partial class AboutPage : InfoPageBase
 {
     public ICommand TapCommand => new Command<string>(async (url) => await Launcher.OpenAsync(url));
 

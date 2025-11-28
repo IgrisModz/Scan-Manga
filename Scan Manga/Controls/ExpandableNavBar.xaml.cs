@@ -1,5 +1,6 @@
 using MauiIcons.Core;
 using MauiIcons.Material;
+using Scan_Manga.Pages;
 
 namespace Scan_Manga.Controls;
 
@@ -58,7 +59,9 @@ public partial class ExpandableNavBar : Grid
             ExpandBtn.Icon(MaterialIcons.Close);
 
             NavBarContent.IsVisible = true;
-            await NavBarContent.FadeTo(1, 200);
+            await InfoBtn.FadeTo(1, 150);
+            await DonateBtn.FadeTo(1, 150);
+            await RefreshBtn.FadeTo(1, 150);
 
             _navBarExpanded = true;
         }
@@ -66,7 +69,9 @@ public partial class ExpandableNavBar : Grid
         {
             ClickOutsideOverlay.IsVisible = false;
 
-            await NavBarContent.FadeTo(0, 150);
+            await RefreshBtn.FadeTo(0, 120);
+            await DonateBtn.FadeTo(0, 120);
+            await InfoBtn.FadeTo(0, 120);
             NavBarContent.IsVisible = false;
 
             var rotation = ExpandBtn.RotateTo(0, 450);
@@ -117,5 +122,16 @@ public partial class ExpandableNavBar : Grid
         {
             OnExpandClicked(null, EventArgs.Empty);
         }
+    }
+
+    private async void OnDonateTapped(object sender, TappedEventArgs e)
+    {
+        await DonateIcon.ScaleTo(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
+        await DonateIcon.ScaleTo(1, 100, Easing.CubicInOut);
+
+        // Reviens à la taille normale
+        OnOverlayTapped(null, EventArgs.Empty);
+
+        await Shell.Current.GoToAsync(nameof(DonatePage));
     }
 }
