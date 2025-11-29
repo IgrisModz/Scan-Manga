@@ -61,7 +61,7 @@
         <!--  ProgressBar  -->
         <ProgressBar
             x:DataType="controls:CustomWebView"
-            HeightRequest="4"
+            HeightRequest="3"
             HorizontalOptions="Fill"
             IsVisible="{Binding IsLoading, Source={x:Reference MainWebView}}"
             Progress="{Binding Progress, Source={x:Reference MainWebView}}"
