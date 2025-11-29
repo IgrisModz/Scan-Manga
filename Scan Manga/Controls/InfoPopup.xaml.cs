@@ -15,13 +15,22 @@ public partial class InfoPopup : Popup<string>
 	private async void OnOpened(object? sender, EventArgs e)
 	{
         await Task.WhenAll(
+#if NET10_OR_GREATER
             PopupBorder.FadeToAsync(1, 250, Easing.CubicInOut),
             PopupBorder.ScaleToAsync(1, 250, Easing.CubicOut)
+#elif NET9_0
+            PopupBorder.FadeTo(1, 250, Easing.CubicInOut),
+            PopupBorder.ScaleTo(1, 250, Easing.CubicOut)
+#endif
         );
 
 		foreach (var btn in ContentStack.Children.OfType<Button>())
         {
+#if NET10_OR_GREATER
             await btn.FadeToAsync(1, 180, Easing.CubicInOut);
+#elif NET9_0
+            await btn.FadeTo(1, 180, Easing.CubicInOut);
+#endif
         }
     }
 
@@ -53,12 +62,21 @@ public partial class InfoPopup : Popup<string>
     {
         foreach (var btn in ContentStack.Children.OfType<Button>().Reverse())
         {
+#if NET10_OR_GREATER
             _ = await btn.FadeToAsync(0, 150);
+#elif NET9_0
+            _ = await btn.FadeTo(0, 150);
+#endif
         }
 
         await Task.WhenAll(
+#if NET10_OR_GREATER
                 PopupBorder.FadeToAsync(0, 250),
                 PopupBorder.ScaleToAsync(0.8, 250)
+#elif NET9_0
+                PopupBorder.FadeTo(0, 250),
+                PopupBorder.ScaleTo(0.8, 250)
+#endif
             );
     }
 }
