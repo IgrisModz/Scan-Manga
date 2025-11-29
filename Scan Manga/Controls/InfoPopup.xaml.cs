@@ -10,12 +10,10 @@ public partial class InfoPopup : Popup<string>
         InitializeComponent();
 
 		Opened += OnOpened;
-	}
+    }
 
 	private async void OnOpened(object? sender, EventArgs e)
 	{
-
-
         await Task.WhenAll(
             PopupBorder.FadeToAsync(1, 250, Easing.CubicInOut),
             PopupBorder.ScaleToAsync(1, 250, Easing.CubicOut)
@@ -23,17 +21,8 @@ public partial class InfoPopup : Popup<string>
 
 		foreach (var btn in ContentStack.Children.OfType<Button>())
         {
-            AnimateButtonEntry(btn);
+            await btn.FadeToAsync(1, 180, Easing.CubicInOut);
         }
-    }
-
-    private static async void AnimateButtonEntry(Button btn)
-    {
-        await Task.Delay(Random.Shared.Next(50, 150)); // léger décalage aléatoire pour effet naturel
-        await Task.WhenAll(
-            btn.FadeToAsync(1, 300, Easing.CubicInOut),
-            btn.ScaleToAsync(1, 300, Easing.CubicOut)
-        );
     }
 
     private async void OnNoticesClicked(object sender, EventArgs e)
@@ -60,9 +49,9 @@ public partial class InfoPopup : Popup<string>
         await CloseAsync(nameof(AboutPage));
     }
 
-    private async Task OnClose()
+    public async Task OnClose()
     {
-        foreach (var btn in ContentStack.Children.OfType<Button>())
+        foreach (var btn in ContentStack.Children.OfType<Button>().Reverse())
         {
             _ = await btn.FadeToAsync(0, 150);
         }
