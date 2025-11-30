@@ -48,7 +48,7 @@
                             <Label>
                                 <Label.FormattedText>
                                     <FormattedString>
-                                        <Span Text="{mi:FontAwesomeBrand Icon=Github, FontOverride=False, IconSize=28, IconColor=#536DFE}">
+                                        <Span Text="{mi:FontAwesomeBrand Icon=Github, FontOverride=False, IconSize=28, IconColor={StaticResource PrimaryDark}}">
                                             <Span.GestureRecognizers>
                                                 <TapGestureRecognizer Command="{Binding TapCommand}" CommandParameter="https://github.com/IgrisModz" />
                                             </Span.GestureRecognizers>
@@ -57,7 +57,7 @@
                                             FontAttributes="Bold"
                                             FontSize="20"
                                             Text=" GitHub"
-                                            TextColor="#536DFE"
+                                            TextColor="{StaticResource PrimaryDark}"
                                             TextDecorations="None">
                                             <Span.GestureRecognizers>
                                                 <TapGestureRecognizer Command="{Binding TapCommand}" CommandParameter="https://github.com/IgrisModz" />
