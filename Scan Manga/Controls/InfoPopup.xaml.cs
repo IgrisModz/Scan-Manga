@@ -10,30 +10,30 @@ public partial class InfoPopup : Popup<string>
         InitializeComponent();
 
 		Opened += OnOpened;
-	}
+    }
 
 	private async void OnOpened(object? sender, EventArgs e)
-	{
-
-
+    {
+#if NET10_0_OR_GREATER
+        await Task.WhenAll(
+            PopupBorder.FadeToAsync(1, 250, Easing.CubicInOut),
+            PopupBorder.ScaleToAsync(1, 250, Easing.CubicOut)
+            );
+#else
         await Task.WhenAll(
             PopupBorder.FadeTo(1, 250, Easing.CubicInOut),
             PopupBorder.ScaleTo(1, 250, Easing.CubicOut)
         );
+#endif
 
-		foreach (var btn in ContentStack.Children.OfType<Button>())
+        foreach (var btn in ContentStack.Children.OfType<Button>())
         {
-            AnimateButtonEntry(btn);
+#if NET10_0_OR_GREATER
+            await btn.FadeToAsync(1, 180, Easing.CubicInOut);
+#else
+            await btn.FadeTo(1, 180, Easing.CubicInOut);
+#endif
         }
-    }
-
-    private static async void AnimateButtonEntry(Button btn)
-    {
-        await Task.Delay(Random.Shared.Next(50, 150)); // léger décalage aléatoire pour effet naturel
-        await Task.WhenAll(
-            btn.FadeTo(1, 300, Easing.CubicInOut),
-            btn.ScaleTo(1, 300, Easing.CubicOut)
-        );
     }
 
     private async void OnNoticesClicked(object sender, EventArgs e)
@@ -60,16 +60,25 @@ public partial class InfoPopup : Popup<string>
         await CloseAsync(nameof(AboutPage));
     }
 
-    private async Task OnClose()
+    public async Task OnClose()
     {
-        foreach (var btn in ContentStack.Children.OfType<Button>())
+        foreach (var btn in ContentStack.Children.OfType<Button>().Reverse())
         {
+#if NET10_0_OR_GREATER
+            _ = await btn.FadeToAsync(0, 150);
+#else
             _ = await btn.FadeTo(0, 150);
+#endif
         }
 
         await Task.WhenAll(
+#if NET10_0_OR_GREATER
+                PopupBorder.FadeToAsync(0, 250),
+                PopupBorder.ScaleToAsync(0.8, 250)
+#else
                 PopupBorder.FadeTo(0, 250),
                 PopupBorder.ScaleTo(0.8, 250)
+#endif
             );
     }
 }

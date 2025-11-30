@@ -12,14 +12,14 @@ public class InfoPageBase : ContentPage
         _fullScreenService = fullScreenService;
     }
 
-    public InfoPageBase()
+    public InfoPageBase() : this(ServiceHelper.Services.GetRequiredService<IFullScreenService>())
     {
-        _fullScreenService = ServiceHelper.Services.GetRequiredService<IFullScreenService>();
     }
 
     protected override void OnAppearing()
     {
         base.OnAppearing();
+
         _fullScreenService.ExitFullScreen();
     }
 }

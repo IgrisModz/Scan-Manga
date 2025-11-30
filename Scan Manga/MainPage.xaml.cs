@@ -1,11 +1,16 @@
 ﻿using CommunityToolkit.Maui;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Platform;
 using CommunityToolkit.Maui.Extensions;
 using Scan_Manga.Controls;
 using Scan_Manga.Services;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using static Microsoft.Maui.Controls.Application;
+
+#if NET9_0
+using Microsoft.Maui.Controls.PlatformConfiguration;
+using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+#endif
 
 namespace Scan_Manga;
 
@@ -19,6 +24,7 @@ public partial class MainPage : ContentPage
     public MainPage(IFullScreenService fullScreenService)
     {
         InitializeComponent();
+        BindingContext = this;
 
         _fullScreenService = fullScreenService;
 
@@ -26,9 +32,7 @@ public partial class MainPage : ContentPage
         MainWebView.Navigated += MainWebView_Navigated;
         MainWebView.HttpErrorOccurred += (s, e) =>
         {
-            OfflineOverlay.IsVisible = true;
             ErrorLabel.Text = $"{e.Code} : {e.Message}";
-
         };
 
         Connectivity.Current.ConnectivityChanged += (s, args) =>
@@ -62,9 +66,8 @@ public partial class MainPage : ContentPage
         else
         {
             OnHandlerChanged();
-            var color = (Color)Application.Current!.Resources["Primary"];
+            var color = (Color)Current!.Resources["Primary"];
             StatusBar.SetColor(color);
-            StatusBar.SetStyle(StatusBarStyle.Default);
         }
     }
 
@@ -77,6 +80,12 @@ public partial class MainPage : ContentPage
             {
                 await Task.Delay(80);
                 _fullScreenService?.EnterFullScreen();
+#if NET10_0_OR_GREATER
+                SafeAreaEdges = SafeAreaEdges.None;
+                MainRoot.SafeAreaEdges = SafeAreaEdges.None;
+#else
+                On<iOS>().SetUseSafeArea(true);
+#endif
 
             }
         }
@@ -126,6 +135,12 @@ public partial class MainPage : ContentPage
 
         bool isLecturePage = e.Url.Contains("/lecture-en-ligne");
         _fullScreenService.SetFullScreen(isLecturePage);
+#if NET10_0_OR_GREATER
+        SafeAreaEdges = isLecturePage ? SafeAreaEdges.None : SafeAreaEdges.Default;
+        MainRoot.SafeAreaEdges = isLecturePage ? SafeAreaEdges.None : SafeAreaEdges.Default;
+#else
+        On<iOS>().SetUseSafeArea(isLecturePage);
+#endif
 
         // Sauvegarder en mémoire
         _lastUrl = e.Url;

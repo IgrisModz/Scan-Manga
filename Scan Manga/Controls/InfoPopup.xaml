@@ -8,8 +8,7 @@
     Margin="0"
     Padding="0"
     x:TypeArguments="x:String"
-    BackgroundColor="Transparent"
-    CanBeDismissedByTappingOutsideOfPopup="True">
+    BackgroundColor="Transparent">
     <Grid>
         <Border
             x:Name="PopupBorder"
@@ -29,23 +28,19 @@
                                                 Dark={StaticResource White}}" />
                 <Button
                     Clicked="OnNoticesClicked"
-                    Opacity="0.8"
-                    Scale="0.8"
+                    Opacity="0"
                     Text="Mentions légales" />
                 <Button
                     Clicked="OnPrivacyClicked"
-                    Opacity="0.8"
-                    Scale="0.8"
+                    Opacity="0"
                     Text="Politique de confidentialité" />
                 <Button
                     Clicked="OnTermsClicked"
-                    Opacity="0.8"
-                    Scale="0.8"
+                    Opacity="0"
                     Text="Conditions générales d’utilisation" />
                 <Button
                     Clicked="OnAboutClicked"
-                    Opacity="0.8"
-                    Scale="0.8"
+                    Opacity="0"
                     Text="À propos" />
             </VerticalStackLayout>
         </Border>
