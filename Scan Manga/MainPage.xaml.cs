@@ -1,11 +1,11 @@
 ﻿using CommunityToolkit.Maui;
-using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Core.Platform;
 using CommunityToolkit.Maui.Extensions;
 using Scan_Manga.Controls;
 using Scan_Manga.Services;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using static Microsoft.Maui.Controls.Application;
 
 #if NET9_0
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -66,9 +66,8 @@ public partial class MainPage : ContentPage
         else
         {
             OnHandlerChanged();
-            var color = (Color)Microsoft.Maui.Controls.Application.Current!.Resources["Primary"];
+            var color = (Color)Current!.Resources["Primary"];
             StatusBar.SetColor(color);
-            StatusBar.SetStyle(StatusBarStyle.Default);
         }
     }
 

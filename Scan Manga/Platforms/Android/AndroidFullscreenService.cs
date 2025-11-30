@@ -60,7 +60,7 @@ public class AndroidFullscreenService : IFullScreenService
                 ScheduleHide(500);
                 ScheduleHide(1000);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 Debug.WriteLine($"EnterFullScreen error: {ex.Message}");
             }
@@ -242,7 +242,7 @@ public class AndroidFullscreenService : IFullScreenService
                 decor.SystemUiFlags = uiOptions;
             }
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
             Debug.WriteLine($"ApplyHide error: {ex.Message}");
         }
