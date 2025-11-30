@@ -152,39 +152,58 @@ public partial class MainPage : ContentPage
         string js = $@"
             (function() {{
                 const selectors = [
-                    'div.BDPFGA[id^=""pf-""]',
-                    'div.PUBFUTURE[id^=""pf-""]',
+                    'div.BDPFGA[data-type=""_mgwidget""]',
+                    'div.PUBFUTURE',
                     'div[data-unit]',
+                    'div#teads_inread',
                     'script[src*=""richardghain.com""]',
                     'script[src*=""adschill.com""]',
                     'script[src*=""acscdn.com""]'
                 ];
                 // --- 1. Suppression des publicités ---
                 function removeAds() {{
+                    
                     // Supprime toutes les classes connues
                     selectors.forEach(sel => {{
                         document.querySelectorAll(sel).forEach(el => el.remove());
                     }});
 
-                    // Supprime les balises in-page-message
-                    document.querySelectorAll('in-page-message').forEach(e => {{
-                        if (e.shadowRoot) e.shadowRoot.innerHTML = '';
-                        e.remove();
+                    const container = document.querySelector('.reader_container');
+
+                    while (container.firstElementChild) {{
+                        const first = container.firstElementChild;
+                    
+                        // Vérifie si c'est bien un <div> avec la classe ""reader_view""
+                        if (first.tagName.toLowerCase() === 'div' && first.classList.contains('reader_view')) {{
+                            // On arrête la boucle car le premier enfant correspond
+                            break;
+                        }} else {{
+                            // Sinon on supprime le premier enfant
+                            container.removeChild(first);
+                        }}
+                    }}
+
+                    // Récupère la balise <html>
+                    const html = document.documentElement;
+                    
+                    // Parcourt tous les enfants directs de <html>
+                    Array.from(html.children).forEach(child => {{
+                        if (child.tagName.toLowerCase() !== 'head' && child.tagName.toLowerCase() !== 'body') {{
+                            html.removeChild(child);
+                        }}
                     }});
 
-                    // Supprime les iframes de type publicitaire
-                    document.querySelectorAll('iframe').forEach(iframe => {{
-                        const src = iframe.src || '';
-                        if (src.includes('crcdn.org') || src.includes('adexchangeclear') || iframe.title === 'offer') {{
-                            iframe.remove();
-                        }}
+                    // Supprime les balises in-page-message
+                    document.querySelectorAll('in-page-message, iframe').forEach(e => {{
+                        if (e.shadowRoot) e.shadowRoot.innerHTML = '';
+                        e.remove();
                     }});
                 }}
 
                 removeAds();
                 const adObserver = new MutationObserver(removeAds);
                 adObserver.observe(document.body, {{ childList: true, subtree: true }});
-                // setInterval(removeAds, 500);
+                //setInterval(removeAds, 500);
 
                 // --- 2. Mise en couleur des chapitres visités ---
 
