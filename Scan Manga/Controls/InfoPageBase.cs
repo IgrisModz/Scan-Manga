@@ -2,15 +2,9 @@
 
 namespace Scan_Manga.Controls;
 
-public class InfoPageBase : ContentPage
+public class InfoPageBase(IFullScreenService fullScreenService) : ContentPage
 {
-    private readonly IFullScreenService _fullScreenService;
-
-
-    public InfoPageBase(IFullScreenService fullScreenService)
-    {
-        _fullScreenService = fullScreenService;
-    }
+    private readonly IFullScreenService _fullScreenService = fullScreenService;
 
     public InfoPageBase() : this(ServiceHelper.Services.GetRequiredService<IFullScreenService>())
     {
