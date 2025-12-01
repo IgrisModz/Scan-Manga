@@ -20,6 +20,8 @@ public partial class MainPage : ContentPage
     private HashSet<string> _visitedLinks = [];
     private string? _lastUrl;
     private bool _isFirstAppear = true;
+    private CancellationTokenSource? _fullScreenCts;
+    private bool _isNavigating;
 
     public MainPage(IFullScreenService fullScreenService)
     {
@@ -44,7 +46,6 @@ public partial class MainPage : ContentPage
         };
     }
 
-    [SupportedOSPlatform("android23.0")]
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -65,9 +66,8 @@ public partial class MainPage : ContentPage
         }
         else
         {
+            _isNavigating = false; // On revient sur la page
             OnHandlerChanged();
-            var color = (Color)Current!.Resources["Primary"];
-            StatusBar.SetColor(color);
         }
     }
 
@@ -78,14 +78,30 @@ public partial class MainPage : ContentPage
         {
             if (_lastUrl?.Contains("/lecture-en-ligne") ?? false)
             {
-                await Task.Delay(80);
-                _fullScreenService?.EnterFullScreen();
+                // Annule toute opération précédente
+                _fullScreenCts?.Cancel();
+                _fullScreenCts = new CancellationTokenSource();
+
+                try
+                {
+                    await Task.Delay(80, _fullScreenCts.Token);
+
+                    if (!_isNavigating && !_fullScreenCts.Token.IsCancellationRequested)
+                    {
+                        _fullScreenService?.EnterFullScreen();
 #if NET10_0_OR_GREATER
                 SafeAreaEdges = SafeAreaEdges.None;
                 MainRoot.SafeAreaEdges = SafeAreaEdges.None;
 #else
-                On<iOS>().SetUseSafeArea(true);
+                    On<iOS>().SetUseSafeArea(true);
 #endif
+                        var color = (Color)Current!.Resources["Primary"];
+                        if (OperatingSystem.IsAndroidVersionAtLeast(23) ||
+                            OperatingSystem.IsIOSVersionAtLeast(15))
+                            StatusBar.SetColor(color);
+                    }
+                }
+                catch (TaskCanceledException) { }
 
             }
         }
@@ -99,6 +115,10 @@ public partial class MainPage : ContentPage
             Preferences.Set("LastUrl", _lastUrl);
 
         Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
+
+        // Annule le plein écran quand on quitte la page
+        _fullScreenCts?.Cancel();
+        _isNavigating = true;
     }
 
     private void OnRefresh(object? sender, EventArgs e)
@@ -247,6 +267,11 @@ public partial class MainPage : ContentPage
 
     private async void OnInfoClicked(object sender, EventArgs e)
     {
+        // Marque qu'on est en train de naviguer
+        _isNavigating = true;
+        // Annule immédiatement toute tentative de plein écran
+        _fullScreenCts?.Cancel();
+
         var infoPopup = new InfoPopup();
 
         var popupOptions = new PopupOptions
@@ -262,10 +287,16 @@ public partial class MainPage : ContentPage
         var popupResult = await this.ShowPopupAsync<string>(infoPopup, popupOptions);
 
         if (popupResult.WasDismissedByTappingOutsideOfPopup)
+        {
+            _isNavigating = false; // Annulé, on reste
             return;
+        }
 
         if (popupResult.Result == null)
+        {
+            _isNavigating = false; // Pas de navigation
             return;
+        }
 
         await Shell.Current.GoToAsync(popupResult.Result);
     }
