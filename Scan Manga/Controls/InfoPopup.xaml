@@ -13,6 +13,8 @@
         <Border
             x:Name="PopupBorder"
             Padding="20"
+            BackgroundColor="{AppThemeBinding Dark=#EE000000,
+                                              Light=#E0FFFFFF}"
             HorizontalOptions="Center"
             Opacity="0.8"
             Scale="0.8"

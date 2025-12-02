@@ -20,6 +20,8 @@ public partial class MainPage : ContentPage
     private HashSet<string> _visitedLinks = [];
     private string? _lastUrl;
     private bool _isFirstAppear = true;
+    private CancellationTokenSource? _fullScreenCts;
+    private bool _isNavigating;
 
     public MainPage(IFullScreenService fullScreenService)
     {
@@ -44,7 +46,6 @@ public partial class MainPage : ContentPage
         };
     }
 
-    [SupportedOSPlatform("android23.0")]
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -65,9 +66,8 @@ public partial class MainPage : ContentPage
         }
         else
         {
+            _isNavigating = false; // On revient sur la page
             OnHandlerChanged();
-            var color = (Color)Current!.Resources["Primary"];
-            StatusBar.SetColor(color);
         }
     }
 
@@ -76,16 +76,32 @@ public partial class MainPage : ContentPage
         base.OnHandlerChanged();
         if (Handler?.MauiContext != null)
         {
-            if (_lastUrl?.Contains("/lecture-en-ligne") ?? false)
+            if (IsLecturePage(_lastUrl) ?? false)
             {
-                await Task.Delay(80);
-                _fullScreenService?.EnterFullScreen();
+                // Annule toute opération précédente
+                _fullScreenCts?.Cancel();
+                _fullScreenCts = new CancellationTokenSource();
+
+                try
+                {
+                    await Task.Delay(80, _fullScreenCts.Token);
+
+                    if (!_isNavigating && !_fullScreenCts.Token.IsCancellationRequested)
+                    {
+                        _fullScreenService?.EnterFullScreen();
 #if NET10_0_OR_GREATER
                 SafeAreaEdges = SafeAreaEdges.None;
                 MainRoot.SafeAreaEdges = SafeAreaEdges.None;
 #else
-                On<iOS>().SetUseSafeArea(true);
+                    On<iOS>().SetUseSafeArea(true);
 #endif
+                        var color = (Color)Current!.Resources["Primary"];
+                        if (OperatingSystem.IsAndroidVersionAtLeast(23) ||
+                            OperatingSystem.IsIOSVersionAtLeast(15))
+                            StatusBar.SetColor(color);
+                    }
+                }
+                catch (TaskCanceledException) { }
 
             }
         }
@@ -99,6 +115,10 @@ public partial class MainPage : ContentPage
             Preferences.Set("LastUrl", _lastUrl);
 
         Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
+
+        // Annule le plein écran quand on quitte la page
+        _fullScreenCts?.Cancel();
+        _isNavigating = true;
     }
 
     private void OnRefresh(object? sender, EventArgs e)
@@ -133,7 +153,7 @@ public partial class MainPage : ContentPage
         
         OfflineOverlay.IsVisible = false;
 
-        bool isLecturePage = e.Url.Contains("/lecture-en-ligne");
+        bool isLecturePage = IsLecturePage(e.Url) ?? false;
         _fullScreenService.SetFullScreen(isLecturePage);
 #if NET10_0_OR_GREATER
         SafeAreaEdges = isLecturePage ? SafeAreaEdges.None : SafeAreaEdges.Default;
@@ -161,92 +181,16 @@ public partial class MainPage : ContentPage
 
         Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
 
-        // Recolorer les liens visités
-        string visitedJoined = JsonSerializer.Serialize(_visitedLinks);
-
-        string js = $@"
-            (function() {{
-                const selectors = [
-                    'div.BDPFGA[data-type=""_mgwidget""]',
-                    'div.PUBFUTURE',
-                    'div[data-unit]',
-                    'div#teads_inread',
-                    'script[src*=""richardghain.com""]',
-                    'script[src*=""adschill.com""]',
-                    'script[src*=""acscdn.com""]'
-                ];
-                // --- 1. Suppression des publicités ---
-                function removeAds() {{
-                    
-                    // Supprime toutes les classes connues
-                    selectors.forEach(sel => {{
-                        document.querySelectorAll(sel).forEach(el => el.remove());
-                    }});
-
-                    const container = document.querySelector('.reader_container');
-
-                    while (container.firstElementChild) {{
-                        const first = container.firstElementChild;
-                    
-                        // Vérifie si c'est bien un <div> avec la classe ""reader_view""
-                        if (first.tagName.toLowerCase() === 'div' && first.classList.contains('reader_view')) {{
-                            // On arrête la boucle car le premier enfant correspond
-                            break;
-                        }} else {{
-                            // Sinon on supprime le premier enfant
-                            container.removeChild(first);
-                        }}
-                    }}
-
-                    // Récupère la balise <html>
-                    const html = document.documentElement;
-                    
-                    // Parcourt tous les enfants directs de <html>
-                    Array.from(html.children).forEach(child => {{
-                        if (child.tagName.toLowerCase() !== 'head' && child.tagName.toLowerCase() !== 'body') {{
-                            html.removeChild(child);
-                        }}
-                    }});
-
-                    // Supprime les balises in-page-message
-                    document.querySelectorAll('in-page-message, iframe').forEach(e => {{
-                        if (e.shadowRoot) e.shadowRoot.innerHTML = '';
-                        e.remove();
-                    }});
-                }}
-
-                removeAds();
-                const adObserver = new MutationObserver(removeAds);
-                adObserver.observe(document.body, {{ childList: true, subtree: true }});
-                //setInterval(removeAds, 500);
-
-                // --- 2. Mise en couleur des chapitres visités ---
-
-                // Injection CSS ciblé
-                const style = document.createElement('style');
-                style.textContent = `
-                    span.i a.visited,
-                    a.l_read.visited,
-                    div.top a.atop.visited {{
-                        color: #e0a19d !important;
-                    }}
-                `;
-                document.head.appendChild(style);
-
-                var visited = {visitedJoined};
-                var anchors = document.querySelectorAll('span.i a, a.l_read, div.top a.atop');
-                anchors.forEach(function(link) {{
-                    if (visited.includes(link.href)) {{
-                        link.classList.add('visited');
-                    }}
-                }});
-            }})();";
-
-        await MainWebView.EvaluateJavaScriptAsync(js);
+        await InjectScriptWithVisitedLinksAsync();
     }
 
     private async void OnInfoClicked(object sender, EventArgs e)
     {
+        // Marque qu'on est en train de naviguer
+        _isNavigating = true;
+        // Annule immédiatement toute tentative de plein écran
+        _fullScreenCts?.Cancel();
+
         var infoPopup = new InfoPopup();
 
         var popupOptions = new PopupOptions
@@ -260,13 +204,36 @@ public partial class MainPage : ContentPage
             },
         };
         var popupResult = await this.ShowPopupAsync<string>(infoPopup, popupOptions);
+        
+        // ShowPopup désactive le plein écran donc il faut le réinitialiser manuellement
+        _fullScreenService.IsFullScreen = false;
 
-        if (popupResult.WasDismissedByTappingOutsideOfPopup)
+        if (popupResult.WasDismissedByTappingOutsideOfPopup ||
+            popupResult.Result == null)
+        {
+            _isNavigating = false; // Annulé, on reste
             return;
-
-        if (popupResult.Result == null)
-            return;
+        }
 
         await Shell.Current.GoToAsync(popupResult.Result);
+    }
+
+    private async Task InjectScriptWithVisitedLinksAsync()
+    {
+        if (_lastUrl == null) return;
+
+        string visitedJoined = JsonSerializer.Serialize(_visitedLinks);
+
+        using var stream = await FileSystem.OpenAppPackageFileAsync("adsRemover.js");
+        using var reader = new StreamReader(stream);
+        var jsTemplate = await reader.ReadToEndAsync();
+
+        string jsContent = jsTemplate.Replace("{{visitedJoined}}", visitedJoined);
+        await MainWebView.EvaluateJavaScriptAsync(jsContent);
+    }
+
+    private static bool? IsLecturePage(string? url)
+    {
+        return url?.Contains("/lecture-en-ligne");
     }
 }
