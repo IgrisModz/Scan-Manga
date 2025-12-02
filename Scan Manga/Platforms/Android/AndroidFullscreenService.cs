@@ -14,14 +14,14 @@ namespace Scan_Manga.Platforms.Android;
 public class AndroidFullscreenService : IFullScreenService
 {
     private static AndroidApp.Activity? GetActivity() => Platform.CurrentActivity;
-    private bool _isFullScreen = false;
+    public bool IsFullScreen { get; set; } = false;
 
 
     [SupportedOSPlatform("android23.0")]
     public void EnterFullScreen()
     {
         // Si déjà en plein écran, on ne fait rien
-        if (_isFullScreen) return;
+        if (IsFullScreen) return;
 
         var activity = GetActivity();
         if (activity?.Window == null) return;
@@ -53,7 +53,7 @@ public class AndroidFullscreenService : IFullScreenService
                 decor.PostDelayed(() => ApplyHide(window), 500);
                 decor.PostDelayed(() => ApplyHide(window), 1000);
 
-                _isFullScreen = true;
+                IsFullScreen = true;
             }
             catch (Exception ex)
             {
@@ -66,7 +66,7 @@ public class AndroidFullscreenService : IFullScreenService
     public void ExitFullScreen()
     {
         // Si déjà sorti du plein écran, on ne fait rien
-        if (!_isFullScreen) return;
+        if (!IsFullScreen) return;
 
         var activity = GetActivity();
         if (activity?.Window == null) return;
@@ -115,7 +115,7 @@ public class AndroidFullscreenService : IFullScreenService
                     window.SetNavigationBarColor(Graphics.Color.Black);
                 }
 
-                _isFullScreen = false;
+                IsFullScreen = false;
             }
             catch (Exception ex)
             {

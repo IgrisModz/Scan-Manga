@@ -76,7 +76,7 @@ public partial class MainPage : ContentPage
         base.OnHandlerChanged();
         if (Handler?.MauiContext != null)
         {
-            if (_lastUrl?.Contains("/lecture-en-ligne") ?? false)
+            if (IsLecturePage(_lastUrl) ?? false)
             {
                 // Annule toute opération précédente
                 _fullScreenCts?.Cancel();
@@ -153,7 +153,7 @@ public partial class MainPage : ContentPage
         
         OfflineOverlay.IsVisible = false;
 
-        bool isLecturePage = e.Url.Contains("/lecture-en-ligne");
+        bool isLecturePage = IsLecturePage(e.Url) ?? false;
         _fullScreenService.SetFullScreen(isLecturePage);
 #if NET10_0_OR_GREATER
         SafeAreaEdges = isLecturePage ? SafeAreaEdges.None : SafeAreaEdges.Default;
@@ -204,16 +204,14 @@ public partial class MainPage : ContentPage
             },
         };
         var popupResult = await this.ShowPopupAsync<string>(infoPopup, popupOptions);
+        
+        // ShowPopup désactive le plein écran donc il faut le réinitialiser manuellement
+        _fullScreenService.IsFullScreen = false;
 
-        if (popupResult.WasDismissedByTappingOutsideOfPopup)
+        if (popupResult.WasDismissedByTappingOutsideOfPopup ||
+            popupResult.Result == null)
         {
             _isNavigating = false; // Annulé, on reste
-            return;
-        }
-
-        if (popupResult.Result == null)
-        {
-            _isNavigating = false; // Pas de navigation
             return;
         }
 
@@ -232,5 +230,10 @@ public partial class MainPage : ContentPage
 
         string jsContent = jsTemplate.Replace("{{visitedJoined}}", visitedJoined);
         await MainWebView.EvaluateJavaScriptAsync(jsContent);
+    }
+
+    private static bool? IsLecturePage(string? url)
+    {
+        return url?.Contains("/lecture-en-ligne");
     }
 }
