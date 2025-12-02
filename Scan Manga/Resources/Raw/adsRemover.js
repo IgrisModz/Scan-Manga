@@ -55,7 +55,7 @@
     `;
     document.head.appendChild(style);
 
-    var visited = {{visitedJoined}};
+    var visited = {visitedJoined};
     var anchors = document.querySelectorAll('span.i a, a.l_read, div.top a.atop');
     anchors.forEach(function(link) {
         if (visited.includes(link.href)) {
