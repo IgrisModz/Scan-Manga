@@ -17,14 +17,18 @@
 
         const container = document.querySelector('.reader_container');
 
-        while (container.firstElementChild) {
-            const first = container.firstElementChild;
+        if (container) {
+            while (container.firstElementChild) {
+                const first = container.firstElementChild;
 
-            if (first.tagName.toLowerCase() === 'div' && first.classList.contains('reader_view')) {
-                break;
-            } else {
-                container.removeChild(first);
+                if (first.tagName.toLowerCase() === 'div' && first.classList.contains('reader_view')) {
+                    break;
+                } else {
+                    first.remove();
+                }
             }
+        } else {
+            console.warn("L'élément .reader_container est introuvable dans le DOM.");
         }
 
         const html = document.documentElement;
@@ -55,7 +59,7 @@
     `;
     document.head.appendChild(style);
 
-    var visited = {{visitedJoined}};
+    var visited = {visitedJoined};
     var anchors = document.querySelectorAll('span.i a, a.l_read, div.top a.atop');
     anchors.forEach(function(link) {
         if (visited.includes(link.href)) {

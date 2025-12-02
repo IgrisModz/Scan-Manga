@@ -228,7 +228,8 @@ public partial class MainPage : ContentPage
         using var reader = new StreamReader(stream);
         var jsTemplate = await reader.ReadToEndAsync();
 
-        string jsContent = jsTemplate.Replace("{{visitedJoined}}", visitedJoined);
+        // visitedJoined est un tableau JSON
+        string jsContent = jsTemplate.Replace("{visitedJoined}", visitedJoined);
         await MainWebView.EvaluateJavaScriptAsync(jsContent);
     }
 
