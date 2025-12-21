@@ -1,8 +1,12 @@
-﻿using Android.Util;
+﻿using Android.Content;
+using Android.OS;
+using Android.Util;
 using Android.Webkit;
 using Microsoft.Maui.Handlers;
 using Scan_Manga.Controls;
 using System.Runtime.Versioning;
+using AndroidApp = Android.App;
+using AndroidNet = Android.Net;
 using Webkit = Android.Webkit;
 
 namespace Scan_Manga.Platforms.Android;
@@ -24,6 +28,9 @@ public class CustomWebViewHandler : WebViewHandler
         // Injecter le WebChromeClient APRÈS le mapping MAUI
         CustomMapper.AppendToMapping("WebChromeClient", (handler, view) =>
         {
+            handler.PlatformView.Settings.SetSupportMultipleWindows(true);
+            handler.PlatformView.Settings.JavaScriptCanOpenWindowsAutomatically = true;
+
             handler.PlatformView?.SetWebChromeClient(
                     new ProgressClient(view)
                 );
@@ -40,7 +47,7 @@ public class CustomWebViewHandler : WebViewHandler
 
             if (view is CustomWebView customWebView)
             {
-                handler.PlatformView?.SetWebViewClient(new ErrorClient(defaultClient, view));
+                handler.PlatformView?.SetWebViewClient(new CustomWebViewClient(defaultClient, view));
             }
         });
     }
@@ -55,15 +62,34 @@ public class CustomWebViewHandler : WebViewHandler
 
             if (_ref.TryGetTarget(out var custom))
             {
-                MainThread.BeginInvokeOnMainThread(() =>
-                {
-                    custom.Progress = newProgress / 100.0;
-                });
+                MainThread.BeginInvokeOnMainThread(() => custom.Progress = newProgress / 100.0);
             }
+        }
+
+        public override bool OnCreateWindow(Webkit.WebView? view, bool isDialog, bool isUserGesture, Message? resultMsg)
+        {
+            // On récupère ce que l'utilisateur a touché
+            var hitTestResult = view?.GetHitTestResult();
+            string? url = hitTestResult?.Extra;
+
+            // Si c'est un lien valide, on l'ouvre dans le navigateur externe
+            if (!string.IsNullOrEmpty(url))
+            {
+                if (IsInternalDomain(url))
+                {
+                    view?.LoadUrl(url); // On force le chargement interne
+                    return false;
+                }
+
+                OpenInExternalBrowser(url!);
+                return false; // On retourne false pour dire "n'ouvre pas de fenêtre interne dans l'app"
+            }
+
+            return base.OnCreateWindow(view, isDialog, isUserGesture, resultMsg);
         }
     }
 
-    private class ErrorClient(WebViewClient? baseClient, CustomWebView customWebView) : WebViewClient
+    private class CustomWebViewClient(WebViewClient? baseClient, CustomWebView customWebView) : WebViewClient
     {
         private readonly WebViewClient? _baseClient = baseClient;
         private readonly CustomWebView _customWebView = customWebView;
@@ -112,9 +138,55 @@ public class CustomWebViewHandler : WebViewHandler
             string message = GetHttpErrorMessage(errorResponse.StatusCode);
             _customWebView.RaiseError($"HTTP {errorResponse.StatusCode}", message);
         }
+
+        public override bool ShouldOverrideUrlLoading(Webkit.WebView? view, IWebResourceRequest? request)
+        {
+            var url = request?.Url?.ToString();
+            if (string.IsNullOrWhiteSpace(url)) return false;
+
+            // Analyse de l'URL
+            if (IsInternalDomain(url))
+            {
+                return false;
+            }
+
+            // Tout le reste (pubs, liens externes, etc.) -> Navigateur Externe
+            OpenInExternalBrowser(url);
+
+            // On retourne true pour dire "J'ai géré le clic moi-même (en externe), ne charge rien dans la WebView"
+            return true;
+        }
     }
 
-    public static string GetErrorMessage(int errorCode)
+    private static bool IsInternalDomain(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+
+        try
+        {
+            var uri = new Uri(url);
+            // On vérifie le domaine exact ou les sous-domaines
+            return uri.Host.Equals("scan-manga.com", StringComparison.OrdinalIgnoreCase) ||
+                   uri.Host.EndsWith(".scan-manga.com", StringComparison.OrdinalIgnoreCase);
+        }
+        catch { return false; }
+    }
+
+    private static void OpenInExternalBrowser(string url)
+    {
+        try
+        {
+            var intent = new Intent(Intent.ActionView, AndroidNet.Uri.Parse(url));
+            intent.AddFlags(ActivityFlags.NewTask);
+            AndroidApp.Application.Context.StartActivity(intent);
+        }
+        catch (Exception ex)
+        {
+            Log.Error("CustomWebView", $"Impossible d'ouvrir le lien externe : {ex.Message}");
+        }
+    }
+
+    private static string GetErrorMessage(int errorCode)
     {
         return errorCode switch
         {
@@ -138,7 +210,7 @@ public class CustomWebViewHandler : WebViewHandler
         };
     }
 
-    public static string GetHttpErrorMessage(int statusCode)
+    private static string GetHttpErrorMessage(int statusCode)
     {
         return statusCode switch
         {
