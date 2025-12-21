@@ -14,6 +14,8 @@ public class iOSFullscreenService : UIViewController, IFullScreenService
     // Propriété pour savoir si on est en plein écran
     public bool IsFullScreen => _overlayViewController != null;
 
+    bool IFullScreenService.IsFullScreen { get => IsFullScreen; set => throw new NotSupportedException(); }
+
     [SupportedOSPlatform("ios15.0")]
     [UnsupportedOSPlatform("maccatalyst")]
     public void EnterFullScreen()
