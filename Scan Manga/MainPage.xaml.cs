@@ -3,9 +3,7 @@ using CommunityToolkit.Maui.Core.Platform;
 using CommunityToolkit.Maui.Extensions;
 using Scan_Manga.Controls;
 using Scan_Manga.Services;
-using System.Runtime.Versioning;
 using System.Text.Json;
-using static Microsoft.Maui.Controls.Application;
 
 #if NET9_0
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -95,7 +93,7 @@ public partial class MainPage : ContentPage
 #else
                     On<iOS>().SetUseSafeArea(true);
 #endif
-                        var color = (Color)Current!.Resources["Primary"];
+                        var color = (Color)Microsoft.Maui.Controls.Application.Current!.Resources["Primary"];
                         if (OperatingSystem.IsAndroidVersionAtLeast(23) ||
                             OperatingSystem.IsIOSVersionAtLeast(15))
                             StatusBar.SetColor(color);
