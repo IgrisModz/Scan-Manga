@@ -1,32 +1,28 @@
-﻿using Android.Views;
+﻿using Android.App;
+using Android.Util;
+using Android.Views;
 using AndroidX.Core.View;
 using Scan_Manga.Services;
-using System.Runtime.Versioning;
-using Graphics = Android.Graphics;
-using Debug = System.Diagnostics.Debug;
-using AndroidApp = Android.App;
-using Views = Android.Views;
+using Views = Android.Views; // Evite les ambiguités
 
-// Note: Assurez-vous que le namespace correspond bien à votre projet
 [assembly: Dependency(typeof(Scan_Manga.Platforms.Android.AndroidFullscreenService))]
 namespace Scan_Manga.Platforms.Android;
 
 public class AndroidFullscreenService : IFullScreenService
 {
-    private static AndroidApp.Activity? GetActivity() => Platform.CurrentActivity;
+    private int _defaultSystemUiVisibility;
+    private bool _isSystemBarVisible;
+
     public bool IsFullScreen { get; set; } = false;
 
-
-    [SupportedOSPlatform("android23.0")]
     public void EnterFullScreen()
     {
         // Si déjà en plein écran, on ne fait rien
         if (IsFullScreen) return;
 
-        var activity = GetActivity();
-        if (activity?.Window == null) return;
+        var activity = CurrentPlatformContext.CurrentActivity;
+        var currentWindow = CurrentPlatformContext.CurrentWindow;
 
-        var window = activity.Window;
         activity.RunOnUiThread(() =>
         {
             try
@@ -34,97 +30,84 @@ public class AndroidFullscreenService : IFullScreenService
                 // Gestion du Notch (API 28+)
                 if (OperatingSystem.IsAndroidVersionAtLeast(28))
                 {
-                    var attrs = window.Attributes;
-                    if (attrs != null)
-                    {
-                        attrs.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
-                        window.Attributes = attrs;
-                    }
+                    currentWindow.Attributes?.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.ShortEdges;
                 }
 
-                WindowCompat.SetDecorFitsSystemWindows(window, false);
-
                 // Appels immédiats et différés (Anti-MIUI/OEM agressifs)
-                var decor = window.DecorView;
-                if (decor == null) return;
-
-                ApplyHide(window);
-                decor.PostDelayed(() => ApplyHide(window), 150);
-                decor.PostDelayed(() => ApplyHide(window), 500);
-                decor.PostDelayed(() => ApplyHide(window), 1000);
+                var decorView = currentWindow.DecorView;
+                if (decorView is null || !decorView.IsAttachedToWindow) return;
+                
+                ApplyHide(currentWindow, decorView);
+                decorView.PostDelayed(() => ApplyHide(currentWindow, decorView), 150);
+                decorView.PostDelayed(() => ApplyHide(currentWindow, decorView), 500);
+                decorView.PostDelayed(() => ApplyHide(currentWindow, decorView), 1000);
 
                 IsFullScreen = true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"EnterFullScreen error: {ex.Message}");
+                Log.WriteLine(LogPriority.Error, "AndroidFullscreenService", $"EnterFullScreen error: {ex.Message}");
             }
         });
     }
 
-    [SupportedOSPlatform("android23.0")]
     public void ExitFullScreen()
     {
-        // Si déjà sorti du plein écran, on ne fait rien
         if (!IsFullScreen) return;
 
-        var activity = GetActivity();
-        if (activity?.Window == null) return;
+        var activity = CurrentPlatformContext.CurrentActivity;
+        var currentWindow = CurrentPlatformContext.CurrentWindow;
 
-        var window = activity.Window;
         activity.RunOnUiThread(() =>
         {
             try
             {
-                // Restaurer le comportement du Notch
-                if (OperatingSystem.IsAndroidVersionAtLeast(28))
+                var decorView = currentWindow.DecorView;
+                if (decorView is null || !decorView.IsAttachedToWindow) return;
+                var windowInsetsControllerCompat = WindowCompat.GetInsetsController(currentWindow, decorView);
+
+                var barTypes = WindowInsetsCompat.Type.SystemBars()
+                    | WindowInsetsCompat.Type.SystemBars()
+                    | WindowInsetsCompat.Type.NavigationBars();
+
+                if (OperatingSystem.IsAndroidVersionAtLeast(30))
                 {
-                    var attrs = window.Attributes;
-                    if (attrs != null)
+                    if (_isSystemBarVisible)
                     {
-                        attrs.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.Default;
-                        window.Attributes = attrs;
+                        currentWindow.InsetsController?.Show(WindowInsets.Type.SystemBars());
                     }
-                }
-
-                WindowCompat.SetDecorFitsSystemWindows(window, true);
-
-                var decor = window.DecorView;
-                if (decor == null) return;
-
-                // Afficher les barres
-                var controller = WindowCompat.GetInsetsController(window, decor);
-                if (controller != null)
-                {
-                    controller.Show(WindowInsetsCompat.Type.SystemBars());
-                    controller.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
                 }
                 else
                 {
-#pragma warning disable CS0618
-                    decor.SystemUiVisibility = StatusBarVisibility.Visible;
-#pragma warning restore CS0618
+                    decorView.SystemUiFlags = (SystemUiFlags)_defaultSystemUiVisibility;
                 }
 
-                window.ClearFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.LayoutNoLimits);
-
-                // Restauration des couleurs (Android 23-34)
-                if (!OperatingSystem.IsAndroidVersionAtLeast(35))
+                if (windowInsetsControllerCompat is not null)
                 {
-                    window.SetStatusBarColor(Graphics.Color.Black);
-                    window.SetNavigationBarColor(Graphics.Color.Black);
+                    windowInsetsControllerCompat.Show(barTypes);
+                    windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorDefault;
                 }
+
+                currentWindow.AddFlags(WindowManagerFlags.ForceNotFullscreen);
+                currentWindow.ClearFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.LayoutNoLimits);
+
+                // Restaurer le comportement du Notch
+                if (OperatingSystem.IsAndroidVersionAtLeast(28))
+                {
+                    currentWindow.Attributes?.LayoutInDisplayCutoutMode = LayoutInDisplayCutoutMode.Default;
+                }
+
+                WindowCompat.SetDecorFitsSystemWindows(currentWindow, true);
 
                 IsFullScreen = false;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"ExitFullScreen error: {ex.Message}");
+                Log.WriteLine(LogPriority.Error, "AndroidFullscreenService", $"ExitFullScreen error: {ex.Message}");
             }
         });
     }
 
-    [SupportedOSPlatform("android23.0")]
     public void SetFullScreen(bool enable)
     {
         if (enable)
@@ -133,48 +116,61 @@ public class AndroidFullscreenService : IFullScreenService
             ExitFullScreen();
     }
 
-    private static void ApplyHide(Views.Window window)
+    private void ApplyHide(Views.Window window, Views.View decorView)
     {
         try
         {
-            var decor = window.DecorView;
-            if (decor == null || !decor.IsAttachedToWindow) return;
+            var windowInsetsControllerCompat = WindowCompat.GetInsetsController(window, decorView);
 
-            // Modern Approach (API 30+)
-            var controller = WindowCompat.GetInsetsController(window, decor);
-            if (controller != null)
-            {
-                controller.Hide(WindowInsetsCompat.Type.SystemBars());
-                controller.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
-            }
+            var barTypes = WindowInsetsCompat.Type.SystemBars()
+                | WindowInsetsCompat.Type.SystemBars()
+                | WindowInsetsCompat.Type.NavigationBars();
 
             WindowCompat.SetDecorFitsSystemWindows(window, false);
+            if (OperatingSystem.IsAndroidVersionAtLeast(30))
+            {
+                var windowInsets = decorView.RootWindowInsets;
+                if (windowInsets is null) return;
+
+                _isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) || windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
+
+                if (_isSystemBarVisible)
+                {
+                    window.InsetsController?.Hide(WindowInsets.Type.SystemBars());
+                }
+            }
+            else
+            {
+                _defaultSystemUiVisibility = (int)decorView.SystemUiFlags;
+
+                window.DecorView.SystemUiFlags = decorView.SystemUiFlags
+                    | SystemUiFlags.LayoutStable
+                    | SystemUiFlags.LayoutHideNavigation
+                    | SystemUiFlags.LayoutFullscreen
+                    | SystemUiFlags.HideNavigation
+                    | SystemUiFlags.Fullscreen
+                    | SystemUiFlags.ImmersiveSticky;
+            }
+
             window.AddFlags(WindowManagerFlags.Fullscreen | WindowManagerFlags.LayoutNoLimits);
             window.ClearFlags(WindowManagerFlags.ForceNotFullscreen);
 
-            // Couleurs transparentes (Android 23-34)
-            if (!OperatingSystem.IsAndroidVersionAtLeast(35))
+            if (windowInsetsControllerCompat is not null)
             {
-                window.SetStatusBarColor(Graphics.Color.Transparent);
-                window.SetNavigationBarColor(Graphics.Color.Transparent);
-            }
-
-            // Legacy Approach (API < 30)
-            if (!OperatingSystem.IsAndroidVersionAtLeast(30))
-            {
-                var uiOptions = SystemUiFlags.LayoutStable
-                                | SystemUiFlags.LayoutHideNavigation
-                                | SystemUiFlags.LayoutFullscreen
-                                | SystemUiFlags.HideNavigation
-                                | SystemUiFlags.Fullscreen
-                                | SystemUiFlags.ImmersiveSticky;
-
-                decor.SystemUiFlags = uiOptions;
+                windowInsetsControllerCompat.Hide(barTypes);
+                windowInsetsControllerCompat.SystemBarsBehavior = WindowInsetsControllerCompat.BehaviorShowTransientBarsBySwipe;
             }
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"ApplyHide error: {ex.Message}");
+            Log.WriteLine(LogPriority.Error, "AndroidFullscreenService", $"ApplyHide error: {ex.Message}");
         }
+    }
+
+    private readonly record struct CurrentPlatformContext()
+    {
+        public static Activity CurrentActivity => Platform.CurrentActivity ?? throw new InvalidOperationException("CurrentActivity cannot be null.");
+
+        public static Views.Window CurrentWindow => CurrentActivity.Window ?? throw new InvalidOperationException("Window cannot be null.");
     }
 }
