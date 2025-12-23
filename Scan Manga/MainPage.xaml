@@ -70,7 +70,8 @@
         <controls:ExpandableNavBar
             x:Name="NavBar"
             InfoTapped="OnInfoClicked"
-            RefreshTapped="OnRefresh" />
+            RefreshTapped="OnRefresh"
+            HomeTapped="OnHomeClicked" />
 
     </Grid>
 

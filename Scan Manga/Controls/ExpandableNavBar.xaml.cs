@@ -1,5 +1,6 @@
 using MauiIcons.Core;
 using MauiIcons.Material;
+using Scan_Manga.Helpers;
 using Scan_Manga.Pages;
 
 namespace Scan_Manga.Controls;
@@ -8,6 +9,7 @@ public partial class ExpandableNavBar : Grid
 {
     public event EventHandler? InfoTapped;
     public event EventHandler? RefreshTapped;
+    public event EventHandler? HomeTapped;
 
     private bool _navBarExpanded = false;
 
@@ -22,27 +24,6 @@ public partial class ExpandableNavBar : Grid
 #endif
     }
 
-    // --- Animations utilitaires ---
-    public static Task AnimateWidth(VisualElement view, double from, double to, uint length = 250)
-    {
-        var taskCompletionSource = new TaskCompletionSource<bool>();
-
-        var animation = new Animation(v => view.WidthRequest = v, from, to, Easing.CubicInOut);
-        animation.Commit(view, "WidthAnimation", 16, length, finished: (v, c) => taskCompletionSource.SetResult(true));
-
-        return taskCompletionSource.Task;
-    }
-
-    public static Task AnimateHeight(VisualElement view, double from, double to, uint length = 250)
-    {
-        var taskCompletionSource = new TaskCompletionSource<bool>();
-
-        var animation = new Animation(v => view.HeightRequest = v, from, to, Easing.CubicInOut);
-        animation.Commit(view, "HeightAnimation", 16, length, finished: (v, c) => taskCompletionSource.SetResult(true));
-
-        return taskCompletionSource.Task;
-    }
-
     // --- Actions utilisateur ---
     private async void OnExpandClicked(object? sender, EventArgs e)
     {
@@ -54,32 +35,31 @@ public partial class ExpandableNavBar : Grid
 
         if (!_navBarExpanded)
         {
+            // Ensure ScrollView is at start before opening
+            try
+            {
+                await NavBarScroll.ScrollToAsync(0, 0, false);
+            }
+            catch { }
+
             ClickOutsideOverlay.IsVisible = true;
 
-#if NET10_0_OR_GREATER
-            var rotation = ExpandBtn.RotateToAsync(360, 500);
-#else
-            var rotation = ExpandBtn.RotateTo(360, 500);
-#endif
+            var rotationTask = ExpandBtn.RotateToSafe(360, 500);
 
-            await AnimateWidth(NavBar, NavBar.Width, maxWidth, 200);
-            await AnimateHeight(NavBar, NavBar.Height, 80, 300);
+            await AnimationHelpers.AnimateWidthAsync(NavBar, NavBar.Width, maxWidth, 200);
+            await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, 80, 300);
 
-#if NET9_0 || NET10_0_OR_GREATER
-            await rotation;
-#endif
+            await rotationTask;
             ExpandBtn.Icon(MaterialIcons.Close);
 
             NavBarContent.IsVisible = true;
-#if NET10_0_OR_GREATER
-            await InfoBtn.FadeToAsync(1, 150);
-            await DonateBtn.FadeToAsync(1, 150);
-            await RefreshBtn.FadeToAsync(1, 150);
-#else
-            await InfoBtn.FadeTo(1, 150);
-            await DonateBtn.FadeTo(1, 150);
-            await RefreshBtn.FadeTo(1, 150);
-#endif
+
+            // Fade in buttons sequentially
+            await InfoBtn.FadeToSafe(1, 120);
+            await DonateBtn.FadeToSafe(1, 120);
+            await RefreshBtn.FadeToSafe(1, 120);
+            await HomeBtn.FadeToSafe(1, 120);
+            await SettingsBtn.FadeToSafe(1, 120);
 
             _navBarExpanded = true;
         }
@@ -87,32 +67,32 @@ public partial class ExpandableNavBar : Grid
         {
             ClickOutsideOverlay.IsVisible = false;
 
-#if NET10_0_OR_GREATER
-            await RefreshBtn.FadeToAsync(0, 120);
-            await DonateBtn.FadeToAsync(0, 120);
-            await InfoBtn.FadeToAsync(0, 120);
-#else
-            await RefreshBtn.FadeTo(0, 120);
-            await DonateBtn.FadeTo(0, 120);
-            await InfoBtn.FadeTo(0, 120);
-#endif
+            // Fade out buttons sequentially
+            await SettingsBtn.FadeToSafe(1, 120);
+            await HomeBtn.FadeToSafe(1, 120);
+            await RefreshBtn.FadeToSafe(0, 120);
+            await DonateBtn.FadeToSafe(0, 120);
+            await InfoBtn.FadeToSafe(0, 120);
+
             NavBarContent.IsVisible = false;
 
-#if NET10_0_OR_GREATER
-            var rotation = ExpandBtn.RotateToAsync(0, 450);
-#else
-            var rotation = ExpandBtn.RotateTo(0, 450);
-#endif
+            var rotationTask = ExpandBtn.RotateToSafe(0, 450);
 
-            await AnimateHeight(NavBar, NavBar.Height, 50, 250);
-            await AnimateWidth(NavBar, NavBar.Width, minWidth, 200);
+            await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, 50, 250);
+            await AnimationHelpers.AnimateWidthAsync(NavBar, NavBar.Width, minWidth, 200);
 
-#if NET9_0 || NET10_0_OR_GREATER
-            await rotation;
-#endif
+            await rotationTask;
 
             ExpandBtn.Icon(MaterialIcons.Notes);
+
             _navBarExpanded = false;
+
+            // Reset ScrollView to start after closing
+            try
+            {
+                await NavBarScroll.ScrollToAsync(0, 0, false);
+            }
+            catch { }
         }
     }
 
@@ -120,44 +100,44 @@ public partial class ExpandableNavBar : Grid
     private void OnOverlayPan(object sender, PanUpdatedEventArgs e) => CloseNavBarIfOpen();
     private void OnOverlayPinch(object sender, PinchGestureUpdatedEventArgs e) => CloseNavBarIfOpen();
 
-    private async void OnInfoTapped(object sender, EventArgs e)
+    private async void OnInfoTapped(object sender, EventArgs e) => await ButtonTap(sender, () => InfoTapped?.Invoke(this, EventArgs.Empty));
+    private async void OnRefreshTapped(object sender, EventArgs e) => await ButtonTapWithLabelRotation(sender, () => RefreshTapped?.Invoke(this, EventArgs.Empty));
+    private async void OnDonateTapped(object sender, TappedEventArgs e) => await ButtonTap(sender, async () => await Shell.Current.GoToAsync(nameof(DonatePage)));
+    public async void OnHomeTapped(object sender, TappedEventArgs e) => await ButtonTap(sender, () => HomeTapped?.Invoke(this, EventArgs.Empty));
+    private async void OnSettingsTapped(object sender, TappedEventArgs e) => await ButtonTapWithLabelRotation(sender, async () => await Shell.Current.GoToAsync(nameof(SettingsPage)));
+
+    private async Task ButtonTap(object sender, Action action)
     {
-#if NET10_0_OR_GREATER
-        await InfoBtn.ScaleToAsync(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
-        await InfoBtn.ScaleToAsync(1, 100, Easing.CubicInOut);
-#else
-        await InfoBtn.ScaleTo(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
-        await InfoBtn.ScaleTo(1, 100, Easing.CubicInOut);
-#endif
+        if (sender is VerticalStackLayout tappedBtn)
+        {
+            await tappedBtn.ScaleToSafe(0.70, 100);
+            await tappedBtn.ScaleToSafe(1, 100);
 
-        // Reviens à la taille normale
-        OnOverlayTapped(null, EventArgs.Empty);
+            CloseNavBarIfOpen();
 
-        InfoTapped?.Invoke(this, EventArgs.Empty);
+            action.Invoke();
+        }
     }
 
-    private async void OnRefreshTapped(object sender, EventArgs e)
+    private async Task ButtonTapWithLabelRotation(object sender, Action action)
     {
-        if (sender is VerticalStackLayout refreshBtn)
+        if (sender is VerticalStackLayout tappedBtn)
         {
-#if NET10_0_OR_GREATER
-            await refreshBtn.ScaleToAsync(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
-            await refreshBtn.ScaleToAsync(1, 100, Easing.CubicInOut);    // Reviens à la taille normale
-#else
-            await refreshBtn.ScaleTo(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
-            await refreshBtn.ScaleTo(1, 100, Easing.CubicInOut);    // Reviens à la taille normale
-#endif
-            var refreshLabel = refreshBtn.Children.OfType<Label>().First();
-            refreshLabel.Rotation = 0;
-#if NET10_0_OR_GREATER
-            await refreshLabel.RotateToAsync(360, 500, Easing.CubicInOut);
-#else
-            await refreshLabel.RotateTo(360, 500, Easing.CubicInOut);
-#endif
-            OnOverlayTapped(null, EventArgs.Empty);
+            var btnLabel = tappedBtn.Children.OfType<Label>().First();
+            btnLabel.Rotation = 0;
+            var rotationTask = btnLabel.RotateToSafe(360, 500);
+
+            await tappedBtn.ScaleToSafe(0.70, 100);
+            await tappedBtn.ScaleToSafe(1, 100);
+
+            // Ensure rotation completes before continuing
+            await rotationTask;
+
+            CloseNavBarIfOpen();
+
+            action.Invoke();
         }
 
-        RefreshTapped?.Invoke(this, EventArgs.Empty);
     }
 
     private void CloseNavBarIfOpen()
@@ -166,21 +146,5 @@ public partial class ExpandableNavBar : Grid
         {
             OnExpandClicked(null, EventArgs.Empty);
         }
-    }
-
-    private async void OnDonateTapped(object sender, TappedEventArgs e)
-    {
-#if NET10_0_OR_GREATER
-        await DonateIcon.ScaleToAsync(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
-        await DonateIcon.ScaleToAsync(1, 100, Easing.CubicInOut);
-#else
-        await DonateIcon.ScaleTo(0.85, 100, Easing.CubicInOut); // Rétrécit légèrement
-        await DonateIcon.ScaleTo(1, 100, Easing.CubicInOut);
-#endif
-
-        // Reviens à la taille normale
-        OnOverlayTapped(null, EventArgs.Empty);
-
-        await Shell.Current.GoToAsync(nameof(DonatePage));
     }
 }

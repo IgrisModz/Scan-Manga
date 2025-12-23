@@ -216,6 +216,11 @@ public partial class MainPage : ContentPage
         await Shell.Current.GoToAsync(popupResult.Result);
     }
 
+    private void OnHomeClicked(object sender, EventArgs e)
+    {
+        MainWebView.Source = "https://m.scan-manga.com/?home";
+    }
+
     private async Task InjectScriptWithVisitedLinksAsync()
     {
         if (_lastUrl == null) return;

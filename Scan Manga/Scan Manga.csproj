@@ -99,6 +99,9 @@
 	  <MauiXaml Update="Pages\PrivacyPolicyPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	  <MauiXaml Update="Pages\SettingsPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Pages\TermsOfUsePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

@@ -41,66 +41,100 @@
 
         <Grid x:Name="NavBarRoot" ColumnDefinitions="*,40">
 
-            <!--  Contenu (caché)  -->
-            <HorizontalStackLayout
-                x:Name="NavBarContent"
-                Padding="20,0"
-                IsVisible="False"
-                Spacing="20"
-                VerticalOptions="Center">
+            <ScrollView x:Name="NavBarScroll"
+                        Orientation="Horizontal"
+                        HorizontalScrollBarVisibility="Never"
+                        VerticalScrollBarVisibility="Never"
+                        Padding="20,0"
+                        VerticalOptions="Center">
+                <!--  Contenu (caché)  -->
+                <HorizontalStackLayout
+                    x:Name="NavBarContent"
+                    IsVisible="False"
+                    Spacing="20">
+                    <VerticalStackLayout x:Name="InfoBtn">
+                        <Label
+                            x:Name="InfoIcon"
+                            FontSize="28"
+                            HorizontalOptions="Center"
+                            Text="{mi:Material Icon=Info}"
+                            TextColor="{AppThemeBinding Dark=White,
+                                                        Light=Black}" />
+                        <Label FontSize="10" Text="Informations" />
 
-                <VerticalStackLayout x:Name="InfoBtn">
-                    <Label
-                        x:Name="InfoIcon"
-                        FontSize="28"
-                        HorizontalOptions="Center"
-                        Text="{mi:Material Icon=Info}"
-                        TextColor="{AppThemeBinding Dark=White,
-                                                    Light=Black}" />
-                    <Label FontSize="10" Text="Informations" />
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnInfoTapped" />
+                        </VerticalStackLayout.GestureRecognizers>
+                    </VerticalStackLayout>
 
-                    <VerticalStackLayout.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnInfoTapped" />
-                    </VerticalStackLayout.GestureRecognizers>
-                </VerticalStackLayout>
+                    <VerticalStackLayout x:Name="DonateBtn">
+                        <Label
+                            x:Name="DonateIcon"
+                            FontSize="28"
+                            HorizontalOptions="Center"
+                            Text="{mi:Material Icon=Money}"
+                            TextColor="{AppThemeBinding Dark=White,
+                                                        Light=Black}" />
+                        <Label FontSize="10" Text="Faire un don" />
 
-                <VerticalStackLayout x:Name="DonateBtn">
-                    <Label
-                        x:Name="DonateIcon"
-                        FontSize="28"
-                        HorizontalOptions="Center"
-                        Text="{mi:Material Icon=Money}"
-                        TextColor="{AppThemeBinding Dark=White,
-                                                    Light=Black}" />
-                    <Label FontSize="10" Text="Faire un don" />
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnDonateTapped" />
+                        </VerticalStackLayout.GestureRecognizers>
+                    </VerticalStackLayout>
 
-                    <VerticalStackLayout.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnDonateTapped" />
-                    </VerticalStackLayout.GestureRecognizers>
-                </VerticalStackLayout>
+                    <VerticalStackLayout x:Name="RefreshBtn">
+                        <Label
+                            x:Name="RefreshIcon"
+                            FontSize="28"
+                            HorizontalOptions="Center"
+                            Text="{mi:Material Icon=Refresh}"
+                            TextColor="{AppThemeBinding Dark=White,
+                                                        Light=Black}" />
+                        <Label FontSize="10" Text="Rafraîchir" />
 
-                <VerticalStackLayout x:Name="RefreshBtn">
-                    <Label
-                        x:Name="RefreshIcon"
-                        FontSize="28"
-                        HorizontalOptions="Center"
-                        Text="{mi:Material Icon=Refresh}"
-                        TextColor="{AppThemeBinding Dark=White,
-                                                    Light=Black}" />
-                    <Label FontSize="10" Text="Rafraîchir" />
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnRefreshTapped" />
+                        </VerticalStackLayout.GestureRecognizers>
+                    </VerticalStackLayout>
 
-                    <VerticalStackLayout.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnRefreshTapped" />
-                    </VerticalStackLayout.GestureRecognizers>
-                </VerticalStackLayout>
+                    <VerticalStackLayout x:Name="HomeBtn">
+                        <Label
+                            x:Name="HomeIcon"
+                            FontSize="28"
+                            HorizontalOptions="Center"
+                            Text="{mi:Material Icon=Home}"
+                            TextColor="{AppThemeBinding Dark=White,
+                                                        Light=Black}" />
+                        <Label FontSize="10" Text="Accueil" />
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnHomeTapped" />
+                        </VerticalStackLayout.GestureRecognizers>
+                    </VerticalStackLayout>
 
-            </HorizontalStackLayout>
+                    <VerticalStackLayout x:Name="SettingsBtn">
+                        <Label
+                            x:Name="SettingsIcon"
+                            FontSize="28"
+                            HorizontalOptions="Center"
+                            Text="{mi:Material Icon=Settings}"
+                            TextColor="{AppThemeBinding Dark=White,
+                                                        Light=Black}" />
+                        <Label FontSize="10" Text="Paramètres" />
+                        <VerticalStackLayout.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnSettingsTapped" />
+                        </VerticalStackLayout.GestureRecognizers>
+                    </VerticalStackLayout>
+
+                </HorizontalStackLayout>
+
+            </ScrollView>
 
             <!--  Bouton principal  -->
             <Label
                 x:Name="ExpandBtn"
                 Grid.Column="1"
                 FontSize="Title"
+                ZIndex="1000"
                 HorizontalOptions="Center"
                 Text="{mi:Material Icon=Notes}"
                 TextColor="{AppThemeBinding Dark=White,
