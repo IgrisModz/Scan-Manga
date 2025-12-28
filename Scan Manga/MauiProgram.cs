@@ -3,9 +3,14 @@ using MauiIcons.Material;
 using MauiIcons.FontAwesome.Brand;
 using Scan_Manga.Controls;
 using Scan_Manga.Services;
+using Scan_Manga.Pages;
+using Scan_Manga.ViewModels;
+using Microsoft.Maui.Handlers;
 
 #if ANDROID
 using Scan_Manga.Platforms.Android;
+
+
 #elif IOS
 using Scan_Manga.Platforms.iOS;
 #endif
@@ -36,8 +41,9 @@ public static class MauiProgram
 #if ANDROID
                     handlers.AddHandler<CustomWebView, CustomWebViewHandler>();
 #elif IOS
-                handlers.AddHandler<CustomWebView, CustomWebViewHandler>();
+                    handlers.AddHandler<CustomWebView, CustomWebViewHandler>();
 #endif
+                    handlers.AddHandler<Layout, LayoutHandler>();
                 });
 
 #if ANDROID
@@ -45,6 +51,18 @@ public static class MauiProgram
 #elif IOS
             builder.Services.AddSingleton<IFullScreenService, iOSFullscreenService>();
 #endif
+        builder.Services.AddSingleton<SettingsViewModel>();
+
+        builder.Services.AddSingleton<AboutPage>();
+        builder.Services.AddSingleton<DonatePage>();
+        builder.Services.AddSingleton<LegalNoticesPage>();
+        builder.Services.AddSingleton<PrivacyPolicyPage>();
+        builder.Services.AddSingleton<SettingsPage>();
+        builder.Services.AddSingleton<TermsOfUsePage>();
+
+        builder.Services.AddSingleton<MainPage>();
+
+        builder.Services.AddSingleton<AppShell>();
 
 #if DEBUG
         builder.Logging.AddDebug();

@@ -8,6 +8,4 @@
     Shell.NavBarIsVisible="False"
     Shell.TabBarIsVisible="False">
 
-    <ShellContent ContentTemplate="{DataTemplate local:MainPage}" Route="MainPage" />
-
 </Shell>
