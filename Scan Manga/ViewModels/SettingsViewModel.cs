@@ -7,39 +7,35 @@ namespace Scan_Manga.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject
 {
-    [ObservableProperty]
-    private List<SelectOption> _themeOptions =
+    public List<SelectOption> ThemeOptions { get; } =
     [
         new SelectOption { Label = "Système", Icon = MaterialIcons.SettingsSuggest},
         new SelectOption { Label = "Clair", Icon = MaterialIcons.DarkMode},
         new SelectOption { Label = "Sombre", Icon = MaterialIcons.LightMode }
     ];
 
-    [ObservableProperty]
-    private List<SelectOption> _fullScreenOptions =
+    public List<SelectOption> FullScreenOptions { get; } =
     [
         new SelectOption { Label = "Lecture uniquement", Icon = MaterialIcons.AutoStories },
         new SelectOption { Label = "Toutes les pages", Icon = MaterialIcons.Fullscreen },
         new SelectOption { Label = "Désactivé", Icon = MaterialIcons.FullscreenExit }
     ];
 
-    [ObservableProperty]
-    private SelectOption _selectedTheme;
+    [ObservableProperty] private SelectOption _selectedTheme;
+    [ObservableProperty] private SelectOption _selectedFullScreenMode;
+    [ObservableProperty] private bool _keepScreenOn;
+    [ObservableProperty] private bool _isAdBlockerEnabled;
+    [ObservableProperty] private bool _loadLastPageOnStartup;
+    [ObservableProperty] private bool _isHistoryEnabled;
 
-    [ObservableProperty]
-    private SelectOption _selectedFullScreenMode;
+    [ObservableProperty] private bool isOverlayVisible;
+    [ObservableProperty] private string? _overlayTitle;
+    [ObservableProperty] private string? _overlayMessage;
+    [ObservableProperty] private string? _overlayConfirmText;
+    [ObservableProperty] private string? _overlayCancelText;
 
-    [ObservableProperty]
-    private bool _keepScreenOn;
-
-    [ObservableProperty]
-    private bool _isAdBlockerEnabled;
-
-    [ObservableProperty]
-    private bool _loadLastPageOnStartup;
-
-    [ObservableProperty]
-    private bool _isHistoryEnabled;
+    private enum OverlayContext { None, ClearHistory, Help }
+    private OverlayContext _currentContext = OverlayContext.None;
 
     public SettingsViewModel()
     {
@@ -78,34 +74,55 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task ClearHistory()
     {
-#if NET10_0_OR_GREATER
-        bool confirm = await Shell.Current.DisplayAlertAsync("Historique", "Effacer les données locales ?", "Oui", "Non");
-#else
-        bool confirm = await Shell.Current.DisplayAlert("Historique", "Effacer les données locales ?", "Oui", "Non");
-#endif
-        if (confirm)
-        {
-            Preferences.Remove("VisitedLinks");
-
-#if NET10_0_OR_GREATER
-            await Shell.Current.DisplayAlertAsync("Succès", "L'historique a été vidé.", "OK");
-#else
-            await Shell.Current.DisplayAlert("Succès", "L'historique a été vidé.", "OK");
-#endif
-        }
+        _currentContext = OverlayContext.ClearHistory;
+        OverlayTitle = "Historique";
+        OverlayMessage = "Effacer les données locales ?";
+        OverlayConfirmText = "Oui";
+        OverlayCancelText = "Non";
+        IsOverlayVisible = true;
     }
 
     [RelayCommand]
     private async Task ShowRestoreHelp()
     {
-#if NET10_0_OR_GREATER
-        await Shell.Current.DisplayAlertAsync("Reprendre la lecture",
-            "Si activé, l'application mémorisera votre dernière page visitée et la rechargera automatiquement au prochain lancement.",
-            "Ok");
-#else
-        await Shell.Current.DisplayAlert("Reprendre la lecture",
-            "Si activé, l'application mémorisera votre dernière page visitée et la rechargera automatiquement au prochain lancement.",
-            "Ok");
-#endif
+        _currentContext = OverlayContext.Help;
+        OverlayTitle = "Reprendre la lecture";
+        OverlayMessage = "Si activé, l'application mémorisera votre dernière page visitée...";
+        OverlayConfirmText = "Ok";
+        OverlayCancelText = string.Empty; // Cache le bouton annuler
+        IsOverlayVisible = true;
+    }
+
+    [RelayCommand]
+    private void OnOverlayResult(bool confirmed) // Paramètre explicite
+    {
+        IsOverlayVisible = false;
+
+        if (!confirmed)
+        {
+            _currentContext = OverlayContext.None;
+            return;
+        }
+
+        switch (_currentContext)
+        {
+            case OverlayContext.ClearHistory:
+                Preferences.Remove("VisitedLinks");
+                _currentContext = OverlayContext.None;
+                ShowSuccessAlert("L'historique a été vidé.");
+                break;
+            case OverlayContext.Help:
+                _currentContext = OverlayContext.None;
+                break;
+        }
+    }
+
+    private void ShowSuccessAlert(string message)
+    {
+        OverlayTitle = "Succès";
+        OverlayMessage = message;
+        OverlayConfirmText = "OK";
+        OverlayCancelText = string.Empty;
+        IsOverlayVisible = true;
     }
 }

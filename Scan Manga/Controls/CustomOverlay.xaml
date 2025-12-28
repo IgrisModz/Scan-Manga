@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Scan_Manga.Controls.CustomOverlay"
+             x:Name="this">
+    <Grid x:Name="BackgroundOverlay" BackgroundColor="#AA000000" Opacity="0">
+        <Border x:Name="Container" VerticalOptions="Center" HorizontalOptions="Center"
+                WidthRequest="310" Padding="20" StrokeShape="RoundRectangle 20"
+                Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}" Scale="0.8" Opacity="0">
+            <VerticalStackLayout Spacing="10">
+                <Label Text="{Binding Title, Source={x:Reference this}}" 
+                       FontSize="20" FontAttributes="Bold"/>
+                <Label Text="{Binding Message, Source={x:Reference this}}"/>
+                <FlexLayout JustifyContent="End" Direction="Row">
+                    <Button Grid.Column="1" Text="{Binding CancelText, Source={x:Reference this}}"
+                            IsVisible="{Binding IsCancelVisible, Source={x:Reference this}}"
+                            Margin="0,0,6,0"
+                            Clicked="OnCancelClicked" BackgroundColor="Transparent" TextColor="Gray"/>
+                    <Button Text="{Binding ConfirmText, Source={x:Reference this}}" Padding="0"
+                            MinimumWidthRequest="55"
+                            Clicked="OnConfirmClicked" />
+                </FlexLayout>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentView>

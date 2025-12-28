@@ -132,5 +132,13 @@
             </Border>
             </Grid>
         </ScrollView>
+
+        <controls:CustomOverlay Grid.RowSpan="2"
+                                Title="{Binding OverlayTitle}"
+                                Message="{Binding OverlayMessage}"
+                                ConfirmText="{Binding OverlayConfirmText}"
+                                CancelText="{Binding OverlayCancelText}"
+                                IsOpen="{Binding IsOverlayVisible, Mode=TwoWay}"
+                                ResponseCommand="{Binding OnOverlayResultCommand}"/>
     </Grid>
 </controls:PageBase>
