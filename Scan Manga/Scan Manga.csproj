@@ -82,9 +82,6 @@
 	  <MauiXaml Update="Controls\ExpandableNavBar.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Controls\InfoPopup.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	  <MauiXaml Update="Controls\MaterialPicker.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

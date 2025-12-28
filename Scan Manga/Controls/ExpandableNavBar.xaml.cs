@@ -7,11 +7,15 @@ namespace Scan_Manga.Controls;
 
 public partial class ExpandableNavBar : Grid
 {
-    public event EventHandler? InfoTapped;
     public event EventHandler? RefreshTapped;
     public event EventHandler? HomeTapped;
 
     private bool _navBarExpanded = false;
+    private bool _isVerticalExpanded = false;
+
+    private const double MinWidth = 50;
+    private const double MinHeight = 50;
+    private const double ExpandedHeight = 210;
 
     public ExpandableNavBar()
     {
@@ -29,124 +33,140 @@ public partial class ExpandableNavBar : Grid
 #endif
     }
 
-    // --- Actions utilisateur ---
     private async Task OnExpandClicked(object? sender, EventArgs e)
     {
-        double screenWidth = Width > 0 ? Width :
+        var screenWidth = Width > 0 ? Width :
                              DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
 
-        double maxWidth = Math.Min(screenWidth - 20, 500);
-        double minWidth = 50;
+        var maxWidth = Math.Min(screenWidth - 20, 400);
 
         if (!_navBarExpanded)
         {
-            // Ensure ScrollView is at start before opening
-            try
-            {
-                await NavBarScroll.ScrollToAsync(0, 0, false);
-            }
-            catch { }
-
             ClickOutsideOverlay.IsVisible = true;
 
-            var rotationTask = ExpandBtn.RotateToSafe(360, 500);
+            var expandedTask = ExpandBtn.RotateToSafe(360, 500);
 
             await AnimationHelpers.AnimateWidthAsync(NavBar, NavBar.Width, maxWidth, 200);
-            await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, 80, 300);
+            await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, 110, 300);
 
-            await rotationTask;
+            await expandedTask;
+
             ExpandBtn.Icon(MaterialIcons.Close);
-
             ExpandBtnContainer.IsVisible = false;
-
             NavBarContent.IsVisible = true;
+            MoreBtnContainer.IsVisible = true;
 
             _navBarExpanded = true;
         }
         else
         {
-            ClickOutsideOverlay.IsVisible = false;
-
-            NavBarContent.IsVisible = false;
-
-            ExpandBtnContainer.IsVisible = true;
-
-            var rotationTask = ExpandBtn.RotateToSafe(0, 450);
-
-            await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, 50, 250);
-            await AnimationHelpers.AnimateWidthAsync(NavBar, NavBar.Width, minWidth, 200);
-
-            await rotationTask;
-
-            ExpandBtn.Icon(MaterialIcons.Notes);
-
-            _navBarExpanded = false;
-
-            // Reset ScrollView to start after closing
-            try
-            {
-                await NavBarScroll.ScrollToAsync(0, 0, false);
-            }
-            catch { }
+            await CloseNavBarInternal();
         }
     }
 
-    private async void OnOverlayTapped(object? sender, EventArgs e) => await CloseNavBarIfOpen();
-    private async void OnOverlayPan(object sender, PanUpdatedEventArgs e) => await CloseNavBarIfOpen();
-    private async void OnOverlayPinch(object sender, PinchGestureUpdatedEventArgs e) => await CloseNavBarIfOpen();
-
-    private async void OnInfoTapped(object sender, EventArgs e) => await ButtonTap(sender, () => InfoTapped?.Invoke(this, EventArgs.Empty));
-    private async void OnRefreshTapped(object sender, EventArgs e) => await ButtonTapWithLabelRotation(sender, () => RefreshTapped?.Invoke(this, EventArgs.Empty));
-    private async void OnDonateTapped(object sender, TappedEventArgs e) => await ButtonTap(sender, async () => await Shell.Current.GoToAsync(nameof(DonatePage)));
-    public async void OnHomeTapped(object sender, TappedEventArgs e) => await ButtonTap(sender, () => HomeTapped?.Invoke(this, EventArgs.Empty));
-    private async void OnSettingsTapped(object sender, TappedEventArgs e) => await ButtonTapWithLabelRotation(sender, async () => await Shell.Current.GoToAsync(nameof(SettingsPage)));
-
-    private async Task ButtonTap(object sender, Action action)
+    private async void OnMoreTapped(object? sender, EventArgs e)
     {
-        if (sender is VerticalStackLayout tappedBtn)
+        if (!_isVerticalExpanded)
         {
-            await tappedBtn.ScaleToSafe(0.70, 100);
-            await tappedBtn.ScaleToSafe(1, 100);
+            MoreIcon.Icon(MaterialIcons.KeyboardArrowDown);
 
-            await CloseNavBarIfOpen();
+            await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, ExpandedHeight, 250);
 
-            action.Invoke();
+            ExtraOptionsContainer.IsVisible = true;
+            await ExtraOptionsContainer.FadeToSafe(1, 200);
+            _isVerticalExpanded = true;
         }
-    }
-
-    private async Task ButtonTapWithLabelRotation(object sender, Action action)
-    {
-        if (sender is VerticalStackLayout tappedBtn)
+        else
         {
-            var btnLabel = tappedBtn.Children.OfType<Label>().First();
-            btnLabel.Rotation = 0;
-            var rotationTask = btnLabel.RotateToSafe(360, 500);
-
-            await tappedBtn.ScaleToSafe(0.70, 100);
-            await tappedBtn.ScaleToSafe(1, 100);
-
-            // Ensure rotation completes before continuing
-            await rotationTask;
-
-            await CloseNavBarIfOpen();
-
-            await Task.Delay(50);
-
-            action.Invoke();
+            await CloseVerticalMenu();
         }
-
     }
 
-    private async Task CloseNavBarIfOpen()
+    private async Task CloseVerticalMenu()
     {
-        if (_navBarExpanded)
+        if (!_isVerticalExpanded) return;
+
+        MoreIcon.Icon(MaterialIcons.KeyboardArrowUp); // Retour icône haut
+
+        await ExtraOptionsContainer.FadeToSafe(0, 150);
+        ExtraOptionsContainer.IsVisible = false;
+
+        await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, 110, 200);
+
+        _isVerticalExpanded = false;
+    }
+
+    private async Task CloseNavBarInternal()
+    {
+        ClickOutsideOverlay.IsVisible = false;
+
+        // Si le menu vertical est ouvert, on le ferme d'abord
+        if (_isVerticalExpanded) await CloseVerticalMenu();
+
+        NavBarContent.IsVisible = false;
+        MoreBtnContainer.IsVisible = false;
+        ExpandBtnContainer.IsVisible = true;
+
+        var expandedTask = ExpandBtn.RotateToSafe(0, 450);
+
+        await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, MinHeight, 250);
+        await AnimationHelpers.AnimateWidthAsync(NavBar, NavBar.Width, MinWidth, 200);
+
+        await expandedTask;
+
+        ExpandBtn.Icon(MaterialIcons.Notes);
+        _navBarExpanded = false;
+    }
+
+    private async void OnOverlayTapped(object? sender, TappedEventArgs e) => await CloseNavBarInternal();
+    private async void OnOverlayPan(object sender, PanUpdatedEventArgs e) => await CloseNavBarInternal();
+    private async void OnOverlayPinch(object sender, PinchGestureUpdatedEventArgs e) => await CloseNavBarInternal();
+    private void IgnoreOnOverlayTapped(object sender, TappedEventArgs e) { }
+
+    private async void OnRefreshTapped(object sender, TappedEventArgs e) =>
+        await HandleInteractionAsync(sender, () => { RefreshTapped?.Invoke(this, EventArgs.Empty); return Task.CompletedTask; }, true);
+    public async void OnHomeTapped(object sender, TappedEventArgs e) =>
+        await HandleInteractionAsync(sender, () => { HomeTapped?.Invoke(this, EventArgs.Empty); return Task.CompletedTask; });
+    
+    private async void OnDonateTapped(object sender, TappedEventArgs e) =>
+        await NavigateToAsync(sender, nameof(DonatePage));
+    private async void OnSettingsTapped(object sender, TappedEventArgs e) =>
+        await NavigateToAsync(sender, nameof(SettingsPage), true);
+
+    private async void OnNoticesClicked(object sender, TappedEventArgs e) =>
+        await NavigateToAsync(sender, nameof(LegalNoticesPage));
+    private async void OnPrivacyClicked(object sender, TappedEventArgs e) =>
+        await NavigateToAsync(sender, nameof(PrivacyPolicyPage));
+    private async void OnTermsClicked(object sender, TappedEventArgs e) =>
+        await NavigateToAsync(sender, nameof(TermsOfUsePage));
+    private async void OnAboutClicked(object sender, TappedEventArgs e) =>
+        await NavigateToAsync(sender, nameof(AboutPage));
+
+    private Task NavigateToAsync(object sender, string route, bool rotate = false)
+    {
+        return HandleInteractionAsync(sender, async () =>
         {
-            await OnExpandClicked(null, EventArgs.Empty);
-        }
+            await Shell.Current.GoToAsync(route);
+        }, rotate);
     }
 
-    private void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+    private async Task HandleInteractionAsync(object sender, Func<Task> action, bool rotateIcon = false)
     {
+        if (sender is not VisualElement view) return;
 
+        await view.ScaleToSafe(0.7, 100);
+        await view.ScaleToSafe(1, 100);
+
+        if (rotateIcon && view is VerticalStackLayout stack)
+        {
+            var icon = stack.Children.OfType<Label>().FirstOrDefault();
+            if (icon != null) await icon.RotateToSafe(360, 500);
+        }
+
+        await CloseNavBarInternal();
+
+        await Task.Delay(50);
+
+        await action.Invoke();
     }
 }

@@ -230,38 +230,4 @@ public partial class MainPage : InfoPageBase
     }
 
     private void OnHomeClicked(object sender, EventArgs e) => MainWebView.Source = "https://m.scan-manga.com/?home";
-
-    private async void OnInfoClicked(object sender, EventArgs e)
-    {
-        // Marque qu'on est en train de naviguer
-        _isNavigating = true;
-        // Annule immédiatement toute tentative de plein écran
-        _fullScreenCts?.Cancel();
-
-        var infoPopup = new InfoPopup();
-
-        var popupOptions = new PopupOptions
-        {
-            Shadow = new Shadow
-            {
-                Brush = Brush.White,
-                Offset = new Point(0, 2),
-                Opacity = 0.8f,
-                Radius = 8
-            },
-        };
-        var popupResult = await this.ShowPopupAsync<string>(infoPopup, popupOptions);
-
-        // ShowPopup désactive le plein écran donc il faut le réinitialiser manuellement
-        _fullScreenService.IsFullScreen = false;
-
-        if (popupResult.WasDismissedByTappingOutsideOfPopup ||
-            popupResult.Result == null)
-        {
-            _isNavigating = false; // Annulé, on reste
-            return;
-        }
-
-        await Shell.Current.GoToAsync(popupResult.Result);
-    }
 }

@@ -59,7 +59,6 @@
 
         <controls:ExpandableNavBar
             x:Name="NavBar"
-            InfoTapped="OnInfoClicked"
             RefreshTapped="OnRefresh"
             HomeTapped="OnHomeClicked" />
 
