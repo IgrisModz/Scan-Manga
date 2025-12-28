@@ -75,6 +75,11 @@ public class CustomWebViewHandler : WebViewHandler
             // Si c'est un lien valide, on l'ouvre dans le navigateur externe
             if (!string.IsNullOrEmpty(url))
             {
+                if (IsImageUrl(url))
+                {
+                    return false;
+                }
+
                 if (IsInternalDomain(url))
                 {
                     view?.LoadUrl(url); // On force le chargement interne
@@ -144,6 +149,11 @@ public class CustomWebViewHandler : WebViewHandler
             var url = request?.Url?.ToString();
             if (string.IsNullOrWhiteSpace(url)) return false;
 
+            if (IsImageUrl(url))
+            {
+                return true;
+            }
+
             // Analyse de l'URL
             if (IsInternalDomain(url))
             {
@@ -170,6 +180,23 @@ public class CustomWebViewHandler : WebViewHandler
                    uri.Host.EndsWith(".scan-manga.com", StringComparison.OrdinalIgnoreCase);
         }
         catch { return false; }
+    }
+
+    private static bool IsImageUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return false;
+
+        // 1. Vérification par extension de fichier
+        var extensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".svg" };
+        if (extensions.Any(ext => url.Contains(ext, StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        // 2. Vérification par mots-clés (souvent utilisés par les serveurs de pubs ou CDN d'images)
+        var keywords = new[] { "/uploads/", "/images/", "static.scan-manga", "img-manga" };
+        if (keywords.Any(key => url.Contains(key, StringComparison.OrdinalIgnoreCase)))
+            return true;
+
+        return false;
     }
 
     private static void OpenInExternalBrowser(string url)
