@@ -23,7 +23,7 @@ public partial class ExpandableNavBar : Grid
 
         ExpandBtn.GestureRecognizers.Add(new TapGestureRecognizer
         {
-            Command = new Command(async () => await OnExpandClicked(this, EventArgs.Empty))
+            Command = new Command(async () => await OnExpandClicked())
         });
 
 #if NET10_0_OR_GREATER
@@ -33,7 +33,7 @@ public partial class ExpandableNavBar : Grid
 #endif
     }
 
-    private async Task OnExpandClicked(object? sender, EventArgs e)
+    private async Task OnExpandClicked()
     {
         var screenWidth = Width > 0 ? Width :
                              DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
