@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace Scan_Manga;
 
-public partial class MainPage : InfoPageBase
+public partial class MainPage : PageBase
 {
     private HashSet<string> _visitedLinks = [];
     private string? _lastUrl;

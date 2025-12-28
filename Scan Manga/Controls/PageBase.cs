@@ -8,7 +8,7 @@ using CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 
 namespace Scan_Manga.Controls;
 
-public class InfoPageBase(IFullScreenService fullScreenService) : ContentPage
+public class PageBase(IFullScreenService fullScreenService) : ContentPage
 {
     protected readonly IFullScreenService _fullScreenService = fullScreenService;
 
@@ -17,10 +17,10 @@ public class InfoPageBase(IFullScreenService fullScreenService) : ContentPage
     private static readonly Color LightFallback = Colors.White;
 
     public static readonly BindableProperty CustomStatusBarColorProperty =
-        BindableProperty.Create(nameof(CustomStatusBarColor), typeof(Color), typeof(InfoPageBase), null);
+        BindableProperty.Create(nameof(CustomStatusBarColor), typeof(Color), typeof(PageBase), null);
 
     public static readonly BindableProperty CustomNavigationBarColorProperty =
-        BindableProperty.Create(nameof(CustomNavigationBarColor), typeof(Color), typeof(InfoPageBase), null);
+        BindableProperty.Create(nameof(CustomNavigationBarColor), typeof(Color), typeof(PageBase), null);
 
     public Color? CustomStatusBarColor
     {
@@ -34,7 +34,7 @@ public class InfoPageBase(IFullScreenService fullScreenService) : ContentPage
         set => SetValue(CustomNavigationBarColorProperty, value);
     }
 
-    public InfoPageBase() : this(ServiceHelper.Services.GetRequiredService<IFullScreenService>())
+    public PageBase() : this(ServiceHelper.Services.GetRequiredService<IFullScreenService>())
     {
     }
 

@@ -3,7 +3,7 @@ using Scan_Manga.ViewModels;
 
 namespace Scan_Manga.Pages;
 
-public partial class SettingsPage : InfoPageBase
+public partial class SettingsPage : PageBase
 {
 	public SettingsPage(SettingsViewModel viewModel)
 	{
