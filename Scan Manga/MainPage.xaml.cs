@@ -1,7 +1,4 @@
-﻿using CommunityToolkit.Maui;
-using CommunityToolkit.Maui.Core.Platform;
-using CommunityToolkit.Maui.Extensions;
-using Scan_Manga.Controls;
+﻿using Scan_Manga.Controls;
 using Scan_Manga.Services;
 using System.Text.Json;
 
@@ -36,7 +33,7 @@ public partial class MainPage : InfoPageBase
         {
             if (args.NetworkAccess == NetworkAccess.Internet && MainWebView.HasError)
             {
-                OnRefresh(null, EventArgs.Empty);
+                MainWebView.ReloadPage();
             }
         };
     }

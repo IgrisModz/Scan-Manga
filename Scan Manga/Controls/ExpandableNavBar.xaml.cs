@@ -103,8 +103,12 @@ public partial class ExpandableNavBar : Grid
         // Si le menu vertical est ouvert, on le ferme d'abord
         if (_isVerticalExpanded)
         {
-            await CloseVerticalMenu();
-            await Task.Yield();
+            MoreIcon.Icon(MaterialIcons.KeyboardArrowUp); // Retour icône haut
+
+            await ExtraOptionsContainer.FadeToSafe(0, 150);
+            ExtraOptionsContainer.IsVisible = false;
+
+            _isVerticalExpanded = false;
         }
 
         NavBarContent.IsVisible = false;
