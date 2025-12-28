@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
+               xmlns:models="clr-namespace:Scan_Manga.Models"
+               x:Class="Scan_Manga.Controls.SelectionPopup"
+               Margin="0"
+               Padding="0"
+               x:TypeArguments="models:SelectOption"
+               BackgroundColor="Transparent">
+    <Grid Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}">
+        <Border StrokeShape="RoundRectangle 8"
+                StrokeThickness="0"
+                Padding="10"
+                HorizontalOptions="Fill"
+                VerticalOptions="Center">
+            <CollectionView x:Name="ListOptions" SelectionMode="Single" SelectionChanged="OnSelectionChanged">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="40, *" Padding="12" ColumnSpacing="5">
+                            <mi:MauiIcon Icon="{Binding Icon}"
+                                     IsVisible="{Binding HasIcon}"
+                                     IconColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                     IconSize="26" />
+
+                            <Label Grid.Column="1" Text="{Binding Label}" VerticalOptions="Center" FontSize="16" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Border>
+    </Grid>
+</toolkit:Popup>

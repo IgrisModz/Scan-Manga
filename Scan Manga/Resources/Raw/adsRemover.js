@@ -1,43 +1,54 @@
 ﻿(function () {
-    // Sélecteurs pour masquage CSS immédiat (Visuel)
-    const adSelectors = [
-        'div.BDPFGA[data-type="_mgwidget"]',
-        'div.PUBFUTURE',
-        'div[data-unit]',
-        'div#teads_inread',
-        'script[src*="richardghain.com"]',
-        'script[src*="adschill.com"]',
-        'script[src*="acscdn.com"]'
-    ];
+    const enableAdBlock = {isAdBlockEnabled};
+    const enableColoration = {isHistoryEnabled};
+
+    // Le {visitedJoined} sera remplacé par le tableau JSON brut, ex: ["url1", "url2"]
+    var visitedSet = new Set({visitedJoined});
+
+    if (enableAdBlock) {
+        // Sélecteurs pour masquage CSS immédiat (Visuel)
+        const adSelectors = [
+            'div.BDPFGA[data-type="_mgwidget"]',
+            'div.PUBFUTURE',
+            'div[data-unit]',
+            'div#teads_inread',
+            'div#ayads-html',
+            'script[src*="richardghain.com"]',
+            'script[src*="adschill.com"]',
+            'script[src*="acscdn.com"]'
+        ];
 
 
-    const styleAds = document.createElement('style');
-    styleAds.textContent = adSelectors.join(',') + ' { display: none !important; }';
-    document.head.appendChild(styleAds);
+        const styleAds = document.createElement('style');
+        styleAds.textContent = adSelectors.join(',') + ' { display: none !important; }';
+        document.head.appendChild(styleAds);
+    }
 
-    // Sélecteurs supplémentaires pour suppression JS (Scripts, etc.)
-    const scriptsToRemove = [
-        'script[src*="richardghain.com"]',
-        'script[src*="adschill.com"]',
-        'script[src*="acscdn.com"]'
-    ];
-
-    // Style pour les liens visités
-    const styleColors = document.createElement('style');
-    styleColors.textContent = `
-        span.i a.visited,
-        a.l_read.visited,
-        div.top a.atop.visited {
+    if (enableColoration) {
+        // Style pour les liens visités
+        const styleColors = document.createElement('style');
+        styleColors.textContent = `
+            span.i a.visited,
+            a.l_read.visited,
+            div.top a.atop.visited {
             color: #e0a19d !important;
-        }
-    `;
-    document.head.appendChild(styleColors);
+            }
+        `;
+        document.head.appendChild(styleColors);
+    }
 
-    const allJsSelectors = [...adSelectors, ...scriptsToRemove].join(',');
 
     function cleanDOM() {
-        // Suppression simple des pubs ciblées
-        const elements = document.querySelectorAll(allJsSelectors).forEach(el => el.remove());
+        if (!enableAdBlock) return;
+
+        document.body.className = "";
+
+        const adJsSelectors = [
+            'div.BDPFGA', 'div.PUBFUTURE', 'div[data-unit]', 'div#teads_inread', 'div#ayads-html',
+            'script[src*="richardghain.com"]', 'script[src*="adschill.com"]', 'script[src*="acscdn.com"]'
+        ].join(',');
+
+        document.querySelectorAll(adJsSelectors).forEach(el => el.remove());
 
         // Nettoyage intelligent du reader_container
         const container = document.querySelector('.reader_container');
@@ -78,11 +89,11 @@
         });
     }
 
-    // Le {visitedJoined} sera remplacé par le tableau JSON brut, ex: ["url1", "url2"]
-    var visitedSet = new Set({visitedJoined});
-
     function colorizeLinks() {
-        var anchors = document.querySelectorAll('span.i a:not(.visited), a.l_read:not(.visited), div.top a.atop:not(.visited)');
+        if (!enableColoration) return;
+
+        const selectors = 'span.i a:not(.visited), a.l_read:not(.visited), div.top a.atop:not(.visited)';
+        var anchors = document.querySelectorAll(selectors);
         anchors.forEach(function (link) {
             if (visitedSet.has(link.href)) {
                 link.classList.add('visited');
@@ -94,15 +105,21 @@
     const adObserver = new MutationObserver((mutations) => {
         if (timeout) clearTimeout(timeout);
         timeout = setTimeout(() => {
-            cleanDOM();
-            colorizeLinks(); // On relance la coloration au cas où de nouveaux liens (infinite scroll) apparaissent
-        }, 50);
+            if (enableAdBlock) cleanDOM();
+            if (enableColoration) colorizeLinks(); // On relance la coloration au cas où de nouveaux liens (infinite scroll) apparaissent
+        }, 60);
     });
 
     // Exécution initiale
-    cleanDOM();
-    colorizeLinks();
+    if (enableAdBlock) cleanDOM();
+    if (enableColoration) colorizeLinks();
 
-    // Démarrage de l'observer
-    adObserver.observe(document.body, { childList: true, subtree: true });
+    // Démarrage de la surveillance si l'une des options est active
+    if (enableAdBlock || enableColoration) {
+        adObserver.observe(document.body || document.documentElement, {
+            childList: true,
+            subtree: true,
+            attributes: true // Ajouté pour surveiller les changements de classe sur le body
+        });
+    }
 })();

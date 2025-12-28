@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
+             x:Class="Scan_Manga.Controls.MaterialPicker"
+             x:Name="this">
+    <Grid VerticalOptions="Start" Margin="0">
+        <Border x:Name="MainBorder"
+                HeightRequest="50"
+                StrokeThickness="1"
+                StrokeShape="RoundRectangle 4"
+                Background="Transparent">
+
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="VariantStates">
+                    <VisualState x:Name="Outlined" />
+                    <VisualState x:Name="Filled">
+                        <VisualState.Setters>
+                            <Setter Property="Background" Value="{AppThemeBinding Light=#FAFAFA, Dark=#1E1E1E}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="Text" />
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+
+            <Grid ColumnDefinitions="Auto, *, Auto" Padding="8,0" InputTransparent="True">
+                <mi:MauiIcon Grid.Column="0"
+                             Icon="{Binding SelectedOption.Icon, Source={x:Reference this}}"
+                             IsVisible="{Binding SelectedOption.HasIcon, Source={x:Reference this}}"
+                             IconSize="20"
+                             VerticalOptions="Center"
+                             IconColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+
+                <Label Grid.Column="1" 
+                       Text="{Binding SelectedOption.Label, Source={x:Reference this}}"
+                       VerticalOptions="Center" 
+                       Margin="8,0"
+                       FontSize="12" />
+
+                <mi:MauiIcon Grid.Column="2" Icon="{mi:Material Icon=ArrowDropDown}" IconColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray400}}" IconSize="24" VerticalOptions="Center" />
+            </Grid>
+
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnPickerTapped" />
+            </Border.GestureRecognizers>
+        </Border>
+
+        <BoxView x:Name="IndicatorLine" HeightRequest="2" VerticalOptions="End"
+                 BackgroundColor="{StaticResource Gray400}" 
+                 IsVisible="False" Margin="1,0" />
+    </Grid>
+</ContentView>

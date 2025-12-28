@@ -182,6 +182,8 @@ public partial class MainPage : ContentPage
         await InjectScriptWithVisitedLinksAsync();
     }
 
+    private void OnHomeClicked(object sender, EventArgs e) => MainWebView.Source = "https://m.scan-manga.com/?home";
+
     private async void OnInfoClicked(object sender, EventArgs e)
     {
         // Marque qu'on est en train de naviguer

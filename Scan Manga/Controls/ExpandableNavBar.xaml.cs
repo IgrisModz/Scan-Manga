@@ -17,6 +17,11 @@ public partial class ExpandableNavBar : Grid
     {
         InitializeComponent();
 
+        ExpandBtn.GestureRecognizers.Add(new TapGestureRecognizer
+        {
+            Command = new Command(async () => await OnExpandClicked(this, EventArgs.Empty))
+        });
+
 #if NET10_0_OR_GREATER
         SafeAreaEdges = SafeAreaEdges.None;
 #else
@@ -25,7 +30,7 @@ public partial class ExpandableNavBar : Grid
     }
 
     // --- Actions utilisateur ---
-    private async void OnExpandClicked(object? sender, EventArgs e)
+    private async Task OnExpandClicked(object? sender, EventArgs e)
     {
         double screenWidth = Width > 0 ? Width :
                              DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
@@ -52,14 +57,9 @@ public partial class ExpandableNavBar : Grid
             await rotationTask;
             ExpandBtn.Icon(MaterialIcons.Close);
 
-            NavBarContent.IsVisible = true;
+            ExpandBtnContainer.IsVisible = false;
 
-            // Fade in buttons sequentially
-            await InfoBtn.FadeToSafe(1, 120);
-            await DonateBtn.FadeToSafe(1, 120);
-            await RefreshBtn.FadeToSafe(1, 120);
-            await HomeBtn.FadeToSafe(1, 120);
-            await SettingsBtn.FadeToSafe(1, 120);
+            NavBarContent.IsVisible = true;
 
             _navBarExpanded = true;
         }
@@ -67,14 +67,9 @@ public partial class ExpandableNavBar : Grid
         {
             ClickOutsideOverlay.IsVisible = false;
 
-            // Fade out buttons sequentially
-            await SettingsBtn.FadeToSafe(1, 120);
-            await HomeBtn.FadeToSafe(1, 120);
-            await RefreshBtn.FadeToSafe(0, 120);
-            await DonateBtn.FadeToSafe(0, 120);
-            await InfoBtn.FadeToSafe(0, 120);
-
             NavBarContent.IsVisible = false;
+
+            ExpandBtnContainer.IsVisible = true;
 
             var rotationTask = ExpandBtn.RotateToSafe(0, 450);
 
@@ -96,9 +91,9 @@ public partial class ExpandableNavBar : Grid
         }
     }
 
-    private void OnOverlayTapped(object? sender, EventArgs e) => CloseNavBarIfOpen();
-    private void OnOverlayPan(object sender, PanUpdatedEventArgs e) => CloseNavBarIfOpen();
-    private void OnOverlayPinch(object sender, PinchGestureUpdatedEventArgs e) => CloseNavBarIfOpen();
+    private async void OnOverlayTapped(object? sender, EventArgs e) => await CloseNavBarIfOpen();
+    private async void OnOverlayPan(object sender, PanUpdatedEventArgs e) => await CloseNavBarIfOpen();
+    private async void OnOverlayPinch(object sender, PinchGestureUpdatedEventArgs e) => await CloseNavBarIfOpen();
 
     private async void OnInfoTapped(object sender, EventArgs e) => await ButtonTap(sender, () => InfoTapped?.Invoke(this, EventArgs.Empty));
     private async void OnRefreshTapped(object sender, EventArgs e) => await ButtonTapWithLabelRotation(sender, () => RefreshTapped?.Invoke(this, EventArgs.Empty));
@@ -113,7 +108,7 @@ public partial class ExpandableNavBar : Grid
             await tappedBtn.ScaleToSafe(0.70, 100);
             await tappedBtn.ScaleToSafe(1, 100);
 
-            CloseNavBarIfOpen();
+            await CloseNavBarIfOpen();
 
             action.Invoke();
         }
@@ -133,18 +128,25 @@ public partial class ExpandableNavBar : Grid
             // Ensure rotation completes before continuing
             await rotationTask;
 
-            CloseNavBarIfOpen();
+            await CloseNavBarIfOpen();
+
+            await Task.Delay(50);
 
             action.Invoke();
         }
 
     }
 
-    private void CloseNavBarIfOpen()
+    private async Task CloseNavBarIfOpen()
     {
         if (_navBarExpanded)
         {
-            OnExpandClicked(null, EventArgs.Empty);
+            await OnExpandClicked(null, EventArgs.Empty);
         }
+    }
+
+    private void TapGestureRecognizer_Tapped(object sender, TappedEventArgs e)
+    {
+
     }
 }
