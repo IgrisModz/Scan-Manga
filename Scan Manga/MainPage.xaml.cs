@@ -12,21 +12,18 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace Scan_Manga;
 
-public partial class MainPage : ContentPage
+public partial class MainPage : InfoPageBase
 {
-    private readonly IFullScreenService _fullScreenService;
     private HashSet<string> _visitedLinks = [];
     private string? _lastUrl;
     private bool _isFirstAppear = true;
     private CancellationTokenSource? _fullScreenCts;
     private bool _isNavigating;
 
-    public MainPage(IFullScreenService fullScreenService)
+    public MainPage(IFullScreenService fullScreenService) : base(fullScreenService)
     {
         InitializeComponent();
         BindingContext = this;
-
-        _fullScreenService = fullScreenService;
 
         // 🔑 Brancher Navigated
         MainWebView.Navigated += MainWebView_Navigated;
@@ -51,12 +48,19 @@ public partial class MainPage : ContentPage
         if (_isFirstAppear)
         {
             _isFirstAppear = false;
-            // Charger dernière URL
-            _lastUrl = Preferences.Get("LastUrl", "https://m.scan-manga.com/?home");
+
+            // 1. Appliquer le thème dès le démarrage
+            ApplyUserTheme();
+
+            // 2. Charger dernière URL selon préférence
+            bool loadLast = Preferences.Get("LoadLastPageOnStartup", true);
+            _lastUrl = loadLast
+                ? Preferences.Get("LastUrl", "https://m.scan-manga.com/?home")
+                : "https://m.scan-manga.com/?home";
+
             MainWebView.Source = _lastUrl;
 
-            // Charger URLs déjà visitées
-
+            // 3. Charger l'historique
             var saved = Preferences.Get("VisitedLinks", string.Empty);
             _visitedLinks = string.IsNullOrEmpty(saved)
                 ? []
@@ -64,8 +68,12 @@ public partial class MainPage : ContentPage
         }
         else
         {
-            _isNavigating = false; // On revient sur la page
+            _isNavigating = false;
             OnHandlerChanged();
+
+            // Re-vérifier l'historique (au cas où il a été vidé dans les paramètres)
+            var saved = Preferences.Get("VisitedLinks", string.Empty);
+            if (string.IsNullOrEmpty(saved)) _visitedLinks.Clear();
         }
     }
 
@@ -74,9 +82,11 @@ public partial class MainPage : ContentPage
         base.OnHandlerChanged();
         if (Handler?.MauiContext != null)
         {
-            if (IsLecturePage(_lastUrl) ?? false)
+            // Vérifier si on doit être en plein écran selon les réglages
+            bool shouldBeFS = ShouldEnableFullScreen(_lastUrl ?? string.Empty);
+
+            if (shouldBeFS)
             {
-                // Annule toute opération précédente
                 _fullScreenCts?.Cancel();
                 _fullScreenCts = new CancellationTokenSource();
 
@@ -87,59 +97,34 @@ public partial class MainPage : ContentPage
                     if (!_isNavigating && !_fullScreenCts.Token.IsCancellationRequested)
                     {
                         _fullScreenService?.EnterFullScreen();
-#if NET10_0_OR_GREATER
-                SafeAreaEdges = SafeAreaEdges.None;
-                MainRoot.SafeAreaEdges = SafeAreaEdges.None;
-#else
-                    On<iOS>().SetUseSafeArea(true);
-#endif
-                        var color = (Color)Microsoft.Maui.Controls.Application.Current!.Resources["Primary"];
-                        if (OperatingSystem.IsAndroidVersionAtLeast(23) ||
-                            OperatingSystem.IsIOSVersionAtLeast(15))
-                            StatusBar.SetColor(color);
+                        ApplySafeArea(true);
                     }
                 }
                 catch (TaskCanceledException) { }
-
             }
         }
     }
 
     protected override void OnDisappearing()
     {
-        base.OnDisappearing();
-
         if (_lastUrl != null)
             Preferences.Set("LastUrl", _lastUrl);
 
-        Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
+        if (Preferences.Get("IsHistoryEnabled", true))
+        {
+            Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
+        }
 
         // Annule le plein écran quand on quitte la page
         _fullScreenCts?.Cancel();
         _isNavigating = true;
-    }
 
-    private void OnRefresh(object? sender, EventArgs e)
-    {
-        MainWebView.ReloadPage();
-    }
-
-    protected override bool OnBackButtonPressed()
-    {
-        if (MainWebView.CanGoBack)
-        {
-            MainWebView.GoBack();
-            return true;
-        }
-
-        return base.OnBackButtonPressed();
+        base.OnDisappearing();
     }
 
     private async void MainWebView_Navigated(object? sender, WebNavigatedEventArgs e)
     {
-        // Arrêter le refresh si actif
-        if (WebRefreshView.IsRefreshing)
-            WebRefreshView.IsRefreshing = false;
+        if (WebRefreshView.IsRefreshing) WebRefreshView.IsRefreshing = false;
 
         if (MainWebView.HasError)
         {
@@ -148,38 +133,100 @@ public partial class MainPage : ContentPage
         }
 
         if (string.IsNullOrEmpty(e.Url)) return;
-        
         OfflineOverlay.IsVisible = false;
 
-        bool isLecturePage = IsLecturePage(e.Url) ?? false;
-        _fullScreenService.SetFullScreen(isLecturePage);
-#if NET10_0_OR_GREATER
-        SafeAreaEdges = isLecturePage ? SafeAreaEdges.None : SafeAreaEdges.Default;
-        MainRoot.SafeAreaEdges = isLecturePage ? SafeAreaEdges.None : SafeAreaEdges.Default;
-#else
-        On<iOS>().SetUseSafeArea(isLecturePage);
-#endif
+        bool enableFS = ShouldEnableFullScreen(e.Url);
+        _fullScreenService.SetFullScreen(enableFS);
+        ApplySafeArea(enableFS);
 
-        // Sauvegarder en mémoire
+        bool userWantsKeepOn = Preferences.Get("KeepScreenOn", true);
+        DeviceDisplay.KeepScreenOn = userWantsKeepOn && (IsLecturePage(e.Url) ?? false);
+
         _lastUrl = e.Url;
+        Preferences.Set("LastUrl", _lastUrl);
 
-        if (_lastUrl != null)
-            Preferences.Set("LastUrl", _lastUrl);
-
-        if (!_visitedLinks.Add(e.Url))
+        if (Preferences.Get("IsHistoryEnabled", true))
         {
-            // ✅ Limiter à 2000 liens max
-            if (_visitedLinks.Count > 2000)
+            if (_visitedLinks.Add(e.Url))
             {
-                var toKeep = _visitedLinks.Skip(_visitedLinks.Count - 2000).ToList();
-                _visitedLinks.Clear();
-                foreach (var url in toKeep) _visitedLinks.Add(url);
+                if (_visitedLinks.Count > 2000)
+                {
+                    _visitedLinks = [.. _visitedLinks.Skip(_visitedLinks.Count - 2000)];
+                }
+                Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
             }
         }
 
-        Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
-
         await InjectScriptWithVisitedLinksAsync();
+    }
+
+    private async Task InjectScriptWithVisitedLinksAsync()
+    {
+        if (_lastUrl == null) return;
+        
+        bool isAdBlockActive = Preferences.Get("IsAdBlockerEnabled", true);
+        bool isHistoryActive = Preferences.Get("IsHistoryEnabled", true);
+
+        if (!isAdBlockActive && !isHistoryActive) return;
+
+        try
+        {
+            string visitedJoined = JsonSerializer.Serialize(_visitedLinks);
+
+            using var stream = await FileSystem.OpenAppPackageFileAsync("adsRemover.js");
+            using var reader = new StreamReader(stream);
+            var jsContent = await reader.ReadToEndAsync();
+
+            // visitedJoined est un tableau JSON
+            jsContent = jsContent.Replace("{isAdBlockEnabled}", isAdBlockActive.ToString().ToLower());
+            jsContent = jsContent.Replace("{isHistoryEnabled}", isHistoryActive.ToString().ToLower());
+            jsContent = jsContent.Replace("{visitedJoined}", visitedJoined);
+            await MainWebView.EvaluateJavaScriptAsync(jsContent);
+        }
+        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"JS Injection Error: {ex.Message}"); }
+    }
+
+    private void ApplySafeArea(bool isFullScreen)
+    {
+#if NET10_0_OR_GREATER
+        SafeAreaEdges = isFullScreen ? SafeAreaEdges.None : SafeAreaEdges.Default;
+        MainRoot.SafeAreaEdges = isFullScreen ? SafeAreaEdges.None : SafeAreaEdges.Default;
+#else
+        On<iOS>().SetUseSafeArea(!isFullScreen);
+#endif
+    }
+
+    private static void ApplyUserTheme()
+    {
+        var theme = Preferences.Get("AppTheme", "Système");
+        Microsoft.Maui.Controls.Application.Current?.UserAppTheme = theme switch
+        {
+            "Clair" => AppTheme.Light,
+            "Sombre" => AppTheme.Dark,
+            _ => AppTheme.Unspecified
+        };
+    }
+
+    private static bool ShouldEnableFullScreen(string url)
+    {
+        var mode = Preferences.Get("FullScreenMode", "Lecture uniquement");
+
+        return mode switch
+        {
+            "Toutes les pages" => true,
+            "Lecture uniquement" => IsLecturePage(url) ?? false,
+            _ => false // Désactivé
+        };
+    }
+
+    private static bool? IsLecturePage(string? url) => url?.Contains("/lecture-en-ligne");
+    
+    private void OnRefresh(object? sender, EventArgs e) => MainWebView.ReloadPage();
+
+    protected override bool OnBackButtonPressed()
+    {
+        if (MainWebView.CanGoBack) { MainWebView.GoBack(); return true; }
+        return base.OnBackButtonPressed();
     }
 
     private void OnHomeClicked(object sender, EventArgs e) => MainWebView.Source = "https://m.scan-manga.com/?home";
@@ -204,7 +251,7 @@ public partial class MainPage : ContentPage
             },
         };
         var popupResult = await this.ShowPopupAsync<string>(infoPopup, popupOptions);
-        
+
         // ShowPopup désactive le plein écran donc il faut le réinitialiser manuellement
         _fullScreenService.IsFullScreen = false;
 
@@ -216,30 +263,5 @@ public partial class MainPage : ContentPage
         }
 
         await Shell.Current.GoToAsync(popupResult.Result);
-    }
-
-    private void OnHomeClicked(object sender, EventArgs e)
-    {
-        MainWebView.Source = "https://m.scan-manga.com/?home";
-    }
-
-    private async Task InjectScriptWithVisitedLinksAsync()
-    {
-        if (_lastUrl == null) return;
-
-        string visitedJoined = JsonSerializer.Serialize(_visitedLinks);
-
-        using var stream = await FileSystem.OpenAppPackageFileAsync("adsRemover.js");
-        using var reader = new StreamReader(stream);
-        var jsTemplate = await reader.ReadToEndAsync();
-
-        // visitedJoined est un tableau JSON
-        string jsContent = jsTemplate.Replace("{visitedJoined}", visitedJoined);
-        await MainWebView.EvaluateJavaScriptAsync(jsContent);
-    }
-
-    private static bool? IsLecturePage(string? url)
-    {
-        return url?.Contains("/lecture-en-ligne");
     }
 }
