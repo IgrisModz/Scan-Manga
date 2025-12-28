@@ -229,5 +229,5 @@ public partial class MainPage : InfoPageBase
         return base.OnBackButtonPressed();
     }
 
-    private void OnHomeClicked(object sender, EventArgs e) => MainWebView.Source = "https://m.scan-manga.com/?home";
+    private void OnHomeTapped(object sender, TappedEventArgs e) => MainWebView.Source = "https://m.scan-manga.com/?home";
 }

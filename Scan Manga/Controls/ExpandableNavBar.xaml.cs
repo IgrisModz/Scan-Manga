@@ -8,7 +8,7 @@ namespace Scan_Manga.Controls;
 public partial class ExpandableNavBar : Grid
 {
     public event EventHandler? RefreshTapped;
-    public event EventHandler? HomeTapped;
+    public event EventHandler<TappedEventArgs>? HomeTapped;
 
     private bool _navBarExpanded = false;
     private bool _isVerticalExpanded = false;
@@ -64,7 +64,7 @@ public partial class ExpandableNavBar : Grid
         }
     }
 
-    private async void OnMoreTapped(object? sender, EventArgs e)
+    private async void OnMoreTapped(object? sender, TappedEventArgs e)
     {
         if (!_isVerticalExpanded)
         {
@@ -101,7 +101,11 @@ public partial class ExpandableNavBar : Grid
         ClickOutsideOverlay.IsVisible = false;
 
         // Si le menu vertical est ouvert, on le ferme d'abord
-        if (_isVerticalExpanded) await CloseVerticalMenu();
+        if (_isVerticalExpanded)
+        {
+            await CloseVerticalMenu();
+            await Task.Yield();
+        }
 
         NavBarContent.IsVisible = false;
         MoreBtnContainer.IsVisible = false;
@@ -126,7 +130,7 @@ public partial class ExpandableNavBar : Grid
     private async void OnRefreshTapped(object sender, TappedEventArgs e) =>
         await HandleInteractionAsync(sender, () => { RefreshTapped?.Invoke(this, EventArgs.Empty); return Task.CompletedTask; }, true);
     public async void OnHomeTapped(object sender, TappedEventArgs e) =>
-        await HandleInteractionAsync(sender, () => { HomeTapped?.Invoke(this, EventArgs.Empty); return Task.CompletedTask; });
+        await HandleInteractionAsync(sender, () => { HomeTapped?.Invoke(this, e); return Task.CompletedTask; });
     
     private async void OnDonateTapped(object sender, TappedEventArgs e) =>
         await NavigateToAsync(sender, nameof(DonatePage));
