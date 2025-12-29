@@ -59,13 +59,9 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     partial void OnSelectedFullScreenModeChanged(SelectOption value) => Preferences.Set("FullScreenMode", value.Label);
-
     partial void OnKeepScreenOnChanged(bool value) => Preferences.Set("KeepScreenOn", value);
-
     partial void OnIsAdBlockerEnabledChanged(bool value) => Preferences.Set("IsAdBlockerEnabled", value);
-
     partial void OnLoadLastPageOnStartupChanged(bool value) => Preferences.Set("LoadLastPageOnStartup", value);
-
     partial void OnIsHistoryEnabledChanged(bool value) => Preferences.Set("IsHistoryEnabled", value);
 
     [RelayCommand]

@@ -9,12 +9,13 @@
                Padding="0"
                x:TypeArguments="models:SelectOption"
                BackgroundColor="Transparent">
-    <Grid Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}">
+    <Grid>
         <Border StrokeShape="RoundRectangle 8"
                 StrokeThickness="0"
                 Padding="10"
                 HorizontalOptions="Fill"
-                VerticalOptions="Center">
+                VerticalOptions="Center"
+                Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}">
             <CollectionView x:Name="ListOptions" SelectionMode="Single" SelectionChanged="OnSelectionChanged">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>

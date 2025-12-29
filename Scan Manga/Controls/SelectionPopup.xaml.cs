@@ -13,7 +13,7 @@ public partial class SelectionPopup : Popup<SelectOption>
 
     private async void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        SelectOption? selected = e.CurrentSelection.Count > 0 ? e.CurrentSelection[0] as SelectOption : null;
+        var selected = e.CurrentSelection.Count > 0 ? e.CurrentSelection[0] as SelectOption : null;
         await CloseAsync(result: selected is not null ? selected : default!);
     }
 }
