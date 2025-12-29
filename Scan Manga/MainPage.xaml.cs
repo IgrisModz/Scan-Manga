@@ -14,7 +14,7 @@ public partial class MainPage : PageBase
     private HashSet<string> _visitedLinks = [];
     private string? _lastUrl;
     private bool _isFirstAppear = true;
-    private CancellationTokenSource? _fullScreenCts;
+    private CancellationTokenSource? _fullScreenCts; 
     private bool _isNavigating;
 
     public MainPage(IFullScreenService fullScreenService) : base(fullScreenService)
@@ -46,11 +46,11 @@ public partial class MainPage : PageBase
         {
             _isFirstAppear = false;
 
-            // 1. Appliquer le thème dès le démarrage
+            // Appliquer le thème dès le démarrage
             ApplyUserTheme();
 
-            // 2. Charger dernière URL selon préférence
-            bool loadLast = Preferences.Get("LoadLastPageOnStartup", true);
+            // Charger dernière URL selon préférence
+            var loadLast = Preferences.Get("LoadLastPageOnStartup", true);
             _lastUrl = loadLast
                 ? Preferences.Get("LastUrl", "https://m.scan-manga.com/?home")
                 : "https://m.scan-manga.com/?home";
@@ -71,6 +71,9 @@ public partial class MainPage : PageBase
             // Re-vérifier l'historique (au cas où il a été vidé dans les paramètres)
             var saved = Preferences.Get("VisitedLinks", string.Empty);
             if (string.IsNullOrEmpty(saved)) _visitedLinks.Clear();
+
+            var userWantsKeepOn = Preferences.Get("KeepScreenOn", true);
+            DeviceDisplay.KeepScreenOn = userWantsKeepOn && (IsLecturePage(_lastUrl) ?? false);
         }
     }
 
@@ -80,8 +83,7 @@ public partial class MainPage : PageBase
         if (Handler?.MauiContext != null)
         {
             // Vérifier si on doit être en plein écran selon les réglages
-            bool shouldBeFS = ShouldEnableFullScreen(_lastUrl ?? string.Empty);
-
+            var shouldBeFS = ShouldEnableFullScreen(_lastUrl ?? string.Empty);
             if (shouldBeFS)
             {
                 _fullScreenCts?.Cancel();
@@ -104,6 +106,8 @@ public partial class MainPage : PageBase
 
     protected override void OnDisappearing()
     {
+        DeviceDisplay.KeepScreenOn = false;
+
         if (_lastUrl != null)
             Preferences.Set("LastUrl", _lastUrl);
 
@@ -132,11 +136,11 @@ public partial class MainPage : PageBase
         if (string.IsNullOrEmpty(e.Url)) return;
         OfflineOverlay.IsVisible = false;
 
-        bool enableFS = ShouldEnableFullScreen(e.Url);
+        var enableFS = ShouldEnableFullScreen(e.Url);
         _fullScreenService.SetFullScreen(enableFS);
         ApplySafeArea(enableFS);
 
-        bool userWantsKeepOn = Preferences.Get("KeepScreenOn", true);
+        var userWantsKeepOn = Preferences.Get("KeepScreenOn", true);
         DeviceDisplay.KeepScreenOn = userWantsKeepOn && (IsLecturePage(e.Url) ?? false);
 
         _lastUrl = e.Url;
@@ -161,14 +165,14 @@ public partial class MainPage : PageBase
     {
         if (_lastUrl == null) return;
         
-        bool isAdBlockActive = Preferences.Get("IsAdBlockerEnabled", true);
-        bool isHistoryActive = Preferences.Get("IsHistoryEnabled", true);
+        var isAdBlockActive = Preferences.Get("IsAdBlockerEnabled", true);
+        var isHistoryActive = Preferences.Get("IsHistoryEnabled", true);
 
         if (!isAdBlockActive && !isHistoryActive) return;
 
         try
         {
-            string visitedJoined = JsonSerializer.Serialize(_visitedLinks);
+            var visitedJoined = JsonSerializer.Serialize(_visitedLinks);
 
             using var stream = await FileSystem.OpenAppPackageFileAsync("adsRemover.js");
             using var reader = new StreamReader(stream);
@@ -180,7 +184,10 @@ public partial class MainPage : PageBase
             jsContent = jsContent.Replace("{visitedJoined}", visitedJoined);
             await MainWebView.EvaluateJavaScriptAsync(jsContent);
         }
-        catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"JS Injection Error: {ex.Message}"); }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"JS Injection Error: {ex.Message}");
+        }
     }
 
     private void ApplySafeArea(bool isFullScreen)
