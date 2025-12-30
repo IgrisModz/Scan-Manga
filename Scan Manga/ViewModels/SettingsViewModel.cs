@@ -100,7 +100,7 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private void OnOverlayResult(bool confirmed) // Paramètre explicite
+    private void OverlayResult(bool confirmed) // Paramètre explicite
     {
         IsOverlayVisible = false;
 

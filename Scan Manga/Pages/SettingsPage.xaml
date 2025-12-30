@@ -139,6 +139,6 @@
                                 ConfirmText="{Binding OverlayConfirmText}"
                                 CancelText="{Binding OverlayCancelText}"
                                 IsOpen="{Binding IsOverlayVisible, Mode=TwoWay}"
-                                ResponseCommand="{Binding OnOverlayResultCommand}"/>
+                                ResponseCommand="{Binding OverlayResultCommand}"/>
     </Grid>
 </controls:PageBase>
