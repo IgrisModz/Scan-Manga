@@ -11,7 +11,7 @@
 
     <Grid RowDefinitions="Auto,*">
         <controls:PageHeader />
-        <ScrollView Grid.Row="1" IsVisible="{Binding IsLoaded}">
+        <ScrollView Grid.Row="1">
             <Grid>
                 <Border Margin="20"
                         Shadow="{StaticResource BubbleShadow}"
@@ -98,7 +98,7 @@
                         <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#EEE, Dark=#333}" Margin="0,10"/>
 
                         <Grid ColumnDefinitions="*, *" Padding="0,5">
-                            <VerticalStackLayout Spacing="4" HorizontalOptions="Center">
+                            <VerticalStackLayout x:Name="ClearHistoryLayout" Spacing="4" HorizontalOptions="Center">
                                 <Label FontSize="28"
                                        HorizontalOptions="Center"
                                        FontFamily="MaterialIcons"
@@ -109,11 +109,11 @@
                                        TextColor="#FF453A"
                                        HorizontalOptions="Center"/>
                                 <VerticalStackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding ClearHistoryCommand}" />
+                                    <TapGestureRecognizer Command="{Binding ClearHistoryCommand}" CommandParameter="{x:Reference ClearHistoryLayout}" />
                                 </VerticalStackLayout.GestureRecognizers>
                             </VerticalStackLayout>
 
-                            <VerticalStackLayout Grid.Column="1" Spacing="4" HorizontalOptions="Center">
+                            <VerticalStackLayout x:Name="GoBackLayout" Grid.Column="1" Spacing="4" HorizontalOptions="Center">
                                 <Label FontSize="28"
                                        HorizontalOptions="Center"
                                        FontFamily="MaterialIcons"
@@ -124,7 +124,7 @@
                                        TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
                                        HorizontalOptions="Center"/>
                                 <VerticalStackLayout.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding GoBackCommand}" />
+                                    <TapGestureRecognizer Command="{Binding GoBackCommand}" CommandParameter="{x:Reference GoBackLayout}" />
                                 </VerticalStackLayout.GestureRecognizers>
                             </VerticalStackLayout>
                         </Grid>

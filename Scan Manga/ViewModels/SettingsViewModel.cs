@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MauiIcons.Material;
+using Scan_Manga.Helpers;
 using Scan_Manga.Models;
 
 namespace Scan_Manga.ViewModels;
@@ -65,11 +66,20 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnIsHistoryEnabledChanged(bool value) => Preferences.Set("IsHistoryEnabled", value);
 
     [RelayCommand]
-    private async Task GoBack() => await Shell.Current.GoToAsync("..");
+    private async Task GoBack(VerticalStackLayout sender)
+    {
+        await sender.ScaleToSafe(0.7, 100, Easing.CubicInOut);
+        await sender.ScaleToSafe(1, 100, Easing.CubicInOut);
+
+        await Shell.Current.GoToAsync("..");
+    }
 
     [RelayCommand]
-    private async Task ClearHistory()
+    private async Task ClearHistory(VerticalStackLayout sender)
     {
+        await sender.ScaleToSafe(0.7, 100, Easing.CubicInOut);
+        await sender.ScaleToSafe(1, 100, Easing.CubicInOut);
+
         _currentContext = OverlayContext.ClearHistory;
         OverlayTitle = "Historique";
         OverlayMessage = "Effacer les données locales ?";
