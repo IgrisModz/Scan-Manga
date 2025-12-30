@@ -3,30 +3,53 @@
                xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
                xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
+               xmlns:controls="clr-namespace:Scan_Manga.Controls"
                xmlns:models="clr-namespace:Scan_Manga.Models"
+               x:DataType="controls:SelectionPopup"
                x:Class="Scan_Manga.Controls.SelectionPopup"
                Margin="0"
                Padding="0"
                x:TypeArguments="models:SelectOption"
                BackgroundColor="Transparent">
     <Grid>
-        <Border StrokeShape="RoundRectangle 8"
-                StrokeThickness="0"
+        <Border StrokeShape="RoundRectangle 4"
                 Padding="10"
-                HorizontalOptions="Fill"
-                VerticalOptions="Center"
                 Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}">
-            <CollectionView x:Name="ListOptions" SelectionMode="Single" SelectionChanged="OnSelectionChanged">
+            <CollectionView x:Name="ListOptions"
+                            SelectionMode="None">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid ColumnDefinitions="40, *" Padding="12" ColumnSpacing="5">
-                            <mi:MauiIcon Icon="{Binding Icon}"
-                                     IsVisible="{Binding HasIcon}"
-                                     IconColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
-                                     IconSize="26" />
+                    <DataTemplate x:DataType="models:SelectOption">
+                        <Border StrokeShape="RoundRectangle 8"
+                                StrokeThickness="0"
+                                Margin="2"
+                                Padding="0">
 
-                            <Label Grid.Column="1" Text="{Binding Label}" VerticalOptions="Center" FontSize="16" />
-                        </Grid>
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="Transparent" />
+                                    <Style.Triggers>
+                                        <DataTrigger TargetType="Border" Binding="{Binding IsSelected}" Value="True">
+                                            <Setter Property="Background" Value="{AppThemeBinding Light=#E3F2FD, Dark=#1E3A5F}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="OnItemTapped" 
+                                                      CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+
+                            <Grid ColumnDefinitions="40,*" Padding="12" ColumnSpacing="8">
+                                <mi:MauiIcon Icon="{Binding Icon}" 
+                                             IconColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                             IconSize="26" />
+                                <Label Grid.Column="1" 
+                                       Text="{Binding Label}" 
+                                       VerticalOptions="Center" 
+                                       FontSize="16" />
+                            </Grid>
+                        </Border>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>

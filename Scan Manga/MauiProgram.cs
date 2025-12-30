@@ -9,8 +9,6 @@ using Microsoft.Maui.Handlers;
 
 #if ANDROID
 using Scan_Manga.Platforms.Android;
-
-
 #elif IOS
 using Scan_Manga.Platforms.iOS;
 #endif
@@ -47,7 +45,7 @@ public static class MauiProgram
                 });
 
 #if ANDROID
-            builder.Services.AddSingleton<IFullScreenService, AndroidFullscreenService>();
+        builder.Services.AddSingleton<IFullScreenService, AndroidFullscreenService>();
 #elif IOS
             builder.Services.AddSingleton<IFullScreenService, iOSFullscreenService>();
 #endif

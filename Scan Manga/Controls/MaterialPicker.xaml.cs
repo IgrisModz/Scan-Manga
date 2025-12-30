@@ -38,7 +38,13 @@ public partial class MaterialPicker : ContentView
     public MaterialPicker()
     {
         InitializeComponent();
-        Loaded += (s, e) => UpdateStyle(Variant);
+        Loaded += (s, e) =>
+        {
+            if (SelectedOption == null && Options.Count > 0)
+                SelectedOption = Options[0];
+
+            UpdateStyle(Variant);
+        };
     }
 
     private void UpdateStyle(PickerVariant variant)
@@ -64,16 +70,9 @@ public partial class MaterialPicker : ContentView
 
     private async void OnPickerTapped(object sender, TappedEventArgs e)
     {
-        if (Variant == PickerVariant.Outlined)
-        {
-            MainBorder.SetAppThemeColor(Border.StrokeProperty, GetResourceColor("Primary", Color.FromArgb("#6fc2f4")), GetResourceColor("PrimaryDark", Color.FromArgb("#3D96FF")));
-        }
-        else
-        {
-            IndicatorLine.SetAppThemeColor(BackgroundColorProperty, GetResourceColor("Primary", Color.FromArgb("#6fc2f4")), GetResourceColor("PrimaryDark", Color.FromArgb("#3D96FF")));
-        }
+        SetActiveState(true);
 
-        var popup = new SelectionPopup(Options);
+        var popup = new SelectionPopup(Options, SelectedOption);
         var result = await Shell.Current.CurrentPage.ShowPopupAsync<SelectOption>(popup);
 
         if (result.Result is SelectOption selected)
@@ -81,16 +80,23 @@ public partial class MaterialPicker : ContentView
             SelectedOption = selected;
         }
 
-        // --- ÉTAT NORMAL (Retour au gris) ---
+        SetActiveState(false);
+    }
+
+    private void SetActiveState(bool active)
+    {
+        var color = active
+            ? GetResourceColor("Primary", Color.FromArgb("#6fc2f4"))
+            : GetResourceColor("Gray400", Colors.Gray);
+
         if (Variant == PickerVariant.Outlined)
         {
-            MainBorder.Stroke = GetResourceColor("Gray400", Colors.Gray);
+            MainBorder.Stroke = color;
         }
         else
         {
-            // Sécurité : on s'assure que le stroke reste transparent
-            MainBorder.Stroke = Colors.Transparent;
-            IndicatorLine.BackgroundColor = GetResourceColor("Gray400", Colors.Gray);
+            IndicatorLine.IsVisible = true;
+            IndicatorLine.BackgroundColor = color;
         }
     }
 
