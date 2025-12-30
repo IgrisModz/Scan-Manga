@@ -10,12 +10,15 @@
         const adSelectors = [
             'div.BDPFGA[data-type="_mgwidget"]',
             'div.PUBFUTURE',
+            'div#scan-mangacom_anchor',
+            'div#scan-mangacom_anchor_lm1',
             'div[data-unit]',
             'div#teads_inread',
             'div#ayads-html',
             'script[src*="richardghain.com"]',
             'script[src*="adschill.com"]',
-            'script[src*="acscdn.com"]'
+            'script[src*="acscdn.com"]',
+            'a[href*="adexchangeclear.com"]'
         ];
 
 
@@ -49,6 +52,16 @@
         ].join(',');
 
         document.querySelectorAll(adJsSelectors).forEach(el => el.remove());
+
+        document.querySelectorAll('div[style*="bottom"]').forEach(div => {
+            if (
+                div.style.bottom === '10px' &&
+                div.className.length > 30 &&
+                div.childElementCount === 0
+            ) {
+                div.remove();
+            }
+        });
 
         // Nettoyage intelligent du reader_container
         const container = document.querySelector('.reader_container');
