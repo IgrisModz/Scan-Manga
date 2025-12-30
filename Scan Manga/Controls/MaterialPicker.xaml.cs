@@ -85,18 +85,31 @@ public partial class MaterialPicker : ContentView
 
     private void SetActiveState(bool active)
     {
-        var color = active
-            ? GetResourceColor("Primary", Color.FromArgb("#6fc2f4"))
-            : GetResourceColor("Gray400", Colors.Gray);
-
-        if (Variant == PickerVariant.Outlined)
+        if (active)
         {
-            MainBorder.Stroke = color;
+            var lightColor = GetResourceColor("Primary", Color.FromArgb("#6fc2f4"));
+            var darkColor = GetResourceColor("PrimaryDark", Color.FromArgb("#3D96FF"));
+            if (Variant == PickerVariant.Outlined)
+            {
+                MainBorder.SetAppThemeColor(Border.StrokeProperty, lightColor, darkColor);
+            }
+            else
+            {
+                IndicatorLine.SetAppThemeColor(BackgroundColorProperty, lightColor, darkColor);
+            }
         }
         else
         {
-            IndicatorLine.IsVisible = true;
-            IndicatorLine.BackgroundColor = color;
+            var color = GetResourceColor("Gray400", Colors.Gray);
+            if (Variant == PickerVariant.Outlined)
+            {
+                MainBorder.Stroke = color;
+            }
+            else
+            {
+                MainBorder.Stroke = Colors.Transparent;
+                IndicatorLine.BackgroundColor = color;
+            }
         }
     }
 
