@@ -162,13 +162,17 @@ public partial class ExpandableNavBar : Grid
     {
         if (sender is not VisualElement view) return;
 
-        await view.ScaleToSafe(0.7, 100);
-        await view.ScaleToSafe(1, 100);
+        await view.ScaleToSafe(0.7, 100, Easing.CubicInOut);
+        await view.ScaleToSafe(1, 100, Easing.CubicInOut);
 
         if (rotateIcon && view is VerticalStackLayout stack)
         {
             var icon = stack.Children.OfType<Label>().FirstOrDefault();
-            if (icon != null) await icon.RotateToSafe(360, 500);
+            if (icon != null)
+            {
+                icon.Rotation = 0;
+                await icon.RotateToSafe(360, 500, Easing.CubicInOut);
+            }
         }
 
         await CloseNavBarInternal();
