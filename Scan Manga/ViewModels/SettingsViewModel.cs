@@ -6,25 +6,48 @@ using Scan_Manga.Models;
 
 namespace Scan_Manga.ViewModels;
 
+public enum FullScreenMode
+{
+    ReadingOnly,
+    AllPages,
+    Disabled
+}
+
+public enum KeepScreenOnMode
+{
+    AllPages,
+    ReadingOnly,
+    ChargingOnly,
+    Disabled
+}
+
 public partial class SettingsViewModel : ObservableObject
 {
     public List<SelectOption> ThemeOptions { get; } =
     [
-        new SelectOption { Label = "Système", Icon = MaterialIcons.SettingsSuggest},
-        new SelectOption { Label = "Clair", Icon = MaterialIcons.DarkMode},
-        new SelectOption { Label = "Sombre", Icon = MaterialIcons.LightMode }
+        new() { Label = "Système", Icon = MaterialIcons.SettingsSuggest, Value = AppTheme.Unspecified },
+        new() { Label = "Clair", Icon = MaterialIcons.DarkMode, Value = AppTheme.Light },
+        new() { Label = "Sombre", Icon = MaterialIcons.LightMode, Value = AppTheme.Dark }
     ];
 
     public List<SelectOption> FullScreenOptions { get; } =
     [
-        new SelectOption { Label = "Lecture uniquement", Icon = MaterialIcons.AutoStories },
-        new SelectOption { Label = "Toutes les pages", Icon = MaterialIcons.Fullscreen },
-        new SelectOption { Label = "Désactivé", Icon = MaterialIcons.FullscreenExit }
+        new() { Label = "Lecture uniquement", Icon = MaterialIcons.AutoStories, Value = FullScreenMode.ReadingOnly },
+        new() { Label = "Toutes les pages", Icon = MaterialIcons.Fullscreen, Value = FullScreenMode.AllPages },
+        new() { Label = "Désactivé", Icon = MaterialIcons.FullscreenExit, Value = FullScreenMode.Disabled }
+    ];
+
+    public List<SelectOption> KeepScreenOnOptions { get; } =
+    [
+        new() { Label = "Toutes les pages", Icon = MaterialIcons.ScreenLockPortrait, Value = KeepScreenOnMode.AllPages },
+        new() { Label = "Lecture uniquement", Icon = MaterialIcons.MenuBook, Value = KeepScreenOnMode.ReadingOnly },
+        new() { Label = "Charge uniquement (Lecture)", Icon = MaterialIcons.BatteryChargingFull, Value = KeepScreenOnMode.ChargingOnly },
+        new() { Label = "Désactivé", Icon = MaterialIcons.ScreenLockRotation, Value = KeepScreenOnMode.Disabled }
     ];
 
     [ObservableProperty] private SelectOption _selectedTheme;
     [ObservableProperty] private SelectOption _selectedFullScreenMode;
-    [ObservableProperty] private bool _keepScreenOn;
+    [ObservableProperty] private SelectOption _selectedKeepScreenOnMode;
     [ObservableProperty] private bool _isAdBlockerEnabled;
     [ObservableProperty] private bool _loadLastPageOnStartup;
     [ObservableProperty] private bool _isHistoryEnabled;
@@ -40,30 +63,25 @@ public partial class SettingsViewModel : ObservableObject
 
     public SettingsViewModel()
     {
-        SelectedTheme = ThemeOptions.First(t => t.Label == Preferences.Get("AppTheme", "Système"));
-        SelectedFullScreenMode = FullScreenOptions.First(m => m.Label == Preferences.Get("FullScreenMode", "Lecture uniquement"));
-        KeepScreenOn = Preferences.Get("KeepScreenOn", true);
-        IsAdBlockerEnabled = Preferences.Get("IsAdBlockerEnabled", true);
-        LoadLastPageOnStartup = Preferences.Get("LoadLastPageOnStartup", true);
-        IsHistoryEnabled = Preferences.Get("IsHistoryEnabled", true);
+        SelectedTheme = ThemeOptions.First(t => t.Value.ToString() == Preferences.Get(nameof(SelectedTheme), AppTheme.Unspecified.ToString()));
+        SelectedFullScreenMode = FullScreenOptions.First(m => m.Value.ToString() == Preferences.Get(nameof(SelectedFullScreenMode), FullScreenMode.ReadingOnly.ToString()));
+        SelectedKeepScreenOnMode = KeepScreenOnOptions.First(m => m.Value.ToString() == Preferences.Get(nameof(SelectedKeepScreenOnMode), FullScreenMode.Disabled.ToString()));
+        IsAdBlockerEnabled = Preferences.Get(nameof(IsAdBlockerEnabled), true);
+        LoadLastPageOnStartup = Preferences.Get(nameof(LoadLastPageOnStartup), true);
+        IsHistoryEnabled = Preferences.Get(nameof(IsHistoryEnabled), true);
     }
 
     partial void OnSelectedThemeChanged(SelectOption value)
     {
-        Preferences.Set("AppTheme", value.Label);
-        Application.Current?.UserAppTheme = value.Label switch
-        {
-            "Clair" => AppTheme.Light,
-            "Sombre" => AppTheme.Dark,
-            _ => AppTheme.Unspecified
-        };
+        Preferences.Set(nameof(SelectedTheme), value.Value.ToString());
+        Application.Current?.UserAppTheme = (AppTheme)value.Value;
     }
 
-    partial void OnSelectedFullScreenModeChanged(SelectOption value) => Preferences.Set("FullScreenMode", value.Label);
-    partial void OnKeepScreenOnChanged(bool value) => Preferences.Set("KeepScreenOn", value);
-    partial void OnIsAdBlockerEnabledChanged(bool value) => Preferences.Set("IsAdBlockerEnabled", value);
-    partial void OnLoadLastPageOnStartupChanged(bool value) => Preferences.Set("LoadLastPageOnStartup", value);
-    partial void OnIsHistoryEnabledChanged(bool value) => Preferences.Set("IsHistoryEnabled", value);
+    partial void OnSelectedFullScreenModeChanged(SelectOption value) => Preferences.Set(nameof(SelectedFullScreenMode), value.Value.ToString());
+    partial void OnSelectedKeepScreenOnModeChanged(SelectOption value) => Preferences.Set(nameof(SelectedKeepScreenOnMode), value.Value.ToString());
+    partial void OnIsAdBlockerEnabledChanged(bool value) => Preferences.Set(nameof(IsAdBlockerEnabled), value);
+    partial void OnLoadLastPageOnStartupChanged(bool value) => Preferences.Set(nameof(LoadLastPageOnStartup), value);
+    partial void OnIsHistoryEnabledChanged(bool value) => Preferences.Set(nameof(IsHistoryEnabled), value);
 
     [RelayCommand]
     private async Task GoBack(VerticalStackLayout sender)

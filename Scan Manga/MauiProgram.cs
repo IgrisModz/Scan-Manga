@@ -46,6 +46,7 @@ public static class MauiProgram
 
 #if ANDROID
         builder.Services.AddSingleton<IFullScreenService, AndroidFullscreenService>();
+        builder.Services.AddSingleton<IChargingService, ChargingService>();
 #elif IOS
             builder.Services.AddSingleton<IFullScreenService, iOSFullscreenService>();
 #endif

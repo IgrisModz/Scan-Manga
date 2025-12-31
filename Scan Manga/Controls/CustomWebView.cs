@@ -2,6 +2,8 @@
 
 public class CustomWebView : WebView
 {
+    public const string DefaultUrl = "https://m.scan-manga.com/?po";
+
     public event EventHandler<WebViewErrorEventArgs>? HttpErrorOccurred;
 
     public static readonly BindableProperty ProgressProperty =

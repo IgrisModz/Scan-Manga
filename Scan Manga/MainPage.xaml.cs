@@ -1,6 +1,7 @@
 ﻿using Scan_Manga.Controls;
 using Scan_Manga.Services;
 using System.Text.Json;
+using Scan_Manga.ViewModels;
 
 #if NET9_0
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -14,15 +15,18 @@ public partial class MainPage : PageBase
     private HashSet<string> _visitedLinks = [];
     private string? _lastUrl;
     private bool _isFirstAppear = true;
-    private CancellationTokenSource? _fullScreenCts; 
     private bool _isNavigating;
+    private CancellationTokenSource? _fullScreenCts;
+    private readonly IChargingService _chargingService;
 
-    public MainPage(IFullScreenService fullScreenService) : base(fullScreenService)
+    public MainPage(IFullScreenService fullScreenService, IChargingService chargingService) : base(fullScreenService)
     {
         InitializeComponent();
         BindingContext = this;
 
-        // 🔑 Brancher Navigated
+        _chargingService = chargingService;
+        _chargingService.ChargingStateChanged += OnChargingChanged;
+
         MainWebView.Navigated += MainWebView_Navigated;
         MainWebView.HttpErrorOccurred += (s, e) =>
         {
@@ -38,6 +42,8 @@ public partial class MainPage : PageBase
         };
     }
 
+    #region Lifecycle
+
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -45,19 +51,15 @@ public partial class MainPage : PageBase
         if (_isFirstAppear)
         {
             _isFirstAppear = false;
-
-            // Appliquer le thème dès le démarrage
             ApplyUserTheme();
 
-            // Charger dernière URL selon préférence
-            var loadLast = Preferences.Get("LoadLastPageOnStartup", true);
+            var loadLast = Preferences.Get(nameof(SettingsViewModel.LoadLastPageOnStartup), true);
             _lastUrl = loadLast
-                ? Preferences.Get("LastUrl", "https://m.scan-manga.com/?home")
-                : "https://m.scan-manga.com/?home";
+                ? Preferences.Get("LastUrl", CustomWebView.DefaultUrl)
+                : CustomWebView.DefaultUrl;
 
             MainWebView.Source = _lastUrl;
 
-            // 3. Charger l'historique
             var saved = Preferences.Get("VisitedLinks", string.Empty);
             _visitedLinks = string.IsNullOrEmpty(saved)
                 ? []
@@ -68,64 +70,71 @@ public partial class MainPage : PageBase
             _isNavigating = false;
             OnHandlerChanged();
 
-            // Re-vérifier l'historique (au cas où il a été vidé dans les paramètres)
             var saved = Preferences.Get("VisitedLinks", string.Empty);
-            if (string.IsNullOrEmpty(saved)) _visitedLinks.Clear();
-
-            var userWantsKeepOn = Preferences.Get("KeepScreenOn", true);
-            DeviceDisplay.KeepScreenOn = userWantsKeepOn && (IsLecturePage(_lastUrl) ?? false);
+            if (string.IsNullOrEmpty(saved))
+                _visitedLinks.Clear();
         }
+
+        // 🔑 recalcul systématique KeepScreenOn
+        UpdateKeepScreenOn(_lastUrl);
     }
 
     protected override async void OnHandlerChanged()
     {
         base.OnHandlerChanged();
-        if (Handler?.MauiContext != null)
+
+        if (Handler?.MauiContext == null || _lastUrl == null)
+            return;
+
+        var shouldBeFullScreen = ShouldEnableFullScreen(_lastUrl);
+
+        if (!shouldBeFullScreen)
         {
-            // Vérifier si on doit être en plein écran selon les réglages
-            var shouldBeFS = ShouldEnableFullScreen(_lastUrl ?? string.Empty);
-            if (shouldBeFS)
+            _fullScreenService?.ExitFullScreen();
+            ApplySafeArea(false);
+            return;
+        }
+
+        _fullScreenCts?.Cancel();
+        _fullScreenCts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(80, _fullScreenCts.Token);
+
+            if (!_isNavigating && !_fullScreenCts.Token.IsCancellationRequested)
             {
-                _fullScreenCts?.Cancel();
-                _fullScreenCts = new CancellationTokenSource();
-
-                try
-                {
-                    await Task.Delay(80, _fullScreenCts.Token);
-
-                    if (!_isNavigating && !_fullScreenCts.Token.IsCancellationRequested)
-                    {
-                        _fullScreenService?.EnterFullScreen();
-                        ApplySafeArea(true);
-                    }
-                }
-                catch (TaskCanceledException) { }
+                _fullScreenService?.EnterFullScreen();
+                ApplySafeArea(true);
             }
         }
+        catch (TaskCanceledException) { }
     }
 
     protected override void OnDisappearing()
     {
-        DeviceDisplay.KeepScreenOn = false;
+        UpdateKeepScreenOn(null);
 
         if (_lastUrl != null)
             Preferences.Set("LastUrl", _lastUrl);
 
-        if (Preferences.Get("IsHistoryEnabled", true))
-        {
+        if (Preferences.Get(nameof(SettingsViewModel.IsHistoryEnabled), true))
             Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
-        }
 
-        // Annule le plein écran quand on quitte la page
         _fullScreenCts?.Cancel();
         _isNavigating = true;
 
         base.OnDisappearing();
     }
 
+    #endregion
+
+    #region WebView
+
     private async void MainWebView_Navigated(object? sender, WebNavigatedEventArgs e)
     {
-        if (WebRefreshView.IsRefreshing) WebRefreshView.IsRefreshing = false;
+        if (WebRefreshView.IsRefreshing)
+            WebRefreshView.IsRefreshing = false;
 
         if (MainWebView.HasError)
         {
@@ -133,42 +142,53 @@ public partial class MainPage : PageBase
             return;
         }
 
-        if (string.IsNullOrEmpty(e.Url)) return;
+        if (string.IsNullOrEmpty(e.Url))
+            return;
+
         OfflineOverlay.IsVisible = false;
 
-        var enableFS = ShouldEnableFullScreen(e.Url);
-        _fullScreenService.SetFullScreen(enableFS);
-        ApplySafeArea(enableFS);
+        var enableFullScreen = ShouldEnableFullScreen(e.Url);
+        _fullScreenService.SetFullScreen(enableFullScreen);
+        ApplySafeArea(enableFullScreen);
 
-        var userWantsKeepOn = Preferences.Get("KeepScreenOn", true);
-        DeviceDisplay.KeepScreenOn = userWantsKeepOn && (IsLecturePage(e.Url) ?? false);
+        UpdateKeepScreenOn(e.Url);
 
         _lastUrl = e.Url;
         Preferences.Set("LastUrl", _lastUrl);
 
-        if (Preferences.Get("IsHistoryEnabled", true))
-        {
-            if (_visitedLinks.Add(e.Url))
-            {
-                if (_visitedLinks.Count > 2000)
-                {
-                    _visitedLinks = [.. _visitedLinks.Skip(_visitedLinks.Count - 2000)];
-                }
-                Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
-            }
-        }
+        HandleHistory(e.Url);
 
         await InjectScriptWithVisitedLinksAsync();
     }
 
+    private void HandleHistory(string url)
+    {
+        if (!Preferences.Get(nameof(SettingsViewModel.IsHistoryEnabled), true))
+            return;
+
+        if (_visitedLinks.Add(url))
+        {
+            if (_visitedLinks.Count > 2000)
+                _visitedLinks = [.. _visitedLinks.Skip(_visitedLinks.Count - 2000)];
+
+            Preferences.Set("VisitedLinks", JsonSerializer.Serialize(_visitedLinks));
+        }
+    }
+
+    #endregion
+
+    #region JavaScript Injection
+
     private async Task InjectScriptWithVisitedLinksAsync()
     {
-        if (_lastUrl == null) return;
-        
-        var isAdBlockActive = Preferences.Get("IsAdBlockerEnabled", true);
-        var isHistoryActive = Preferences.Get("IsHistoryEnabled", true);
+        if (_lastUrl == null)
+            return;
 
-        if (!isAdBlockActive && !isHistoryActive) return;
+        var isAdBlockActive = Preferences.Get(nameof(SettingsViewModel.IsAdBlockerEnabled), true);
+        var isHistoryActive = Preferences.Get(nameof(SettingsViewModel.IsHistoryEnabled), true);
+
+        if (!isAdBlockActive && !isHistoryActive)
+            return;
 
         try
         {
@@ -178,16 +198,75 @@ public partial class MainPage : PageBase
             using var reader = new StreamReader(stream);
             var jsContent = await reader.ReadToEndAsync();
 
-            // visitedJoined est un tableau JSON
             jsContent = jsContent.Replace("{isAdBlockEnabled}", isAdBlockActive.ToString().ToLower());
             jsContent = jsContent.Replace("{isHistoryEnabled}", isHistoryActive.ToString().ToLower());
             jsContent = jsContent.Replace("{visitedJoined}", visitedJoined);
+
             await MainWebView.EvaluateJavaScriptAsync(jsContent);
         }
         catch (Exception ex)
         {
             System.Diagnostics.Debug.WriteLine($"JS Injection Error: {ex.Message}");
         }
+    }
+
+    #endregion
+
+    #region Helpers
+
+    private void OnChargingChanged(object? sender, bool isCharging)
+    {
+        MainThread.BeginInvokeOnMainThread(() => UpdateKeepScreenOn(_lastUrl));
+    }
+
+    private void UpdateKeepScreenOn(string? url)
+    {
+        DeviceDisplay.KeepScreenOn = ShouldKeepScreenOn(url);
+    }
+
+    private  bool ShouldKeepScreenOn(string? url)
+    {
+        var modeString = Preferences.Get(nameof(SettingsViewModel.SelectedKeepScreenOnMode), KeepScreenOnMode.Disabled.ToString());
+
+        var result = Enum.TryParse<KeepScreenOnMode>(modeString, out var mode);
+        if (!result || mode == KeepScreenOnMode.Disabled)
+            return false;
+
+        var isLecture = IsLecturePage(url) ?? false;
+
+        return mode switch
+        {
+            KeepScreenOnMode.AllPages => true,
+            KeepScreenOnMode.ReadingOnly => isLecture,
+            KeepScreenOnMode.ChargingOnly => isLecture && _chargingService.IsCharging,
+            _ => false
+        };
+    }
+
+    private static bool ShouldEnableFullScreen(string url)
+    {
+        var modeString = Preferences.Get(nameof(SettingsViewModel.SelectedFullScreenMode), FullScreenMode.ReadingOnly.ToString());
+
+        var result = Enum.TryParse<FullScreenMode>(modeString, out var mode);
+        if (!result || mode == FullScreenMode.Disabled)
+            return false;
+
+        return mode switch
+        {
+            FullScreenMode.AllPages => true,
+            FullScreenMode.ReadingOnly => IsLecturePage(url) ?? false,
+            _ => false
+        };
+    }
+
+    private static bool? IsLecturePage(string? url)
+        => url?.Contains("/lecture-en-ligne");
+
+    private static void ApplyUserTheme()
+    {
+        var themeString = Preferences.Get(nameof(SettingsViewModel.SelectedTheme), AppTheme.Unspecified.ToString());
+        var result = Enum.TryParse<AppTheme>(themeString, out var theme);
+        Microsoft.Maui.Controls.Application.Current?.UserAppTheme = result ? theme : AppTheme.Unspecified;
     }
 
     private void ApplySafeArea(bool isFullScreen)
@@ -200,38 +279,25 @@ public partial class MainPage : PageBase
 #endif
     }
 
-    private static void ApplyUserTheme()
-    {
-        var theme = Preferences.Get("AppTheme", "Système");
-        Microsoft.Maui.Controls.Application.Current?.UserAppTheme = theme switch
-        {
-            "Clair" => AppTheme.Light,
-            "Sombre" => AppTheme.Dark,
-            _ => AppTheme.Unspecified
-        };
-    }
+    #endregion
 
-    private static bool ShouldEnableFullScreen(string url)
-    {
-        var mode = Preferences.Get("FullScreenMode", "Lecture uniquement");
+    #region UI Events
 
-        return mode switch
-        {
-            "Toutes les pages" => true,
-            "Lecture uniquement" => IsLecturePage(url) ?? false,
-            _ => false // Désactivé
-        };
-    }
-
-    private static bool? IsLecturePage(string? url) => url?.Contains("/lecture-en-ligne");
-    
-    private void OnRefresh(object? sender, EventArgs e) => MainWebView.ReloadPage();
+    private void OnRefresh(object? sender, EventArgs e)
+        => MainWebView.ReloadPage();
 
     protected override bool OnBackButtonPressed()
     {
-        if (MainWebView.CanGoBack) { MainWebView.GoBack(); return true; }
+        if (MainWebView.CanGoBack)
+        {
+            MainWebView.GoBack();
+            return true;
+        }
         return base.OnBackButtonPressed();
     }
 
-    private void OnHomeTapped(object sender, TappedEventArgs e) => MainWebView.Source = "https://m.scan-manga.com/?home";
+    private void OnHomeTapped(object sender, TappedEventArgs e)
+        => MainWebView.Source = CustomWebView.DefaultUrl;
+
+    #endregion
 }
