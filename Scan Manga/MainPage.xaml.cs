@@ -30,7 +30,8 @@ public partial class MainPage : PageBase
         MainWebView.Navigated += MainWebView_Navigated;
         MainWebView.HttpErrorOccurred += (s, e) =>
         {
-            ErrorLabel.Text = $"{e.Code} : {e.Message}";
+            ErrorTitleLabel.Text = e.Title;
+            ErrorMessageLabel.Text = e.Message;
         };
 
         Connectivity.Current.ConnectivityChanged += (s, args) =>

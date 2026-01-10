@@ -47,12 +47,12 @@ public class CustomWebView : WebView
         }
     }
 
-    public void RaiseError(string code, string message)
+    public void RaiseError(string title, string message)
     {
         HasError = true;
-        LastErrorCode = code;
+        LastErrorCode = title;
         LastErrorMessage = message;
-        HttpErrorOccurred?.Invoke(this, new WebViewErrorEventArgs(code, message));
+        HttpErrorOccurred?.Invoke(this, new WebViewErrorEventArgs(title, message));
     }
 
     public void ReloadPage()
@@ -63,8 +63,8 @@ public class CustomWebView : WebView
 }
 
 // Classe d’arguments pour l’événement
-public class WebViewErrorEventArgs(string code, string message) : EventArgs
+public class WebViewErrorEventArgs(string title, string message) : EventArgs
 {
-    public string Code { get; } = code;
+    public string Title { get; } = title;
     public string Message { get; } = message;
 }

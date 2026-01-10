@@ -29,23 +29,36 @@
             x:Name="OfflineOverlay"
             BackgroundColor="{AppThemeBinding Light={StaticResource White},
                                               Dark={StaticResource OffBlack}}"
-            IsVisible="False">
-            <VerticalStackLayout
-                Margin="20"
-                HorizontalOptions="Center"
-                Spacing="10"
-                VerticalOptions="Center">
-                <Label
-                    x:Name="ErrorLabel"
-                    FontAttributes="Bold"
-                    FontSize="18"
-                    HorizontalOptions="Center"
-                    HorizontalTextAlignment="Center"
-                    Text="⚠️ Impossible de charger la page.&#x0d;&#x0a;Vérifiez votre connexion Internet."
-                    TextColor="Red"
-                    VerticalOptions="Center" />
-                <Button Clicked="OnRefresh" Text="Réessayer" />
-            </VerticalStackLayout>
+            IsVisible="False"
+            RowDefinitions="Auto,*">
+            <controls:PageHeader />
+            <ScrollView Grid.Row="1">
+                <Grid>
+                    <Border
+                        Margin="20"
+                        Shadow="{StaticResource BubbleShadow}"
+                        VerticalOptions="Start">
+                        <VerticalStackLayout Padding="25" Spacing="10">
+                            <mi:MauiIcon Icon="{mi:Material Icon=ErrorOutline, IconSize=48, IconColor=#FA4336}" HorizontalOptions="Center" />
+                            <Label x:Name="ErrorTitleLabel"
+                                   Style="{StaticResource Headline}"
+                                   FontSize="28"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center"/>
+                            <Label x:Name="ErrorMessageLabel"
+                                   Style="{StaticResource SubHeadline}"
+                                   FontSize="18"
+                                   Margin="0,0,0,8"
+                                   HorizontalOptions="Center"
+                                   HorizontalTextAlignment="Center"
+                                   Text="⚠️ Impossible de charger la page.&#x0d;&#x0a;Vérifiez votre connexion Internet."
+                                   TextColor="#FF4081"
+                                   VerticalOptions="Center" />
+                            <Button Clicked="OnRefresh" Text="Réessayer" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+            </ScrollView>
         </Grid>
 
         <!--  ProgressBar  -->
