@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Scan_Manga.Platforms.iOS;
 
-public class iOSFullscreenService : UIViewController, IFullScreenService
+public class FullscreenService : UIViewController, IFullScreenService
 {
     // On garde une référence à notre contrôleur "fantôme"
     private UIViewController? _overlayViewController;

@@ -5,10 +5,9 @@ using AndroidX.Core.View;
 using Scan_Manga.Services;
 using Views = Android.Views; // Evite les ambiguités
 
-[assembly: Dependency(typeof(Scan_Manga.Platforms.Android.AndroidFullscreenService))]
 namespace Scan_Manga.Platforms.Android;
 
-public class AndroidFullscreenService : IFullScreenService
+public class FullscreenService : IFullScreenService
 {
     private int _defaultSystemUiVisibility;
     private bool _isSystemBarVisible;

@@ -40,12 +40,9 @@ public static class MauiProgram
                     handlers.AddHandler<Layout, LayoutHandler>();
                 });
 
-#if ANDROID
-        builder.Services.AddSingleton<IFullScreenService, AndroidFullscreenService>();
+        builder.Services.AddSingleton<IFullScreenService, FullscreenService>();
         builder.Services.AddSingleton<IChargingService, ChargingService>();
-#elif IOS
-            builder.Services.AddSingleton<IFullScreenService, iOSFullscreenService>();
-#endif
+        
         builder.Services.AddSingleton<SettingsViewModel>();
 
         builder.Services.AddSingleton<AboutPage>();
