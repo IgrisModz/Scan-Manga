@@ -3,11 +3,6 @@ using Scan_Manga.Services;
 using System.Text.Json;
 using Scan_Manga.ViewModels;
 
-#if NET9_0
-using Microsoft.Maui.Controls.PlatformConfiguration;
-using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
-#endif
-
 namespace Scan_Manga;
 
 public partial class MainPage : PageBase
@@ -272,12 +267,8 @@ public partial class MainPage : PageBase
 
     private void ApplySafeArea(bool isFullScreen)
     {
-#if NET10_0_OR_GREATER
         SafeAreaEdges = isFullScreen ? SafeAreaEdges.None : SafeAreaEdges.Default;
         MainRoot.SafeAreaEdges = isFullScreen ? SafeAreaEdges.None : SafeAreaEdges.Default;
-#else
-        On<iOS>().SetUseSafeArea(!isFullScreen);
-#endif
     }
 
     #endregion

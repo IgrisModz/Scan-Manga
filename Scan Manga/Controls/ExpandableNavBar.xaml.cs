@@ -26,11 +26,7 @@ public partial class ExpandableNavBar : Grid
             Command = new Command(async () => await OnExpandClicked())
         });
 
-#if NET10_0_OR_GREATER
         SafeAreaEdges = SafeAreaEdges.None;
-#else
-        IgnoreSafeArea = true;
-#endif
     }
 
     private async Task OnExpandClicked()
