@@ -1,21 +1,18 @@
-﻿namespace Scan_Manga;
+﻿using Scan_Manga.Services;
+
+namespace Scan_Manga;
 
 public partial class App : Application
 {
     private readonly AppShell _appShell;
-    public App(AppShell appShell)
+
+    public App(AppShell appShell, ISettingsService settingsService)
     {
         InitializeComponent();
 
         _appShell = appShell;
 
-        var savedTheme = Preferences.Get("SelectedTheme", "Système");
-        UserAppTheme = savedTheme switch
-        {
-            "Clair" => AppTheme.Light,
-            "Sombre" => AppTheme.Dark,
-            _ => AppTheme.Unspecified
-        };
+        UserAppTheme = settingsService.GetTheme();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)

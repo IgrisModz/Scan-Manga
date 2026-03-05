@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using MauiIcons.Material;
 using Scan_Manga.Helpers;
 using Scan_Manga.Models;
+using Scan_Manga.Services;
 
 namespace Scan_Manga.ViewModels;
 
@@ -23,6 +24,8 @@ public enum KeepScreenOnMode
 
 public partial class SettingsViewModel : ObservableObject
 {
+    private readonly ISettingsService _settingsService;
+
     public List<SelectOption> ThemeOptions { get; } =
     [
         new() { Label = "Système", Icon = MaterialIcons.SettingsSuggest, Value = AppTheme.Unspecified },
@@ -61,33 +64,42 @@ public partial class SettingsViewModel : ObservableObject
     private enum OverlayContext { None, ClearHistory, Help }
     private OverlayContext _currentContext = OverlayContext.None;
 
-    public SettingsViewModel()
+    public SettingsViewModel(ISettingsService settingsService)
     {
-        SelectedTheme = ThemeOptions.First(t => t.Value.ToString() == Preferences.Get(nameof(SelectedTheme), AppTheme.Unspecified.ToString()));
-        SelectedFullScreenMode = FullScreenOptions.First(m => m.Value.ToString() == Preferences.Get(nameof(SelectedFullScreenMode), FullScreenMode.ReadingOnly.ToString()));
-        SelectedKeepScreenOnMode = KeepScreenOnOptions.First(m => m.Value.ToString() == Preferences.Get(nameof(SelectedKeepScreenOnMode), FullScreenMode.Disabled.ToString()));
-        IsAdBlockerEnabled = Preferences.Get(nameof(IsAdBlockerEnabled), true);
-        LoadLastPageOnStartup = Preferences.Get(nameof(LoadLastPageOnStartup), true);
-        IsHistoryEnabled = Preferences.Get(nameof(IsHistoryEnabled), true);
+        _settingsService = settingsService;
+
+        var savedTheme = _settingsService.GetTheme();
+        SelectedTheme = ThemeOptions.First(t => (AppTheme)t.Value == savedTheme);
+
+        var savedFullScreenMode = _settingsService.GetFullScreenMode();
+        SelectedFullScreenMode = FullScreenOptions.First(m => (FullScreenMode)m.Value == savedFullScreenMode);
+
+        var savedKeepScreenOnMode = _settingsService.GetKeepScreenOnMode();
+        SelectedKeepScreenOnMode = KeepScreenOnOptions.First(m => (KeepScreenOnMode)m.Value == savedKeepScreenOnMode);
+
+        IsAdBlockerEnabled = _settingsService.IsAdBlockerEnabled();
+        LoadLastPageOnStartup = _settingsService.LoadLastPageOnStartup();
+        IsHistoryEnabled = _settingsService.IsHistoryEnabled();
     }
 
     partial void OnSelectedThemeChanged(SelectOption value)
     {
-        Preferences.Set(nameof(SelectedTheme), value.Value.ToString());
-        Application.Current?.UserAppTheme = (AppTheme)value.Value;
+        var theme = (AppTheme)value.Value;
+        _settingsService.SetTheme(theme);
+        Application.Current?.UserAppTheme = theme;
     }
 
-    partial void OnSelectedFullScreenModeChanged(SelectOption value) => Preferences.Set(nameof(SelectedFullScreenMode), value.Value.ToString());
-    partial void OnSelectedKeepScreenOnModeChanged(SelectOption value) => Preferences.Set(nameof(SelectedKeepScreenOnMode), value.Value.ToString());
-    partial void OnIsAdBlockerEnabledChanged(bool value) => Preferences.Set(nameof(IsAdBlockerEnabled), value);
-    partial void OnLoadLastPageOnStartupChanged(bool value) => Preferences.Set(nameof(LoadLastPageOnStartup), value);
-    partial void OnIsHistoryEnabledChanged(bool value) => Preferences.Set(nameof(IsHistoryEnabled), value);
+    partial void OnSelectedFullScreenModeChanged(SelectOption value) => _settingsService.SetFullScreenMode((FullScreenMode)value.Value);
+    partial void OnSelectedKeepScreenOnModeChanged(SelectOption value) => _settingsService.SetKeepScreenOnMode((KeepScreenOnMode)value.Value);
+    partial void OnIsAdBlockerEnabledChanged(bool value) => _settingsService.SetAdBlockerEnabled(value);
+    partial void OnLoadLastPageOnStartupChanged(bool value) => _settingsService.SetLoadLastPageOnStartup(value);
+    partial void OnIsHistoryEnabledChanged(bool value) => _settingsService.SetHistoryEnabled(value);
 
     [RelayCommand]
     private async Task GoBack(VerticalStackLayout sender)
     {
-        await sender.ScaleToSafe(0.7, 100, Easing.CubicInOut);
-        await sender.ScaleToSafe(1, 100, Easing.CubicInOut);
+        await sender.ScaleToSafe(0.7, 100);
+        await sender.ScaleToSafe(1, 100);
 
         await Shell.Current.GoToAsync("..");
     }
@@ -95,8 +107,8 @@ public partial class SettingsViewModel : ObservableObject
     [RelayCommand]
     private async Task ClearHistory(VerticalStackLayout sender)
     {
-        await sender.ScaleToSafe(0.7, 100, Easing.CubicInOut);
-        await sender.ScaleToSafe(1, 100, Easing.CubicInOut);
+        await sender.ScaleToSafe(0.7, 100);
+        await sender.ScaleToSafe(1, 100);
 
         _currentContext = OverlayContext.ClearHistory;
         OverlayTitle = "Historique";

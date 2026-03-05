@@ -13,13 +13,15 @@ public partial class MainPage : PageBase
     private bool _isNavigating;
     private CancellationTokenSource? _fullScreenCts;
     private readonly IChargingService _chargingService;
+    private readonly ISettingsService _settingsService;
 
-    public MainPage(IFullScreenService fullScreenService, IChargingService chargingService) : base(fullScreenService)
+    public MainPage(IFullScreenService fullScreenService, IChargingService chargingService, ISettingsService settingsService) : base(fullScreenService)
     {
         InitializeComponent();
         BindingContext = this;
 
         _chargingService = chargingService;
+        _settingsService = settingsService;
         _chargingService.ChargingStateChanged += OnChargingChanged;
 
         MainWebView.Navigated += MainWebView_Navigated;
@@ -49,26 +51,21 @@ public partial class MainPage : PageBase
             _isFirstAppear = false;
             ApplyUserTheme();
 
-            var loadLast = Preferences.Get(nameof(SettingsViewModel.LoadLastPageOnStartup), true);
+            var loadLast = _settingsService.LoadLastPageOnStartup();
             _lastUrl = loadLast
-                ? Preferences.Get("LastUrl", CustomWebView.DefaultUrl)
+                ? _settingsService.GetLastUrl(CustomWebView.DefaultUrl)
                 : CustomWebView.DefaultUrl;
 
             MainWebView.Source = _lastUrl;
 
-            var saved = Preferences.Get("VisitedLinks", string.Empty);
-            _visitedLinks = string.IsNullOrEmpty(saved)
-                ? []
-                : JsonSerializer.Deserialize<HashSet<string>>(saved) ?? [];
+            _visitedLinks = _settingsService.GetVisitedLinks();
         }
         else
         {
             _isNavigating = false;
             OnHandlerChanged();
 
-            var saved = Preferences.Get("VisitedLinks", string.Empty);
-            if (string.IsNullOrEmpty(saved))
-                _visitedLinks.Clear();
+            _visitedLinks = _settingsService.GetVisitedLinks();
         }
 
         // 🔑 recalcul systématique KeepScreenOn
@@ -258,11 +255,10 @@ public partial class MainPage : PageBase
     private static bool? IsLecturePage(string? url)
         => url?.Contains("/lecture-en-ligne");
 
-    private static void ApplyUserTheme()
+    private void ApplyUserTheme()
     {
-        var themeString = Preferences.Get(nameof(SettingsViewModel.SelectedTheme), AppTheme.Unspecified.ToString());
-        var result = Enum.TryParse<AppTheme>(themeString, out var theme);
-        Microsoft.Maui.Controls.Application.Current?.UserAppTheme = result ? theme : AppTheme.Unspecified;
+        var theme = _settingsService.GetTheme();
+        Application.Current!.UserAppTheme = theme;
     }
 
     private void ApplySafeArea(bool isFullScreen)

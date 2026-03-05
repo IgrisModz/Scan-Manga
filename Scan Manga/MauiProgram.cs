@@ -42,7 +42,8 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<IFullScreenService, FullscreenService>();
         builder.Services.AddSingleton<IChargingService, ChargingService>();
-        
+        builder.Services.AddSingleton<ISettingsService, SettingsService>();
+
         builder.Services.AddSingleton<SettingsViewModel>();
 
         builder.Services.AddSingleton<AboutPage>();
