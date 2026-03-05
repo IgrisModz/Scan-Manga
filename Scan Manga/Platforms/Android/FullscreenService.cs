@@ -77,7 +77,7 @@ public class FullscreenService : IFullScreenService
                     _statusBarOverlays.Add(overlay);
             }
 
-            if ((_navigationBarOverlay = decorGroup.FindViewWithTag("NavigationBarOverlay") as View) is not null)
+            if ((_navigationBarOverlay = decorGroup.FindViewWithTag("NavigationBarOverlay")) is not null)
                 _navigationBarOverlay.Visibility = ViewStates.Gone;
 
             window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
