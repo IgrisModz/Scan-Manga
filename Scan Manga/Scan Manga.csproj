@@ -48,9 +48,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="IgrisModz.MauiIcons.FontAwesome.Brands" Version="1.1.0" />
+		<PackageReference Include="IgrisModz.MauiIcons.MaterialSymbols.Rounded" Version="1.1.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
-		<PackageReference Include="AathifMahir.Maui.MauiIcons.FontAwesome.Brand" Version="6.0.0" />
-		<PackageReference Include="AathifMahir.Maui.MauiIcons.Material" Version="6.0.0" />
 	</ItemGroup>
 
 	<ItemGroup Condition="$(TargetFramework.StartsWith('net10'))">

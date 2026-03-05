@@ -4,7 +4,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:Scan_Manga.Controls"
-    xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
+    xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
     Title="Faire un don">
 
     <Grid RowDefinitions="Auto,*">
@@ -29,12 +29,12 @@
                         <Button
                             x:Name="PaypalBtn"
                             Clicked="OnPaypalClicked"
-                            ImageSource="{mi:FontAwesomeBrand Icon=Paypal}"
+                            ImageSource="{mi:FontAwesomeBrands Icon=Paypal}"
                             MaximumHeightRequest="48"
                             Text="Faire un don via Paypal" />
                         <Button
                             Clicked="OnPatreonClicked"
-                            ImageSource="{mi:FontAwesomeBrand Icon=Patreon}"
+                            ImageSource="{mi:FontAwesomeBrands Icon=Patreon}"
                             MaximumHeightRequest="48"
                             Text="Faire un don via Patreon" />
                         <Button

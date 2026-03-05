@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MauiIcons.Material;
+using MauiIcons.MaterialSymbols.Rounded;
 using Scan_Manga.Helpers;
 using Scan_Manga.Models;
 using Scan_Manga.Services;
@@ -28,38 +28,39 @@ public partial class SettingsViewModel : ObservableObject
 
     public List<SelectOption> ThemeOptions { get; } =
     [
-        new() { Label = "Système", Icon = MaterialIcons.SettingsSuggest, Value = AppTheme.Unspecified },
-        new() { Label = "Clair", Icon = MaterialIcons.DarkMode, Value = AppTheme.Light },
-        new() { Label = "Sombre", Icon = MaterialIcons.LightMode, Value = AppTheme.Dark }
+        new() { Label = "Système", Icon = MaterialSymbolsRoundedIcons.SettingsSuggest, Value = AppTheme.Unspecified },
+        new() { Label = "Clair", Icon = MaterialSymbolsRoundedIcons.LightMode, Value = AppTheme.Light },
+        new() { Label = "Sombre", Icon = MaterialSymbolsRoundedIcons.DarkMode, Value = AppTheme.Dark }
     ];
 
     public List<SelectOption> FullScreenOptions { get; } =
     [
-        new() { Label = "Lecture uniquement", Icon = MaterialIcons.AutoStories, Value = FullScreenMode.ReadingOnly },
-        new() { Label = "Toutes les pages", Icon = MaterialIcons.Fullscreen, Value = FullScreenMode.AllPages },
-        new() { Label = "Désactivé", Icon = MaterialIcons.FullscreenExit, Value = FullScreenMode.Disabled }
+        new() { Label = "Lecture uniquement", Icon = MaterialSymbolsRoundedIcons.AutoStories, Value = FullScreenMode.ReadingOnly },
+        new() { Label = "Toutes les pages", Icon = MaterialSymbolsRoundedIcons.Fullscreen, Value = FullScreenMode.AllPages },
+        new() { Label = "Désactivé", Icon = MaterialSymbolsRoundedIcons.FullscreenExit, Value = FullScreenMode.Disabled }
     ];
 
     public List<SelectOption> KeepScreenOnOptions { get; } =
     [
-        new() { Label = "Toutes les pages", Icon = MaterialIcons.ScreenLockPortrait, Value = KeepScreenOnMode.AllPages },
-        new() { Label = "Lecture uniquement", Icon = MaterialIcons.MenuBook, Value = KeepScreenOnMode.ReadingOnly },
-        new() { Label = "Charge uniquement (Lecture)", Icon = MaterialIcons.BatteryChargingFull, Value = KeepScreenOnMode.ChargingOnly },
-        new() { Label = "Désactivé", Icon = MaterialIcons.ScreenLockRotation, Value = KeepScreenOnMode.Disabled }
+        new() { Label = "Toutes les pages", Icon = MaterialSymbolsRoundedIcons.ScreenLockPortrait, Value = KeepScreenOnMode.AllPages },
+        new() { Label = "Lecture uniquement", Icon = MaterialSymbolsRoundedIcons.MenuBook, Value = KeepScreenOnMode.ReadingOnly },
+        new() { Label = "Charge uniquement (Lecture)", Icon = MaterialSymbolsRoundedIcons.BatteryChargingFull, Value = KeepScreenOnMode.ChargingOnly },
+        new() { Label = "Désactivé", Icon = MaterialSymbolsRoundedIcons.ScreenLockRotation, Value = KeepScreenOnMode.Disabled }
     ];
 
-    [ObservableProperty] private SelectOption _selectedTheme;
-    [ObservableProperty] private SelectOption _selectedFullScreenMode;
-    [ObservableProperty] private SelectOption _selectedKeepScreenOnMode;
-    [ObservableProperty] private bool _isAdBlockerEnabled;
-    [ObservableProperty] private bool _loadLastPageOnStartup;
-    [ObservableProperty] private bool _isHistoryEnabled;
+    [ObservableProperty] public partial SelectOption SelectedTheme { get; set; }
 
-    [ObservableProperty] private bool isOverlayVisible;
-    [ObservableProperty] private string? _overlayTitle;
-    [ObservableProperty] private string? _overlayMessage;
-    [ObservableProperty] private string? _overlayConfirmText;
-    [ObservableProperty] private string? _overlayCancelText;
+    [ObservableProperty] public partial SelectOption SelectedFullScreenMode { get; set; }
+    [ObservableProperty] public partial SelectOption SelectedKeepScreenOnMode { get; set; }
+    [ObservableProperty] public partial bool IsAdBlockerEnabled { get; set; }
+    [ObservableProperty] public partial bool LoadLastPageOnStartup { get; set; }
+
+    [ObservableProperty] public partial bool IsHistoryEnabled { get; set; }
+    [ObservableProperty] public partial bool IsOverlayVisible { get; set; }
+    [ObservableProperty] public partial string? OverlayTitle { get; set; }
+    [ObservableProperty] public partial string? OverlayMessage { get; set; }
+    [ObservableProperty] public partial string? OverlayConfirmText { get; set; }
+    [ObservableProperty] public partial string? OverlayCancelText { get; set; }
 
     private enum OverlayContext { None, ClearHistory, Help }
     private OverlayContext _currentContext = OverlayContext.None;

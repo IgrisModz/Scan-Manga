@@ -3,7 +3,7 @@
     x:Class="Scan_Manga.Controls.ExpandableNavBar"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons">
+    xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons">
 
     <!--  Overlay  -->
     <Grid
@@ -43,7 +43,7 @@
             </Grid.GestureRecognizers>
             <Grid Grid.Row="0" x:Name="MoreBtnContainer" IsVisible="False" HeightRequest="30">
                 <Label x:Name="MoreIcon" 
-                       Text="{mi:Material Icon=KeyboardArrowUp}" 
+                       Text="{mi:MaterialSymbolsRounded Icon=KeyboardArrowUp}" 
                        FontSize="30" 
                        HorizontalOptions="Center" 
                        VerticalOptions="Center"
@@ -56,7 +56,7 @@
 
             <VerticalStackLayout x:Name="ExtraOptionsContainer" 
                                  Grid.Row="1" 
-                                 IsVisible="False" 
+                                 IsVisible="False"
                                  Opacity="0"
                                  Spacing="15"
                                  Padding="0,10">
@@ -65,7 +65,7 @@
 
                 <Grid ColumnDefinitions="*, *, *, *" RowDefinitions="Auto">
                     <VerticalStackLayout Grid.Column="0">
-                        <Label Text="{mi:Material Icon=Gavel}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                        <Label Text="{mi:MaterialSymbolsRounded Icon=Gavel, Size=30}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
                         <Label Text="Légal" FontSize="12" HorizontalOptions="Center" FontAttributes="Bold"/>
                         <VerticalStackLayout.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnNoticesClicked"/>
@@ -73,7 +73,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Grid.Column="1">
-                        <Label Text="{mi:Material Icon=Description}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                        <Label Text="{mi:MaterialSymbolsRounded Icon=Description, Size=30}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
                         <Label Text="CGU" FontSize="12" HorizontalOptions="Center" FontAttributes="Bold"/>
                         <VerticalStackLayout.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnTermsClicked"/>
@@ -81,7 +81,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Grid.Column="2">
-                        <Label Text="{mi:Material Icon=Lock}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                        <Label Text="{mi:MaterialSymbolsRounded Icon=Lock, Size=30}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
                         <Label Text="Privé" FontSize="12" HorizontalOptions="Center" FontAttributes="Bold"/>
                         <VerticalStackLayout.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnPrivacyClicked"/>
@@ -89,7 +89,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Grid.Column="3">
-                        <Label Text="{mi:Material Icon=HelpCenter}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                        <Label Text="{mi:MaterialSymbolsRounded Icon=HelpCenter, Size=30}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
                         <Label Text="À Propos" FontSize="12" HorizontalOptions="Center" FontAttributes="Bold"/>
                         <VerticalStackLayout.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnAboutClicked"/>
@@ -103,7 +103,7 @@
                 <Grid x:Name="NavBarContent" IsVisible="False" ColumnDefinitions="*, *, *, *">
 
                     <VerticalStackLayout Grid.Column="0" VerticalOptions="Center">
-                        <Label Text="{mi:Material Icon=Home}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                        <Label Text="{mi:MaterialSymbolsRounded Icon=Home}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
                         <Label Text="Accueil" FontSize="12" HorizontalOptions="Center" FontAttributes="Bold"/>
                         <VerticalStackLayout.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnHomeTapped"/>
@@ -111,7 +111,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Grid.Column="1" VerticalOptions="Center">
-                        <Label Text="{mi:Material Icon=Refresh}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                        <Label Text="{mi:MaterialSymbolsRounded Icon=Refresh}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
                         <Label Text="Actualiser" FontSize="12" HorizontalOptions="Center" FontAttributes="Bold"/>
                         <VerticalStackLayout.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnRefreshTapped"/>
@@ -119,7 +119,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Grid.Column="2" VerticalOptions="Center">
-                        <Label Text="{mi:Material Icon=Money}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                        <Label Text="{mi:MaterialSymbolsRounded Icon=Money}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
                         <Label Text="Soutenir" FontSize="12" HorizontalOptions="Center" FontAttributes="Bold"/>
                         <VerticalStackLayout.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnDonateTapped"/>
@@ -127,7 +127,7 @@
                     </VerticalStackLayout>
 
                     <VerticalStackLayout Grid.Column="3" VerticalOptions="Center">
-                        <Label Text="{mi:Material Icon=Settings}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                        <Label Text="{mi:MaterialSymbolsRounded Icon=Settings}" FontSize="30" HorizontalOptions="Center" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
                         <Label Text="Réglages" FontSize="12" HorizontalOptions="Center" FontAttributes="Bold"/>
                         <VerticalStackLayout.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnSettingsTapped"/>
@@ -136,7 +136,7 @@
                 </Grid>
 
                 <Grid x:Name="ExpandBtnContainer" Grid.Column="1" Margin="0,0,0,8" VerticalOptions="End" WidthRequest="40">
-                    <Label x:Name="ExpandBtn" Text="{mi:Material Icon=Notes}" FontSize="Title" HorizontalOptions="Center" VerticalOptions="Center"
+                    <Label x:Name="ExpandBtn" Text="{mi:MaterialSymbolsRounded Icon=Notes}" FontSize="Title" HorizontalOptions="Center" VerticalOptions="Center"
                            TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
                 </Grid>
             </Grid>

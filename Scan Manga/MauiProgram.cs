@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Maui;
-using MauiIcons.Material;
-using MauiIcons.FontAwesome.Brand;
+using MauiIcons.FontAwesome.Brands;
+using MauiIcons.MaterialSymbols.Rounded;
 using Scan_Manga.Controls;
 using Scan_Manga.Services;
 using Scan_Manga.Pages;
@@ -27,8 +27,8 @@ public static class MauiProgram
             builder
                 .UseMauiApp<App>()
                 .UseMauiCommunityToolkit()
-                .UseMaterialMauiIcons()
-                .UseFontAwesomeBrandMauiIcons()
+                .UseFontAwesomeBrands()
+                .UseMaterialSymbolsRounded()
                 .ConfigureFonts(fonts =>
                 {
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

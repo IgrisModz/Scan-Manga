@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:Scan_Manga.Controls"
     xmlns:local="clr-namespace:Scan_Manga.Pages"
-    xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
+    xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
     Title="À propos"
     x:DataType="local:AboutPage">
 
@@ -43,7 +43,7 @@
                             <Label>
                                 <Label.FormattedText>
                                     <FormattedString>
-                                        <Span Text="{mi:FontAwesomeBrand Icon=Github, FontOverride=False, IconSize=28, IconColor={StaticResource PrimaryDark}}">
+                                        <Span Text="{mi:FontAwesomeBrands Icon=Github, Size=28, Color={StaticResource PrimaryDark}}">
                                             <Span.GestureRecognizers>
                                                 <TapGestureRecognizer Command="{Binding TapCommand}" CommandParameter="https://github.com/IgrisModz" />
                                             </Span.GestureRecognizers>

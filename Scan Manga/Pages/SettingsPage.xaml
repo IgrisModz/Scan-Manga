@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:controls="clr-namespace:Scan_Manga.Controls"
-    xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
+    xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
     xmlns:viewmodels="clr-namespace:Scan_Manga.ViewModels"
     x:Class="Scan_Manga.Pages.SettingsPage"
     x:DataType="viewmodels:SettingsViewModel"
@@ -22,7 +22,8 @@
                         <VerticalStackLayout Spacing="15">
                             <Label Text="APPARENCE" FontSize="14" TextColor="{StaticResource PrimaryDark}" FontAttributes="Bold"/>
                             <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
-                                <mi:MauiIcon Icon="{mi:Material Icon=Palette}" IconSize="26" IconColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
+                                
+                                <mi:MaterialSymbolsRoundedIcon Icon="Palette" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
                                 <Label Grid.Column="1" Text="Thème" VerticalOptions="Center" FontAttributes="Bold"/>
                                 <controls:MaterialPicker Grid.Column="2"
                                                          VerticalOptions="Center"
@@ -36,7 +37,7 @@
                         <VerticalStackLayout Spacing="15">
                             <Label Text="AFFICHAGE" FontSize="14" TextColor="{StaticResource PrimaryDark}" FontAttributes="Bold"/>
                             <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
-                                <mi:MauiIcon Icon="{mi:Material Icon=Fullscreen}" IconSize="26" IconColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
+                                <mi:MaterialSymbolsRoundedIcon Icon="Fullscreen" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
                                 <Label Grid.Column="1" Text="Mode plein écran" VerticalOptions="Center" FontAttributes="Bold" />
                                 <controls:MaterialPicker Grid.Column="2"
                                                          VerticalOptions="Center"
@@ -51,7 +52,7 @@
                             <Label Text="CONFORT DE LECTURE" FontSize="14" TextColor="{StaticResource PrimaryDark}" FontAttributes="Bold"/>
 
                             <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
-                                <mi:MauiIcon Icon="{mi:Material Icon=Lightbulb}" IconSize="26" IconColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
+                                <mi:MaterialSymbolsRoundedIcon Icon="Lightbulb" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
                                 <Label Grid.Column="1" Text="Garder l'écran allumé" VerticalOptions="Center" FontAttributes="Bold"/>
                                 <controls:MaterialPicker Grid.Column="2"
                                                          VerticalOptions="Center"
@@ -64,7 +65,7 @@
                             <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#EEE, Dark=#333}"/>
 
                             <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
-                                <mi:MauiIcon Icon="{mi:Material Icon=DoNotDisturb}" IconSize="26" IconColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
+                                <mi:MaterialSymbolsRoundedIcon Icon="DoNotDisturb" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
                                 <Label Grid.Column="1" Text="Bloqueur de publicités" VerticalOptions="Center" FontAttributes="Bold"/>
                                 <Switch IsToggled="{Binding IsAdBlockerEnabled}" Grid.Column="2"/>
                             </Grid>
@@ -74,27 +75,27 @@
                             <Label Text="NAVIGATION ET DONNÉES" FontSize="14" TextColor="{StaticResource PrimaryDark}" FontAttributes="Bold"/>
 
                             <Grid ColumnDefinitions="Auto, *, Auto, Auto" ColumnSpacing="10">
-                                <mi:MauiIcon Icon="{mi:Material Icon=PlayCircle}" IconSize="26" IconColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
+                                <mi:MaterialSymbolsRoundedIcon Icon="PlayCircle" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
 
                                 <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
                                     <Label Grid.Column="1" Text="Reprendre la lecture" VerticalOptions="Center" FontAttributes="Bold"/>
 
-                                    <mi:MauiIcon Grid.Column="2" 
-                                                     Icon="{mi:Material Icon=Info}"
-                                                     IconSize="18"
-                                                     IconColor="Gray"
+                                    <mi:MaterialSymbolsRoundedIcon Grid.Column="2" 
+                                                     Icon="Info"
+                                                     FontSize="18"
+                                                     TextColor="Gray"
                                                      VerticalOptions="Center">
-                                        <mi:MauiIcon.GestureRecognizers>
+                                        <mi:MaterialSymbolsRoundedIcon.GestureRecognizers>
                                             <TapGestureRecognizer Command="{Binding ShowRestoreHelpCommand}"/>
-                                        </mi:MauiIcon.GestureRecognizers>
-                                    </mi:MauiIcon>
+                                        </mi:MaterialSymbolsRoundedIcon.GestureRecognizers>
+                                    </mi:MaterialSymbolsRoundedIcon>
                                 </HorizontalStackLayout>
 
                                 <Switch Grid.Column="3" IsToggled="{Binding LoadLastPageOnStartup}"/>
                             </Grid>
 
                             <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
-                                <mi:MauiIcon Icon="{mi:Material Icon=History}" IconSize="26" IconColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
+                                <mi:MaterialSymbolsRoundedIcon Icon="History" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
                                 <Label Grid.Column="1" Text="Enregistrer l'historique" VerticalOptions="Center" FontAttributes="Bold"/>
                                 <Switch IsToggled="{Binding IsHistoryEnabled}" Grid.Column="2"/>
                             </Grid>
@@ -107,7 +108,7 @@
                                 <Label FontSize="28"
                                        HorizontalOptions="Center"
                                        FontFamily="MaterialIcons"
-                                       Text="{mi:Material Icon=DeleteForever}"
+                                       Text="{mi:MaterialSymbolsRounded Icon=DeleteForever}"
                                        TextColor="#FF453A" />
                                 <Label FontSize="11" 
                                        Text="Vider l'historique" 
@@ -122,7 +123,7 @@
                                 <Label FontSize="28"
                                        HorizontalOptions="Center"
                                        FontFamily="MaterialIcons"
-                                       Text="{mi:Material Icon=ArrowBack}"
+                                       Text="{mi:MaterialSymbolsRounded Icon=ArrowBack}"
                                        TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
                                 <Label FontSize="11" 
                                        Text="Retour" 

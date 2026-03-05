@@ -6,7 +6,7 @@
     xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
     xmlns:controls="clr-namespace:Scan_Manga.Controls"
     xmlns:local="clr-namespace:Scan_Manga"
-    xmlns:mi="http://www.aathifmahir.com/dotnet/2022/maui/icons"
+    xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
     x:DataType="local:MainPage"
     CustomStatusBarColor="{StaticResource Primary}">
 
@@ -39,7 +39,7 @@
                         Shadow="{StaticResource BubbleShadow}"
                         VerticalOptions="Start">
                         <VerticalStackLayout Padding="25" Spacing="10">
-                            <mi:MauiIcon Icon="{mi:Material Icon=ErrorOutline, IconSize=48, IconColor=#FA4336}" HorizontalOptions="Center" />
+                            <mi:MaterialSymbolsRoundedIcon Icon="ErrorOutline" FontSize="48" Text="#FA4336" HorizontalOptions="Center" />
                             <Label x:Name="ErrorTitleLabel"
                                    Style="{StaticResource Headline}"
                                    FontSize="28"

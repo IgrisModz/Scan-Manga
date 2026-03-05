@@ -1,5 +1,5 @@
-using MauiIcons.Core;
-using MauiIcons.Material;
+using MauiIcons.Core.Extensions;
+using MauiIcons.MaterialSymbols.Rounded;
 using Scan_Manga.Helpers;
 using Scan_Manga.Pages;
 
@@ -47,7 +47,7 @@ public partial class ExpandableNavBar : Grid
 
             await expandedTask;
 
-            ExpandBtn.Icon(MaterialIcons.Close);
+            ExpandBtn.Text = MaterialSymbolsRoundedIcons.Close.GetGlyph();
             ExpandBtnContainer.IsVisible = false;
             NavBarContent.IsVisible = true;
             MoreBtnContainer.IsVisible = true;
@@ -64,7 +64,7 @@ public partial class ExpandableNavBar : Grid
     {
         if (!_isVerticalExpanded)
         {
-            MoreIcon.Icon(MaterialIcons.KeyboardArrowDown);
+            MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowDown.GetGlyph();
 
             await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, ExpandedHeight, 250);
 
@@ -82,7 +82,7 @@ public partial class ExpandableNavBar : Grid
     {
         if (!_isVerticalExpanded) return;
 
-        MoreIcon.Icon(MaterialIcons.KeyboardArrowUp); // Retour icône haut
+        MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowUp.GetGlyph(); // Retour icône haut
 
         await ExtraOptionsContainer.FadeToSafe(0, 150);
         ExtraOptionsContainer.IsVisible = false;
@@ -99,7 +99,7 @@ public partial class ExpandableNavBar : Grid
         // Si le menu vertical est ouvert, on le ferme d'abord
         if (_isVerticalExpanded)
         {
-            MoreIcon.Icon(MaterialIcons.KeyboardArrowUp); // Retour icône haut
+            MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowUp.GetGlyph(); // Retour icône haut
 
             await ExtraOptionsContainer.FadeToSafe(0, 150);
             ExtraOptionsContainer.IsVisible = false;
@@ -118,7 +118,7 @@ public partial class ExpandableNavBar : Grid
 
         await expandedTask;
 
-        ExpandBtn.Icon(MaterialIcons.Notes);
+        ExpandBtn.Text = MaterialSymbolsRoundedIcons.Notes.GetGlyph();
         _navBarExpanded = false;
     }
 
@@ -158,8 +158,8 @@ public partial class ExpandableNavBar : Grid
     {
         if (sender is not VisualElement view) return;
 
-        await view.ScaleToSafe(0.7, 100, Easing.CubicInOut);
-        await view.ScaleToSafe(1, 100, Easing.CubicInOut);
+        await view.ScaleToSafe(0.7, 100);
+        await view.ScaleToSafe(1, 100);
 
         if (rotateIcon && view is VerticalStackLayout stack)
         {
@@ -167,7 +167,7 @@ public partial class ExpandableNavBar : Grid
             if (icon != null)
             {
                 icon.Rotation = 0;
-                await icon.RotateToSafe(360, 500, Easing.CubicInOut);
+                await icon.RotateToSafe(360, 500);
             }
         }
 
