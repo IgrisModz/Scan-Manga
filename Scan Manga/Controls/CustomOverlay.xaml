@@ -6,9 +6,15 @@
              x:Class="Scan_Manga.Controls.CustomOverlay"
              x:Name="this">
     <Grid x:Name="BackgroundOverlay" BackgroundColor="#AA000000" Opacity="0">
+        <Grid.GestureRecognizers>
+            <TapGestureRecognizer Tapped="OnBackgroundTapped" />
+        </Grid.GestureRecognizers>
         <Border x:Name="Container" VerticalOptions="Center" HorizontalOptions="Center"
                 WidthRequest="310" Padding="20" StrokeShape="RoundRectangle 20"
                 Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}" Scale="0.8" Opacity="0">
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnBorderTapped" />
+            </Border.GestureRecognizers>
             <VerticalStackLayout Spacing="10">
                 <Label Text="{Binding Title, Source={x:Reference this}}" 
                        FontSize="20" FontAttributes="Bold"/>

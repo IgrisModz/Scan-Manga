@@ -89,4 +89,13 @@ public partial class CustomOverlay : ContentView
         base.OnPropertyChanged(propertyName);
         if (propertyName == nameof(CancelText)) OnPropertyChanged(nameof(IsCancelVisible));
     }
+
+    private void OnBackgroundTapped(object sender, TappedEventArgs e)
+    {
+        IsOpen = false;
+    }
+
+    private void OnBorderTapped(object sender, TappedEventArgs e)
+    {
+    }
 }
