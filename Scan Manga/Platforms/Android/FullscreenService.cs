@@ -3,7 +3,6 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Core.View;
 using Scan_Manga.Services;
-using Color = Android.Graphics.Color;
 using View = Android.Views.View;
 using Window = Android.Views.Window;
 
@@ -13,10 +12,8 @@ public class FullscreenService : IFullScreenService
 {
     private int _defaultSystemUiVisibility;
     private bool _wasSystemBarVisible;
-    private int _originalStatusBarColor;
-    private int _originalNavigationBarColor;
 
-    // Listes pour gérer les overlays multiples (bug CommunityToolkit.Maui: StatusBar n'a pas de tag, donc plusieurs overlays peuvent être créés)
+    // Lists to manage multiple overlays (CommunityToolkit.Maui bug: StatusBar has no tag, so multiple overlays can be created)
     private readonly List<View> _statusBarOverlays = [];
     private View? _navigationBarOverlay;
 
@@ -41,7 +38,7 @@ public class FullscreenService : IFullScreenService
 
             ApplyHide(window, decorView);
 
-            // Appels différés pour contourner les OEM agressifs (MIUI, etc.)
+            // Delayed calls to work around aggressive OEMs (MIUI, etc.)
             foreach (var delay in (int[])[150, 500, 1000])
                 decorView.PostDelayed(() => ApplyHide(window, decorView), delay);
 
@@ -67,12 +64,12 @@ public class FullscreenService : IFullScreenService
         var controller = WindowCompat.GetInsetsController(window, decorView);
         var barTypes = WindowInsetsCompat.Type.SystemBars() | WindowInsetsCompat.Type.NavigationBars();
 
-        // Android 35+ : Masquer les overlays CommunityToolkit.Maui
+        // Android 35+: Hide CommunityToolkit.Maui overlays
         if (OperatingSystem.IsAndroidVersionAtLeast(35))
         {
             var decorGroup = (ViewGroup)decorView;
 
-            // Masquer TOUS les StatusBar overlays (bug CTK: plusieurs peuvent exister car pas de tag)
+            // Hide ALL StatusBar overlays (CTK bug: multiple can exist because no tag is set)
             foreach (var overlay in FindAllStatusBarOverlays(decorGroup))
             {
                 overlay.Visibility = ViewStates.Gone;
@@ -83,13 +80,7 @@ public class FullscreenService : IFullScreenService
             if ((_navigationBarOverlay = decorGroup.FindViewWithTag("NavigationBarOverlay") as View) is not null)
                 _navigationBarOverlay.Visibility = ViewStates.Gone;
 
-            SetBarColors(window, Color.Transparent, Color.Transparent);
             window.ClearFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-        }
-        else if (OperatingSystem.IsAndroidVersionAtLeast(21))
-        {
-            (_originalStatusBarColor, _originalNavigationBarColor) = (window.StatusBarColor, window.NavigationBarColor);
-            SetBarColors(window, Color.Transparent, Color.Transparent);
         }
 
         WindowCompat.SetDecorFitsSystemWindows(window, false);
@@ -124,17 +115,13 @@ public class FullscreenService : IFullScreenService
             window.ClearFlags(WindowManagerFlags.LayoutNoLimits);
             window.SetFlags(WindowManagerFlags.DrawsSystemBarBackgrounds, WindowManagerFlags.DrawsSystemBarBackgrounds);
 
-            // Restaurer TOUS les StatusBar overlays
+            // Restore ALL StatusBar overlays
             foreach (var overlay in _statusBarOverlays)
                 overlay.Visibility = ViewStates.Visible;
             _statusBarOverlays.Clear();
 
             _navigationBarOverlay?.Visibility = ViewStates.Visible;
             _navigationBarOverlay = null;
-        }
-        else if (OperatingSystem.IsAndroidVersionAtLeast(21))
-        {
-            SetBarColors(window, new Color(_originalStatusBarColor), new Color(_originalNavigationBarColor));
         }
 
         if (OperatingSystem.IsAndroidVersionAtLeast(30))
@@ -168,18 +155,10 @@ public class FullscreenService : IFullScreenService
         catch (Exception ex) { Log.Error("FullscreenService", ex.Message); }
     });
 
-    private static void SetBarColors(Window window, Color statusBar, Color navigationBar)
-    {
-#pragma warning disable CA1416, CA1422
-        window.SetStatusBarColor(statusBar);
-        window.SetNavigationBarColor(navigationBar);
-#pragma warning restore CA1416, CA1422
-    }
-
     /// <summary>
-    /// Trouve TOUS les StatusBarOverlays de CommunityToolkit.Maui.
-    /// Bug CTK: StatusBar n'a pas de tag défini, donc FindViewWithTag ne fonctionne pas
-    /// et un nouvel overlay est créé à chaque changement de couleur → plusieurs overlays empilés.
+    /// Finds ALL StatusBarOverlays from CommunityToolkit.Maui.
+    /// CTK bug: StatusBar has no tag defined, so FindViewWithTag doesn't work
+    /// and a new overlay is created on each color change → multiple stacked overlays.
     /// </summary>
     private static List<View> FindAllStatusBarOverlays(ViewGroup decorGroup)
     {
