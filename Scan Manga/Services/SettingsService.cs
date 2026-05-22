@@ -1,26 +1,27 @@
-using System.Text.Json;
 using Scan_Manga.Constants;
+using Scan_Manga.Controls;
 using Scan_Manga.ViewModels;
+using System.Text.Json;
 
 namespace Scan_Manga.Services;
 
 public class SettingsService : ISettingsService
 {
-    public AppTheme GetTheme()
+    public AppTheme GetAppTheme()
     {
-        var themeString = Preferences.Get(PreferenceKeys.SelectedTheme, AppTheme.Unspecified.ToString());
+        var themeString = Preferences.Get(PreferenceKeys.SelectedAppTheme, AppTheme.Unspecified.ToString());
         return Enum.TryParse<AppTheme>(themeString, out var theme) ? theme : AppTheme.Unspecified;
     }
 
-    public void SetTheme(AppTheme theme)
+    public void SetAppTheme(AppTheme theme)
     {
-        Preferences.Set(PreferenceKeys.SelectedTheme, theme.ToString());
+        Preferences.Set(PreferenceKeys.SelectedAppTheme, theme.ToString());
     }
 
     public FullScreenMode GetFullScreenMode()
     {
-        var modeString = Preferences.Get(PreferenceKeys.SelectedFullScreenMode, FullScreenMode.ReadingOnly.ToString());
-        return Enum.TryParse<FullScreenMode>(modeString, out var mode) ? mode : FullScreenMode.ReadingOnly;
+        var modeString = Preferences.Get(PreferenceKeys.SelectedFullScreenMode, FullScreenMode.Disabled.ToString());
+        return Enum.TryParse<FullScreenMode>(modeString, out var mode) ? mode : FullScreenMode.Disabled;
     }
 
     public void SetFullScreenMode(FullScreenMode mode)
@@ -49,14 +50,14 @@ public class SettingsService : ISettingsService
         Preferences.Set(PreferenceKeys.IsAdBlockerEnabled, enabled);
     }
 
-    public bool LoadLastPageOnStartup()
+    public bool LoadLastUrlOnStartup()
     {
-        return Preferences.Get(PreferenceKeys.LoadLastPageOnStartup, true);
+        return Preferences.Get(PreferenceKeys.LoadLastUrlOnStartup, true);
     }
 
-    public void SetLoadLastPageOnStartup(bool enabled)
+    public void SetLoadLastUrlOnStartup(bool enabled)
     {
-        Preferences.Set(PreferenceKeys.LoadLastPageOnStartup, enabled);
+        Preferences.Set(PreferenceKeys.LoadLastUrlOnStartup, enabled);
     }
 
     public bool IsHistoryEnabled()
@@ -69,9 +70,9 @@ public class SettingsService : ISettingsService
         Preferences.Set(PreferenceKeys.IsHistoryEnabled, enabled);
     }
 
-    public string GetLastUrl(string defaultUrl)
+    public string GetLastUrl()
     {
-        return Preferences.Get(PreferenceKeys.LastUrl, defaultUrl);
+        return Preferences.Get(PreferenceKeys.LastUrl, CustomWebView.DefaultUrl);
     }
 
     public void SetLastUrl(string url)
@@ -79,21 +80,21 @@ public class SettingsService : ISettingsService
         Preferences.Set(PreferenceKeys.LastUrl, url);
     }
 
-    public HashSet<string> GetVisitedLinks()
+    public HashSet<string> GetVisitedUrls()
     {
-        var saved = Preferences.Get(PreferenceKeys.VisitedLinks, string.Empty);
+        var saved = Preferences.Get(PreferenceKeys.VisitedUrls, string.Empty);
         return string.IsNullOrEmpty(saved)
             ? []
             : JsonSerializer.Deserialize<HashSet<string>>(saved) ?? [];
     }
 
-    public void SetVisitedLinks(HashSet<string> links)
+    public void SetVisitedUrls(HashSet<string> urls)
     {
-        Preferences.Set(PreferenceKeys.VisitedLinks, JsonSerializer.Serialize(links));
+        Preferences.Set(PreferenceKeys.VisitedUrls, JsonSerializer.Serialize(urls));
     }
 
-    public void ClearVisitedLinks()
+    public void ClearVisitedUrls()
     {
-        Preferences.Remove(PreferenceKeys.VisitedLinks);
+        Preferences.Remove(PreferenceKeys.VisitedUrls);
     }
 }

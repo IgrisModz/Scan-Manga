@@ -47,15 +47,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+		<PackageReference Include="IgrisModz.MauiFullScreen" Version="1.1.0" />
 		<PackageReference Include="IgrisModz.MauiIcons.FontAwesome.Brands" Version="1.1.0" />
 		<PackageReference Include="IgrisModz.MauiIcons.MaterialSymbols.Rounded" Version="1.1.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.3" />
-	</ItemGroup>
-
-	<ItemGroup Condition="$(TargetFramework.StartsWith('net10'))">
-		<PackageReference Include="CommunityToolkit.Maui" Version="14.0.1" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.41" />
+		<PackageReference Include="IgrisModz.Plugin.DeviceCharging" Version="1.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.8" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="14.1.1" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="*" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -83,9 +82,6 @@
 	  <MauiXaml Update="Controls\MaterialPicker.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Controls\PageHeader.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	  <MauiXaml Update="Controls\SelectionPopup.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
@@ -93,6 +89,9 @@
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\DonatePage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Controls\IconButton.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\LegalNoticesPage.xaml">

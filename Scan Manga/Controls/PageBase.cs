@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui.Core;
-using Scan_Manga.Services;
 using CommunityToolkit.Maui.Core.Platform;
+using MauiFullScreen;
+
 
 #if ANDROID
 using CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
@@ -8,10 +9,8 @@ using CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 
 namespace Scan_Manga.Controls;
 
-public class PageBase(IFullScreenService fullScreenService) : ContentPage
+public class PageBase : ContentPage
 {
-    protected readonly IFullScreenService _fullScreenService = fullScreenService;
-
     // Couleurs de fallback mises en cache pour éviter le parsing hex à chaque appel
     private static readonly Color DarkFallback = Color.FromArgb("#1F1F1F");
     private static readonly Color LightFallback = Colors.White;
@@ -34,10 +33,6 @@ public class PageBase(IFullScreenService fullScreenService) : ContentPage
         set => SetValue(CustomNavigationBarColorProperty, value);
     }
 
-    public PageBase() : this(ServiceHelper.Services.GetRequiredService<IFullScreenService>())
-    {
-    }
-
     protected override void OnAppearing()
     {
         base.OnAppearing();
@@ -45,7 +40,7 @@ public class PageBase(IFullScreenService fullScreenService) : ContentPage
         Application.Current?.RequestedThemeChanged += OnThemeChanged;
 
         UpdateSystemBars();
-        _fullScreenService.ExitFullScreen();
+        Window?.DisableFullScreen();
     }
 
     protected override void OnDisappearing()

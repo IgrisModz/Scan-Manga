@@ -1,6 +1,7 @@
 ﻿using CommunityToolkit.Maui;
 using MauiIcons.FontAwesome.Brands;
 using MauiIcons.MaterialSymbols.Rounded;
+using Plugin.DeviceCharging;
 using Scan_Manga.Controls;
 using Scan_Manga.Services;
 using Scan_Manga.Pages;
@@ -40,8 +41,8 @@ public static class MauiProgram
                     handlers.AddHandler<Layout, LayoutHandler>();
                 });
 
-        builder.Services.AddSingleton<IFullScreenService, FullscreenService>();
-        builder.Services.AddSingleton<IChargingService, ChargingService>();
+        builder.Services.AddDeviceCharging();
+
         builder.Services.AddSingleton<ISettingsService, SettingsService>();
 
         builder.Services.AddSingleton<SettingsViewModel>();
@@ -54,8 +55,6 @@ public static class MauiProgram
         builder.Services.AddSingleton<TermsOfUsePage>();
 
         builder.Services.AddSingleton<MainPage>();
-
-        builder.Services.AddSingleton<AppShell>();
 
 #if DEBUG
         builder.Logging.AddDebug();

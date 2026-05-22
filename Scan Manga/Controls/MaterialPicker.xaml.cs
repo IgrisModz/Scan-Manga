@@ -1,9 +1,8 @@
 using CommunityToolkit.Maui.Extensions;
+using MauiIcons.MaterialSymbols.Rounded;
 using Scan_Manga.Models;
 
 namespace Scan_Manga.Controls;
-
-public enum PickerVariant { Outlined, Filled, Text }
 
 public partial class MaterialPicker : ContentView
 {
@@ -17,9 +16,9 @@ public partial class MaterialPicker : ContentView
         BindableProperty.Create(nameof(Variant), typeof(PickerVariant), typeof(MaterialPicker), PickerVariant.Outlined,
             propertyChanged: (b, o, n) => ((MaterialPicker)b).UpdateStyle((PickerVariant)n));
 
-    public SelectOption SelectedOption
+    public SelectOption? SelectedOption
     {
-        get => (SelectOption)GetValue(SelectedOptionProperty);
+        get => (SelectOption?)GetValue(SelectedOptionProperty);
         set => SetValue(SelectedOptionProperty, value);
     }
 
@@ -41,13 +40,15 @@ public partial class MaterialPicker : ContentView
         Loaded += (s, e) =>
         {
             if (SelectedOption == null && Options.Count > 0)
+            {
                 SelectedOption = Options[0];
+            }
 
             UpdateStyle(Variant);
         };
     }
 
-    private void UpdateStyle(PickerVariant variant)
+    void UpdateStyle(PickerVariant variant)
     {
         VisualStateManager.GoToState(MainBorder, variant.ToString());
 
@@ -68,7 +69,7 @@ public partial class MaterialPicker : ContentView
         }
     }
 
-    private async void OnPickerTapped(object sender, TappedEventArgs e)
+    async void OnPickerTapped(object? sender, TappedEventArgs e)
     {
         SetActiveState(true);
 
@@ -83,7 +84,7 @@ public partial class MaterialPicker : ContentView
         SetActiveState(false);
     }
 
-    private void SetActiveState(bool active)
+    void SetActiveState(bool active)
     {
         if (active)
         {
@@ -97,6 +98,8 @@ public partial class MaterialPicker : ContentView
             {
                 IndicatorLine.SetAppThemeColor(BackgroundColorProperty, lightColor, darkColor);
             }
+
+            DropdownIcon.Icon = MaterialSymbolsRoundedIcons.ArrowDropUp;
         }
         else
         {
@@ -110,13 +113,18 @@ public partial class MaterialPicker : ContentView
                 MainBorder.Stroke = Colors.Transparent;
                 IndicatorLine.BackgroundColor = color;
             }
+
+            DropdownIcon.Icon = MaterialSymbolsRoundedIcons.ArrowDropDown;
         }
     }
 
-    private static Color GetResourceColor(string key, Color fallback)
+    static Color GetResourceColor(string key, Color fallback)
     {
         if (Application.Current?.Resources.TryGetValue(key, out var obj) == true && obj is Color color)
+        {
             return color;
+        }
+
         return fallback;
     }
 }

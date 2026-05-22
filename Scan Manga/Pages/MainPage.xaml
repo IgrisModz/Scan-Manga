@@ -1,36 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:PageBase
-    x:Class="Scan_Manga.MainPage"
+    x:Class="Scan_Manga.Pages.MainPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
     xmlns:controls="clr-namespace:Scan_Manga.Controls"
-    xmlns:local="clr-namespace:Scan_Manga"
+    xmlns:vm="clr-namespace:Scan_Manga.ViewModels"
     xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
-    x:DataType="local:MainPage"
+    x:DataType="vm:MainViewModel"
     CustomStatusBarColor="{StaticResource Primary}">
 
     <Grid x:Name="MainRoot">
         <!--  Refresh uniquement sur le WebView  -->
-        <RefreshView
-            x:Name="WebRefreshView"
-            IsRefreshing="False"
-            Refreshing="OnRefresh">
-            <controls:CustomWebView
-                x:Name="MainWebView"
-                android:WebView.DisplayZoomControls="False"
-                android:WebView.EnableZoomControls="True"
-                HorizontalOptions="Fill"
-                VerticalOptions="Fill" />
+        <RefreshView x:Name="WebRefreshView"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding RefreshCommand}">
+            <controls:CustomWebView x:Name="MainWebView"
+                                    android:WebView.DisplayZoomControls="False"
+                                    android:WebView.EnableZoomControls="True"
+                                    HorizontalOptions="Fill"
+                                    VerticalOptions="Fill" />
         </RefreshView>
 
         <!--  Offline overlay  -->
-        <Grid
-            x:Name="OfflineOverlay"
-            BackgroundColor="{AppThemeBinding Light={StaticResource White},
-                                              Dark={StaticResource OffBlack}}"
-            IsVisible="False"
-            RowDefinitions="Auto,*">
+        <Grid x:Name="OfflineOverlay"
+              IsVisible="False"
+              RowDefinitions="Auto,*"
+              BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource OffBlack}}">
             <controls:PageHeader />
             <ScrollView Grid.Row="1">
                 <Grid>
@@ -39,7 +35,7 @@
                         Shadow="{StaticResource BubbleShadow}"
                         VerticalOptions="Start">
                         <VerticalStackLayout Padding="25" Spacing="10">
-                            <mi:MaterialSymbolsRoundedIcon Icon="ErrorOutline" FontSize="48" Text="#FA4336" HorizontalOptions="Center" />
+                            <mi:MaterialSymbolsRoundedIcon Icon="ErrorOutline" FontSize="48" TextColor="#FA4336" HorizontalOptions="Center" />
                             <Label x:Name="ErrorTitleLabel"
                                    Style="{StaticResource Headline}"
                                    FontSize="28"
@@ -72,8 +68,8 @@
 
         <controls:ExpandableNavBar
             x:Name="NavBar"
-            RefreshTapped="OnRefresh"
-            HomeTapped="OnHomeTapped" />
+            RefreshClicked="OnRefresh"
+            HomeClicked="OnHomeClicked" />
 
     </Grid>
 

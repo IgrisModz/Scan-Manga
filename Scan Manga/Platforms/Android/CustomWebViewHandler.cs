@@ -139,7 +139,7 @@ public class CustomWebViewHandler : WebViewHandler
             if (request?.IsForMainFrame != true || errorResponse == null)
                 return;
 
-            Log.Error("MyWebView", $"HTTP Error {errorResponse.StatusCode} {errorResponse.ReasonPhrase}");
+            Log.Error("CustomWebView", $"HTTP Error {errorResponse.StatusCode} {errorResponse.ReasonPhrase}");
 
             var errorInfo = WebErrorHelper.GetHttpErrorInfo(errorResponse.StatusCode);
             _customWebView.RaiseError($"{errorInfo.Title} ({errorResponse.StatusCode})", errorInfo.Message);
@@ -177,8 +177,9 @@ public class CustomWebViewHandler : WebViewHandler
         {
             var uri = new Uri(url);
             // On vérifie le domaine exact ou les sous-domaines
-            return uri.Host.Equals("scan-manga.com", StringComparison.OrdinalIgnoreCase) ||
-                   uri.Host.EndsWith(".scan-manga.com", StringComparison.OrdinalIgnoreCase);
+            return true;
+            //return uri.Host.Equals("scan-manga.com", StringComparison.OrdinalIgnoreCase) ||
+            //       uri.Host.EndsWith(".scan-manga.com", StringComparison.OrdinalIgnoreCase);
         }
         catch { return false; }
     }

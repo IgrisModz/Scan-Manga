@@ -4,19 +4,26 @@ namespace Scan_Manga;
 
 public partial class App : Application
 {
-    private readonly AppShell _appShell;
+    public const double Width = 1366;
+    public const double Height = 768;
 
-    public App(AppShell appShell, ISettingsService settingsService)
+    public App(ISettingsService settingsService)
     {
         InitializeComponent();
 
-        _appShell = appShell;
-
-        UserAppTheme = settingsService.GetTheme();
+        UserAppTheme = settingsService.GetAppTheme();
     }
 
     protected override Window CreateWindow(IActivationState? activationState)
     {
-        return new Window(_appShell);
+        return new Window(new AppShell())
+        {
+            MinimumWidth = 1280,
+            MinimumHeight = 720,
+            Width = App.Width,
+            Height = App.Height,
+            X = (DeviceDisplay.Current.MainDisplayInfo.Width / DeviceDisplay.Current.MainDisplayInfo.Density - App.Width) / 2,
+            Y = (DeviceDisplay.Current.MainDisplayInfo.Height / DeviceDisplay.Current.MainDisplayInfo.Density - App.Height) / 2
+        };
     }
 }

@@ -5,15 +5,15 @@
                xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
                xmlns:controls="clr-namespace:Scan_Manga.Controls"
                xmlns:models="clr-namespace:Scan_Manga.Models"
-               x:DataType="controls:SelectionPopup"
                x:Class="Scan_Manga.Controls.SelectionPopup"
                Margin="0"
                Padding="0"
+               x:DataType="controls:SelectionPopup"
                x:TypeArguments="models:SelectOption"
-               BackgroundColor="Transparent"
-               SafeAreaEdges="True">
+               BackgroundColor="Transparent">
     <Grid>
-        <Border StrokeShape="RoundRectangle 4"
+        <Border MaximumWidthRequest="400"
+                StrokeShape="RoundRectangle 4"
                 Padding="10"
                 Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}">
             <CollectionView x:Name="ListOptions"
@@ -43,12 +43,23 @@
 
                             <Grid ColumnDefinitions="40,*" Padding="12" ColumnSpacing="8">
                                 <mi:MaterialSymbolsRoundedIcon Icon="{Binding Icon}" 
-                                             TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
-                                             FontSize="26" />
+                                                               TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
+                                                               FontSize="26" />
                                 <Label Grid.Column="1" 
                                        Text="{Binding Label}" 
                                        VerticalOptions="Center" 
-                                       FontSize="16" />
+                                       FontSize="16">
+                                    <Label.Style>
+                                        <Style TargetType="Label">
+                                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+                                            <Style.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
+                                                    <Setter Property="TextColor" Value="{StaticResource White}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Label.Style>
+                                </Label>
                             </Grid>
                         </Border>
                     </DataTemplate>

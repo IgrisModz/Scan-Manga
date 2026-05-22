@@ -2,19 +2,17 @@ namespace Scan_Manga.Helpers;
 
 public static class AnimationHelpers
 {
-    public static Task AnimateWidthAsync(VisualElement view, double from, double to, uint length = 250)
-    {
-        var tcs = new TaskCompletionSource<bool>();
-        var animation = new Animation(v => view.WidthRequest = v, from, to, Easing.CubicInOut);
-        animation.Commit(view, "AnimateWidth", 16, length, finished: (v, c) => tcs.SetResult(true));
-        return tcs.Task;
-    }
+    public static Task<bool> AnimateWidthAsync(this VisualElement view, double from, double to, uint length = 250)
+        => AnimatePropertyAsync(view, "AnimateWidth", v => view.WidthRequest = v, from, to, length);
 
-    public static Task AnimateHeightAsync(VisualElement view, double from, double to, uint length = 250)
+    public static Task<bool> AnimateHeightAsync(this VisualElement view, double from, double to, uint length = 250)
+        => AnimatePropertyAsync(view, "AnimateHeight", v => view.HeightRequest = v, from, to, length);
+
+    static Task<bool> AnimatePropertyAsync(VisualElement view, string name, Action<double> callback, double from, double to, uint length)
     {
         var tcs = new TaskCompletionSource<bool>();
-        var animation = new Animation(v => view.HeightRequest = v, from, to, Easing.CubicInOut);
-        animation.Commit(view, "AnimateHeight", 16, length, finished: (v, c) => tcs.SetResult(true));
+        var animation = new Animation(callback, from, to, Easing.CubicInOut);
+        animation.Commit(view, name, 16, length, finished: (v, c) => tcs.SetResult(true));
         return tcs.Task;
     }
 

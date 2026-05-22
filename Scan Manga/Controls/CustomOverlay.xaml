@@ -4,7 +4,7 @@
              xmlns:controls="clr-namespace:Scan_Manga.Controls"
              x:DataType="controls:CustomOverlay"
              x:Class="Scan_Manga.Controls.CustomOverlay"
-             x:Name="this">
+             x:Name="thisRoot">
     <Grid x:Name="BackgroundOverlay" BackgroundColor="#AA000000" Opacity="0">
         <Grid.GestureRecognizers>
             <TapGestureRecognizer Tapped="OnBackgroundTapped" />
@@ -16,15 +16,15 @@
                 <TapGestureRecognizer Tapped="OnBorderTapped" />
             </Border.GestureRecognizers>
             <VerticalStackLayout Spacing="10">
-                <Label Text="{Binding Title, Source={x:Reference this}}" 
+                <Label Text="{Binding Title, Source={x:Reference thisRoot}}" 
                        FontSize="20" FontAttributes="Bold"/>
-                <Label Text="{Binding Message, Source={x:Reference this}}"/>
+                <Label Text="{Binding Message, Source={x:Reference thisRoot}}"/>
                 <FlexLayout JustifyContent="End" Direction="Row">
-                    <Button Grid.Column="1" Text="{Binding CancelText, Source={x:Reference this}}"
-                            IsVisible="{Binding IsCancelVisible, Source={x:Reference this}}"
+                    <Button Grid.Column="1" Text="{Binding CancelText, Source={x:Reference thisRoot}}"
+                            IsVisible="{Binding IsCancelVisible, Source={x:Reference thisRoot}}"
                             Margin="0,0,6,0"
                             Clicked="OnCancelClicked" BackgroundColor="Transparent" TextColor="Gray"/>
-                    <Button Text="{Binding ConfirmText, Source={x:Reference this}}" Padding="0"
+                    <Button Text="{Binding ConfirmText, Source={x:Reference thisRoot}}" Padding="0"
                             MinimumWidthRequest="55"
                             Clicked="OnConfirmClicked" />
                 </FlexLayout>

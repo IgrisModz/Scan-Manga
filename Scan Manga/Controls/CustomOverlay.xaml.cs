@@ -32,16 +32,22 @@ public partial class CustomOverlay : ContentView
         InputTransparent = true;
     }
 
-    private static async void OnIsOpenChanged(BindableObject bindable, object oldValue, object newValue)
+    static async void OnIsOpenChanged(BindableObject bindable, object oldValue, object newValue)
     {
         if (bindable is CustomOverlay control && newValue is bool open)
         {
-            if (open) await control.AnimateIn();
-            else await control.AnimateOut();
+            if (open)
+            {
+                await control.AnimateIn();
+            }
+            else
+            {
+                await control.AnimateOut();
+            }
         }
     }
 
-    private async Task AnimateIn()
+    async Task AnimateIn()
     {
         IsVisible = true;
         InputTransparent = false;
@@ -58,7 +64,7 @@ public partial class CustomOverlay : ContentView
         );
     }
 
-    private async Task AnimateOut()
+    async Task AnimateOut()
     {
         await Task.WhenAll(
             BackgroundOverlay.FadeToSafe(0, 200),
@@ -69,10 +75,10 @@ public partial class CustomOverlay : ContentView
         InputTransparent = true;
     }
 
-    private void OnConfirmClicked(object sender, EventArgs e) => HandleResponse(true);
-    private void OnCancelClicked(object sender, EventArgs e) => HandleResponse(false);
+    void OnConfirmClicked(object sender, EventArgs e) => HandleResponse(true);
+    void OnCancelClicked(object sender, EventArgs e) => HandleResponse(false);
 
-    private void HandleResponse(bool result)
+    void HandleResponse(bool result)
     {
         // On ferme
         IsOpen = false;
@@ -87,15 +93,18 @@ public partial class CustomOverlay : ContentView
     protected override void OnPropertyChanged([CallerMemberName] string? propertyName = null)
     {
         base.OnPropertyChanged(propertyName);
-        if (propertyName == nameof(CancelText)) OnPropertyChanged(nameof(IsCancelVisible));
+        if (propertyName == nameof(CancelText))
+        {
+            OnPropertyChanged(nameof(IsCancelVisible));
+        }
     }
 
-    private void OnBackgroundTapped(object sender, TappedEventArgs e)
+    void OnBackgroundTapped(object sender, TappedEventArgs e)
     {
         IsOpen = false;
     }
 
-    private void OnBorderTapped(object sender, TappedEventArgs e)
+    void OnBorderTapped(object sender, TappedEventArgs e)
     {
     }
 }

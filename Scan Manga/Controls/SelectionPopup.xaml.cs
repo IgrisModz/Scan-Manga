@@ -5,7 +5,7 @@ namespace Scan_Manga.Controls;
 
 public partial class SelectionPopup : Popup<SelectOption>
 {
-    public SelectionPopup(IList<SelectOption> options, SelectOption currentSelected)
+    public SelectionPopup(IList<SelectOption> options, SelectOption? currentSelected)
     {
         InitializeComponent();
 
@@ -16,7 +16,8 @@ public partial class SelectionPopup : Popup<SelectOption>
 
         ListOptions.ItemsSource = options;
     }
-    private async void OnItemTapped(object sender, TappedEventArgs e)
+
+    async void OnItemTapped(object? sender, TappedEventArgs e)
     {
         if (e.Parameter is SelectOption clickedOption)
         {

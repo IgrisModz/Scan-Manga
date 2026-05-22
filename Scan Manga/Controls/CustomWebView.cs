@@ -2,12 +2,12 @@
 
 public class CustomWebView : WebView
 {
-    public const string DefaultUrl = "https://m.scan-manga.com/?po";
+    public static string DefaultUrl { get; private set; } = GetDefaultUrl();
 
     public event EventHandler<WebViewErrorEventArgs>? HttpErrorOccurred;
 
     public static readonly BindableProperty ProgressProperty =
-    BindableProperty.Create(nameof(Progress), typeof(double), typeof(CustomWebView), 0.0, propertyChanged: OnProgressChanged);
+        BindableProperty.Create(nameof(Progress), typeof(double), typeof(CustomWebView), 0.0, propertyChanged: OnProgressChanged);
 
     public static readonly BindableProperty IsLoadingProperty =
         BindableProperty.Create(nameof(IsLoading), typeof(bool), typeof(CustomWebView), false);
@@ -59,6 +59,15 @@ public class CustomWebView : WebView
     {
         HasError = false;
         Reload();
+    }
+
+    static string GetDefaultUrl()
+    {
+#if ANDROID || IOS
+        return "https://m.scan-manga.com/?po";
+#else
+		return "https://www.scan-manga.com/?home";
+#endif
     }
 }
 

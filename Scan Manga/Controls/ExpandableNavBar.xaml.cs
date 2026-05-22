@@ -7,8 +7,8 @@ namespace Scan_Manga.Controls;
 
 public partial class ExpandableNavBar : Grid
 {
-    public event EventHandler? RefreshTapped;
-    public event EventHandler<TappedEventArgs>? HomeTapped;
+    public event EventHandler? RefreshClicked;
+    public event EventHandler? HomeClicked;
 
     private bool _navBarExpanded = false;
     private bool _isVerticalExpanded = false;
@@ -82,7 +82,7 @@ public partial class ExpandableNavBar : Grid
     {
         if (!_isVerticalExpanded) return;
 
-        MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowUp.GetGlyph(); // Retour icône haut
+        MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowUp.GetGlyph(); // Retour icÃ´ne haut
 
         await ExtraOptionsContainer.FadeToSafe(0, 150);
         ExtraOptionsContainer.IsVisible = false;
@@ -99,7 +99,7 @@ public partial class ExpandableNavBar : Grid
         // Si le menu vertical est ouvert, on le ferme d'abord
         if (_isVerticalExpanded)
         {
-            MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowUp.GetGlyph(); // Retour icône haut
+            MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowUp.GetGlyph(); // Retour icÃ´ne haut
 
             await ExtraOptionsContainer.FadeToSafe(0, 150);
             ExtraOptionsContainer.IsVisible = false;
@@ -122,59 +122,27 @@ public partial class ExpandableNavBar : Grid
         _navBarExpanded = false;
     }
 
-    private async void OnOverlayTapped(object? sender, TappedEventArgs e) => await CloseNavBarInternal();
-    private async void OnOverlayPan(object sender, PanUpdatedEventArgs e) => await CloseNavBarInternal();
-    private async void OnOverlayPinch(object sender, PinchGestureUpdatedEventArgs e) => await CloseNavBarInternal();
-    private void IgnoreOnOverlayTapped(object sender, TappedEventArgs e) { }
+    async void OnOverlayTapped(object? sender, TappedEventArgs e) => await CloseNavBarInternal();
+    async void OnOverlayPan(object sender, PanUpdatedEventArgs e) => await CloseNavBarInternal();
+    async void OnOverlayPinch(object sender, PinchGestureUpdatedEventArgs e) => await CloseNavBarInternal();
+    void IgnoreOnOverlayTapped(object sender, TappedEventArgs e) { }
 
-    private async void OnRefreshTapped(object sender, TappedEventArgs e) =>
-        await HandleInteractionAsync(sender, () => { RefreshTapped?.Invoke(this, EventArgs.Empty); return Task.CompletedTask; }, true);
-    public async void OnHomeTapped(object sender, TappedEventArgs e) =>
-        await HandleInteractionAsync(sender, () => { HomeTapped?.Invoke(this, e); return Task.CompletedTask; });
-    
-    private async void OnDonateTapped(object sender, TappedEventArgs e) =>
-        await NavigateToAsync(sender, nameof(DonatePage));
-    private async void OnSettingsTapped(object sender, TappedEventArgs e) =>
-        await NavigateToAsync(sender, nameof(SettingsPage), true);
+    async void OnNoticesClicked(object sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(LegalNoticesPage)));
+    async void OnPrivacyClicked(object sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(PrivacyPolicyPage)));
+    async void OnTermsClicked(object sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(TermsOfUsePage)));
+    async void OnAboutClicked(object sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(AboutPage)));
 
-    private async void OnNoticesClicked(object sender, TappedEventArgs e) =>
-        await NavigateToAsync(sender, nameof(LegalNoticesPage));
-    private async void OnPrivacyClicked(object sender, TappedEventArgs e) =>
-        await NavigateToAsync(sender, nameof(PrivacyPolicyPage));
-    private async void OnTermsClicked(object sender, TappedEventArgs e) =>
-        await NavigateToAsync(sender, nameof(TermsOfUsePage));
-    private async void OnAboutClicked(object sender, TappedEventArgs e) =>
-        await NavigateToAsync(sender, nameof(AboutPage));
+    async void OnDonateClicked(object? sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(DonatePage)));
+    async void OnRefreshClicked(object? sender, EventArgs e) => await ButtonTap(() => RefreshClicked?.Invoke(this, EventArgs.Empty));
+    async void OnHomeClicked(object? sender, EventArgs e) => await ButtonTap(() => HomeClicked?.Invoke(this, EventArgs.Empty));
+    async void OnSettingsClicked(object? sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(SettingsPage)));
 
-    private Task NavigateToAsync(object sender, string route, bool rotate = false)
+    async Task ButtonTap(Action action)
     {
-        return HandleInteractionAsync(sender, async () =>
-        {
-            await Shell.Current.GoToAsync(route);
-        }, rotate);
-    }
-
-    private async Task HandleInteractionAsync(object sender, Func<Task> action, bool rotateIcon = false)
-    {
-        if (sender is not VisualElement view) return;
-
-        await view.ScaleToSafe(0.7, 100);
-        await view.ScaleToSafe(1, 100);
-
-        if (rotateIcon && view is VerticalStackLayout stack)
-        {
-            var icon = stack.Children.OfType<Label>().FirstOrDefault();
-            if (icon != null)
-            {
-                icon.Rotation = 0;
-                await icon.RotateToSafe(360, 500);
-            }
-        }
-
         await CloseNavBarInternal();
 
         await Task.Delay(50);
 
-        await action.Invoke();
+        action.Invoke();
     }
 }

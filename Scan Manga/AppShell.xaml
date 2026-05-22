@@ -3,9 +3,14 @@
     x:Class="Scan_Manga.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:Scan_Manga"
+    xmlns:pages="clr-namespace:Scan_Manga.Pages"
     Title="Scan-Manga"
     Shell.NavBarIsVisible="False"
     Shell.TabBarIsVisible="False">
+
+    <ShellContent
+        Title="Home"
+        ContentTemplate="{DataTemplate pages:MainPage}"
+        Route="MainPage" />
 
 </Shell>
