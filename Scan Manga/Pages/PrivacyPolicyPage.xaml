@@ -17,7 +17,7 @@
                     <VerticalStackLayout Padding="25" Spacing="10">
 
                         <Label
-                            FontSize="Title"
+                            FontSize="24"
                             Style="{StaticResource Headline}"
                             Text="Politique de confidentialité" />
 

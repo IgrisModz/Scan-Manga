@@ -20,7 +20,7 @@
                     <VerticalStackLayout Padding="25" Spacing="10">
 
                         <Label
-                            FontSize="Title"
+                            FontSize="24"
                             Style="{StaticResource Headline}"
                             Text="À propos" />
 
@@ -35,7 +35,7 @@
                         </Label>
                         <Label
                             FontAttributes="Bold"
-                            FontSize="Subtitle"
+                            FontSize="18"
                             Style="{StaticResource SubHeadline}"
                             Text="Code source" />
                         <VerticalStackLayout Spacing="8">
