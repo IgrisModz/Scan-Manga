@@ -4,15 +4,23 @@
              xmlns:controls="clr-namespace:Scan_Manga.Controls"
              xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
              x:Class="Scan_Manga.Controls.IconButton"
+             x:Name="Root"
              x:DataType="controls:IconButton">
-    <VerticalStackLayout>
+    <VerticalStackLayout Spacing="{Binding Spacing}" BindingContext="{x:Reference Root}">
         <mi:MaterialSymbolsRoundedIcon x:Name="IconBtn"
-                                       FontSize="30"
+                                       FontSize="{Binding IconSize}"
                                        HorizontalOptions="Center"
                                        Icon="{Binding Icon}"
-                                       TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"/>
+                                       TextColor="{Binding IconColor}"/>
 
-        <Label FontSize="10" FontAttributes="Bold" HorizontalTextAlignment="Center" LineBreakMode="TailTruncation" MaxLines="1" TextTransform="Uppercase" Text="{Binding Text}" />
+        <Label FontSize="{Binding FontSize}"
+               FontAttributes="{Binding FontAttributes}"
+               HorizontalTextAlignment="Center"
+               LineBreakMode="TailTruncation"
+               MaxLines="1"
+               TextTransform="{Binding TextTransform}"
+               TextColor="{Binding TextColor}"
+               Text="{Binding Text}" />
 
         <VerticalStackLayout.GestureRecognizers>
             <TapGestureRecognizer Tapped="OnButtonTapped" />

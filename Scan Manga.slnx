@@ -1,5 +1,13 @@
 <Solution>
-  <Project Path="Scan Manga/Scan Manga.csproj">
-    <Deploy Solution="Debug|*" />
-  </Project>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="config.json" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Build.targets" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="Scan Manga/Scan Manga.csproj"/>
 </Solution>

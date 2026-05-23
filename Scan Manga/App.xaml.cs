@@ -20,10 +20,10 @@ public partial class App : Application
         {
             MinimumWidth = 1280,
             MinimumHeight = 720,
-            Width = App.Width,
-            Height = App.Height,
-            X = (DeviceDisplay.Current.MainDisplayInfo.Width / DeviceDisplay.Current.MainDisplayInfo.Density - App.Width) / 2,
-            Y = (DeviceDisplay.Current.MainDisplayInfo.Height / DeviceDisplay.Current.MainDisplayInfo.Density - App.Height) / 2
+            Width = Width,
+            Height = Height,
+            X = (DeviceDisplay.Current.MainDisplayInfo.Width / DeviceDisplay.Current.MainDisplayInfo.Density - Width) / 2,
+            Y = (DeviceDisplay.Current.MainDisplayInfo.Height / DeviceDisplay.Current.MainDisplayInfo.Density - Height) / 2
         };
     }
 }

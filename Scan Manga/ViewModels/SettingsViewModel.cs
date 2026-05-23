@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using MauiIcons.MaterialSymbols.Rounded;
 using Scan_Manga.Constants;
-using Scan_Manga.Helpers;
 using Scan_Manga.Models;
 using Scan_Manga.Services;
 
@@ -79,20 +78,14 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnIsHistoryEnabledChanged(bool value) => settingsService.SetHistoryEnabled(value);
 
     [RelayCommand]
-    static async Task GoBack(VerticalStackLayout sender)
+    static async Task GoBack()
     {
-        await sender.ScaleToSafe(0.7, 100);
-        await sender.ScaleToSafe(1, 100);
-
         await Shell.Current.GoToAsync("..");
     }
 
     [RelayCommand]
-    async Task ClearHistory(VerticalStackLayout sender)
+    async Task ClearHistory()
     {
-        await sender.ScaleToSafe(0.7, 100);
-        await sender.ScaleToSafe(1, 100);
-
         currentContext = OverlayContext.ClearHistory;
         Overlay = new Overlay
         {
@@ -105,7 +98,7 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [RelayCommand]
-    private async Task ShowRestoreHelp()
+    async Task ShowRestoreHelp()
     {
         currentContext = OverlayContext.Help;
         Overlay = new Overlay

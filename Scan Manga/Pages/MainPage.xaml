@@ -11,17 +11,15 @@
     CustomStatusBarColor="{StaticResource Primary}">
 
     <Grid x:Name="MainRoot">
-        <!--  Refresh uniquement sur le WebView  -->
+    <!--  Refresh uniquement sur le WebView  -->
         <RefreshView x:Name="WebRefreshView"
                      IsRefreshing="{Binding IsRefreshing}"
                      Command="{Binding RefreshCommand}">
             <controls:CustomWebView x:Name="MainWebView"
                                     android:WebView.DisplayZoomControls="False"
-                                    android:WebView.EnableZoomControls="True"
-                                    HorizontalOptions="Fill"
-                                    VerticalOptions="Fill" />
+                                    android:WebView.EnableZoomControls="True" />
         </RefreshView>
-
+        
         <!--  Offline overlay  -->
         <Grid x:Name="OfflineOverlay"
               IsVisible="False"
@@ -30,10 +28,9 @@
             <controls:PageHeader />
             <ScrollView Grid.Row="1">
                 <Grid>
-                    <Border
-                        Margin="20"
-                        Shadow="{StaticResource BubbleShadow}"
-                        VerticalOptions="Start">
+                    <Border Margin="20"
+                            Shadow="{StaticResource BubbleShadow}"
+                            VerticalOptions="Start">
                         <VerticalStackLayout Padding="25" Spacing="10">
                             <mi:MaterialSymbolsRoundedIcon Icon="ErrorOutline" FontSize="48" TextColor="#FA4336" HorizontalOptions="Center" />
                             <Label x:Name="ErrorTitleLabel"
@@ -58,19 +55,16 @@
         </Grid>
 
         <!--  ProgressBar  -->
-        <ProgressBar
-            x:DataType="controls:CustomWebView"
-            HeightRequest="3"
-            HorizontalOptions="Fill"
-            IsVisible="{Binding IsLoading, Source={x:Reference MainWebView}}"
-            Progress="{Binding Progress, Source={x:Reference MainWebView}}"
-            VerticalOptions="Start" />
+        <ProgressBar x:DataType="controls:CustomWebView"
+                     HeightRequest="3"
+                     HorizontalOptions="Fill"
+                     VerticalOptions="Start"
+                     IsVisible="{Binding IsLoading, Source={x:Reference MainWebView}}"
+                     Progress="{Binding Progress, Source={x:Reference MainWebView}}" />
 
-        <controls:ExpandableNavBar
-            x:Name="NavBar"
-            RefreshClicked="OnRefresh"
-            HomeClicked="OnHomeClicked" />
-
+        <controls:ExpandableNavBar x:Name="NavBar"
+                                   RefreshClicked="OnRefresh"
+                                   HomeClicked="OnHomeClicked" />
     </Grid>
 
 </controls:PageBase>

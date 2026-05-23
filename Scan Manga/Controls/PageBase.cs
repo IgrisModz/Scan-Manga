@@ -9,11 +9,11 @@ using CommunityToolkit.Maui.PlatformConfiguration.AndroidSpecific;
 
 namespace Scan_Manga.Controls;
 
-public class PageBase : ContentPage
+public partial class PageBase : ContentPage
 {
     // Couleurs de fallback mises en cache pour éviter le parsing hex à chaque appel
-    private static readonly Color DarkFallback = Color.FromArgb("#1F1F1F");
-    private static readonly Color LightFallback = Colors.White;
+    static readonly Color darkFallback = Color.FromArgb("#1F1F1F");
+    static readonly Color lightFallback = Colors.White;
 
     public static readonly BindableProperty CustomStatusBarColorProperty =
         BindableProperty.Create(nameof(CustomStatusBarColor), typeof(Color), typeof(PageBase), null);
@@ -50,9 +50,9 @@ public class PageBase : ContentPage
         base.OnDisappearing();
     }
 
-    private void OnThemeChanged(object? sender, AppThemeChangedEventArgs e) => UpdateSystemBars();
+    void OnThemeChanged(object? sender, AppThemeChangedEventArgs e) => UpdateSystemBars();
 
-    private void UpdateSystemBars()
+    void UpdateSystemBars()
     {
         var isDarkMode = Application.Current?.RequestedTheme == AppTheme.Dark;
 
@@ -61,10 +61,13 @@ public class PageBase : ContentPage
 
         // Update Navigation bar style and color
 #if ANDROID
-        var navPlatform = On<Microsoft.Maui.Controls.PlatformConfiguration.Android>();
-        navPlatform.SetColor(finalNavBarColor);
-        // Calcul du style spécifiquement pour la barre de navigation
-        navPlatform.SetStyle(GetNavigationBarStyle(finalNavBarColor));
+        if (OperatingSystem.IsAndroidVersionAtLeast(23))
+        {
+            var navPlatform = On<Microsoft.Maui.Controls.PlatformConfiguration.Android>();
+            navPlatform.SetColor(finalNavBarColor);
+            // Calcul du style spécifiquement pour la barre de navigation
+            navPlatform.SetStyle(GetNavigationBarStyle(finalNavBarColor));
+        }
 #endif
 
         if (OperatingSystem.IsAndroidVersionAtLeast(23) || OperatingSystem.IsIOSVersionAtLeast(15))
@@ -75,24 +78,26 @@ public class PageBase : ContentPage
         }
     }
 
-    private static Color GetThemedColor(Color? customColor, bool isDark)
+    static Color GetThemedColor(Color? customColor, bool isDark)
     {
-        // Si une couleur custom est définie, on la prend
-        if (customColor != null)
-            return customColor;
+		// Si une couleur custom est définie, on la prend
+		if (customColor != null)
+		{
+			return customColor;
+		}
 
-        // Sinon on cherche dans les ressources
-        var resourceKey = isDark ? "OffBlack" : "White";
+		// Sinon on cherche dans les ressources
+		var resourceKey = isDark ? "OffBlack" : "White";
         if (Application.Current?.Resources.TryGetValue(resourceKey, out var res) is true && res is Color resColor)
         {
             return resColor;
         }
 
         // Sinon fallback hardcodé
-        return isDark ? DarkFallback : LightFallback;
+        return isDark ? darkFallback : lightFallback;
     }
 
-    private static StatusBarStyle GetStatusBarStyle(Color color)
+    static StatusBarStyle GetStatusBarStyle(Color color)
     {
         // Si la couleur est claire (> 0.5), on veut des icones sombres (DarkContent)
         // Sinon on veut des icones claires (LightContent)
@@ -100,7 +105,7 @@ public class PageBase : ContentPage
     }
 
 #if ANDROID
-    private static NavigationBarStyle GetNavigationBarStyle(Color color)
+    static NavigationBarStyle GetNavigationBarStyle(Color color)
     {
         return color.GetLuminosity() > 0.5 ? NavigationBarStyle.DarkContent : NavigationBarStyle.LightContent;
     }

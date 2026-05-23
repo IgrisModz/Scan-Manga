@@ -2,11 +2,14 @@
 using MauiIcons.FontAwesome.Brands;
 using MauiIcons.MaterialSymbols.Rounded;
 using Plugin.DeviceCharging;
-using Scan_Manga.Controls;
 using Scan_Manga.Services;
 using Scan_Manga.Pages;
 using Scan_Manga.ViewModels;
+
+#if ANDROID || IOS
+using Scan_Manga.Controls;
 using Microsoft.Maui.Handlers;
+#endif
 
 #if ANDROID
 using Scan_Manga.Platforms.Android;
@@ -25,21 +28,23 @@ public static class MauiProgram
     public static MauiApp CreateMauiApp()
     {
         var builder = MauiApp.CreateBuilder();
-            builder
-                .UseMauiApp<App>()
-                .UseMauiCommunityToolkit()
-                .UseFontAwesomeBrands()
-                .UseMaterialSymbolsRounded()
-                .ConfigureFonts(fonts =>
-                {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
-                })
-                .ConfigureMauiHandlers(handlers =>
-                {
-                    handlers.AddHandler<CustomWebView, CustomWebViewHandler>();
-                    handlers.AddHandler<Layout, LayoutHandler>();
-                });
+        builder
+            .UseMauiApp<App>()
+            .UseMauiCommunityToolkit()
+            .UseFontAwesomeBrands()
+            .UseMaterialSymbolsRounded()
+            .ConfigureFonts(fonts =>
+            {
+                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
+                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+            })
+            .ConfigureMauiHandlers(handlers =>
+            {
+#if ANDROID || IOS
+                handlers.AddHandler<CustomWebView, CustomWebViewHandler>();
+                handlers.AddHandler<Layout, LayoutHandler>();
+#endif
+            });
 
         builder.Services.AddDeviceCharging();
 
@@ -60,10 +65,6 @@ public static class MauiProgram
         builder.Logging.AddDebug();
 #endif
 
-        var app = builder.Build();
-
-        ServiceHelper.Services = app.Services;
-
-        return app;
+        return builder.Build();
     }
 }
