@@ -10,12 +10,12 @@ public partial class ExpandableNavBar : Grid
     public event EventHandler? RefreshClicked;
     public event EventHandler? HomeClicked;
 
-    private bool _navBarExpanded = false;
-    private bool _isVerticalExpanded = false;
+    bool navBarExpanded = false;
+    bool isVerticalExpanded = false;
 
-    private const double MinWidth = 50;
-    private const double MinHeight = 50;
-    private const double ExpandedHeight = 210;
+    const double minWidth = 50;
+    const double minHeight = 50;
+    const double expandedHeight = 210;
 
     public ExpandableNavBar()
     {
@@ -29,14 +29,14 @@ public partial class ExpandableNavBar : Grid
         SafeAreaEdges = SafeAreaEdges.None;
     }
 
-    private async Task OnExpandClicked()
+    async Task OnExpandClicked()
     {
         var screenWidth = Width > 0 ? Width :
                              DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
 
         var maxWidth = Math.Min(screenWidth - 20, 400);
 
-        if (!_navBarExpanded)
+        if (!navBarExpanded)
         {
             ClickOutsideOverlay.IsVisible = true;
 
@@ -52,7 +52,7 @@ public partial class ExpandableNavBar : Grid
             NavBarContent.IsVisible = true;
             MoreBtnContainer.IsVisible = true;
 
-            _navBarExpanded = true;
+            navBarExpanded = true;
         }
         else
         {
@@ -60,17 +60,17 @@ public partial class ExpandableNavBar : Grid
         }
     }
 
-    private async void OnMoreTapped(object? sender, TappedEventArgs e)
+    async void OnMoreTapped(object? sender, TappedEventArgs e)
     {
-        if (!_isVerticalExpanded)
+        if (!isVerticalExpanded)
         {
             MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowDown.GetGlyph();
 
-            await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, ExpandedHeight, 250);
+            await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, expandedHeight, 250);
 
             ExtraOptionsContainer.IsVisible = true;
             await ExtraOptionsContainer.FadeToSafe(1, 200);
-            _isVerticalExpanded = true;
+            isVerticalExpanded = true;
         }
         else
         {
@@ -78,33 +78,36 @@ public partial class ExpandableNavBar : Grid
         }
     }
 
-    private async Task CloseVerticalMenu()
+    async Task CloseVerticalMenu()
     {
-        if (!_isVerticalExpanded) return;
+		if (!isVerticalExpanded)
+		{
+			return;
+		}
 
-        MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowUp.GetGlyph(); // Retour icône haut
+		MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowUp.GetGlyph(); // Retour icône haut
 
         await ExtraOptionsContainer.FadeToSafe(0, 150);
         ExtraOptionsContainer.IsVisible = false;
 
         await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, 110, 200);
 
-        _isVerticalExpanded = false;
+        isVerticalExpanded = false;
     }
 
-    private async Task CloseNavBarInternal()
+    async Task CloseNavBarInternal()
     {
         ClickOutsideOverlay.IsVisible = false;
 
         // Si le menu vertical est ouvert, on le ferme d'abord
-        if (_isVerticalExpanded)
+        if (isVerticalExpanded)
         {
             MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowUp.GetGlyph(); // Retour icône haut
 
             await ExtraOptionsContainer.FadeToSafe(0, 150);
             ExtraOptionsContainer.IsVisible = false;
 
-            _isVerticalExpanded = false;
+            isVerticalExpanded = false;
         }
 
         NavBarContent.IsVisible = false;
@@ -113,13 +116,13 @@ public partial class ExpandableNavBar : Grid
 
         var expandedTask = ExpandBtn.RotateToSafe(0, 450);
 
-        await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, MinHeight, 250);
-        await AnimationHelpers.AnimateWidthAsync(NavBar, NavBar.Width, MinWidth, 200);
+        await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, minHeight, 250);
+        await AnimationHelpers.AnimateWidthAsync(NavBar, NavBar.Width, minWidth, 200);
 
         await expandedTask;
 
         ExpandBtn.Text = MaterialSymbolsRoundedIcons.Notes.GetGlyph();
-        _navBarExpanded = false;
+        navBarExpanded = false;
     }
 
     async void OnOverlayTapped(object? sender, TappedEventArgs e) => await CloseNavBarInternal();

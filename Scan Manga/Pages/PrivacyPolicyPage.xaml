@@ -1,41 +1,30 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<controls:PageBase
-    x:Class="Scan_Manga.Pages.PrivacyPolicyPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:controls="clr-namespace:Scan_Manga.Controls"
-    Title="Confidentialité">
+<controls:InfoPage x:Class="Scan_Manga.Pages.PrivacyPolicyPage"
+                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:controls="clr-namespace:Scan_Manga.Controls"
+                   xmlns:pages="clr-namespace:Scan_Manga.Pages"
+                   x:DataType="pages:PrivacyPolicyPage"
+                   Title="Confidentialité">
+    
+    <VerticalStackLayout Spacing="10">
 
-    <Grid RowDefinitions="Auto,*">
-        <controls:PageHeader />
-        <ScrollView Grid.Row="1">
-            <Grid>
-                <Border
-                    Margin="20"
-                    Shadow="{StaticResource BubbleShadow}"
-                    VerticalOptions="Start">
-                    <VerticalStackLayout Padding="25" Spacing="10">
+        <Label FontSize="24"
+               Style="{StaticResource Headline}"
+               Text="Politique de confidentialité" />
 
-                        <Label
-                            FontSize="24"
-                            Style="{StaticResource Headline}"
-                            Text="Politique de confidentialité" />
+        <Label Style="{StaticResource SubHeadline}" Text="Collecte de données" />
+        <Label Text="Aucune donnée personnelle n’est collectée, stockée ou transmise." />
 
-                        <Label Style="{StaticResource SubHeadline}" Text="Collecte de données" />
-                        <Label Text="Aucune donnée personnelle n’est collectée, stockée ou transmise." />
+        <Label Style="{StaticResource SubHeadline}" Text="Historique local" />
+        <Label Text="L’application enregistre uniquement l’historique des liens visités sur l’appareil de l’utilisateur afin de marquer les liens déjà consultés." />
 
-                        <Label Style="{StaticResource SubHeadline}" Text="Historique local" />
-                        <Label Text="L’application enregistre uniquement l’historique des liens visités sur l’appareil de l’utilisateur afin de marquer les liens déjà consultés." />
+        <Label Style="{StaticResource SubHeadline}" Text="Publicités" />
+        <Label Text="L'application tente de masquer certains éléments du site affiché (publicités) via du JavaScript local. Aucune analyse n’est réalisée et rien n’est envoyé." />
 
-                        <Label Style="{StaticResource SubHeadline}" Text="Publicités" />
-                        <Label Text="L'application tente de masquer certains éléments du site affiché (publicités) via du JavaScript local. Aucune analyse n’est réalisée et rien n’est envoyé." />
+        <Label Style="{StaticResource SubHeadline}" Text="Partage des données" />
+        <Label Text="Aucune donnée n’est partagée avec des tiers." />
 
-                        <Label Style="{StaticResource SubHeadline}" Text="Partage des données" />
-                        <Label Text="Aucune donnée n’est partagée avec des tiers." />
-
-                    </VerticalStackLayout>
-                </Border>
-            </Grid>
-        </ScrollView>
-    </Grid>
-</controls:PageBase>
+    </VerticalStackLayout>
+    
+</controls:InfoPage>

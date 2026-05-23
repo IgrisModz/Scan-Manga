@@ -1,71 +1,61 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<controls:PageBase
-    x:Class="Scan_Manga.Pages.AboutPage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:controls="clr-namespace:Scan_Manga.Controls"
-    xmlns:local="clr-namespace:Scan_Manga.Pages"
-    xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
-    Title="À propos"
-    x:DataType="local:AboutPage">
-
-    <Grid RowDefinitions="Auto,*">
-        <controls:PageHeader />
-        <ScrollView Grid.Row="1">
-            <Grid>
-                <Border
-                    Margin="20"
-                    Shadow="{StaticResource BubbleShadow}"
-                    VerticalOptions="Start">
-                    <VerticalStackLayout Padding="25" Spacing="10">
-
-                        <Label
-                            FontSize="24"
-                            Style="{StaticResource Headline}"
-                            Text="À propos" />
-
-                        <Label>
-                            <Label.FormattedText>
-                                <FormattedString>
-                                    <Span Text="Cette application est open-source et gratuite. Développée par " />
-                                    <Span FontAttributes="Bold" Text="IgrisModz" />
-                                    <Span Text=". Aucune donnée personnelle n’est collectée." />
-                                </FormattedString>
-                            </Label.FormattedText>
-                        </Label>
-                        <Label
-                            FontAttributes="Bold"
-                            FontSize="18"
-                            Style="{StaticResource SubHeadline}"
-                            Text="Code source" />
-                        <VerticalStackLayout Spacing="8">
-                            <Label Text="Le code source est disponible sur" />
-                            <Label>
-                                <Label.FormattedText>
-                                    <FormattedString>
-                                        <Span Text="{mi:FontAwesomeBrands Icon=Github, Size=28, Color={StaticResource PrimaryDark}}">
-                                            <Span.GestureRecognizers>
-                                                <TapGestureRecognizer Command="{Binding TapCommand}" CommandParameter="https://github.com/IgrisModz" />
-                                            </Span.GestureRecognizers>
-                                        </Span>
-                                        <Span
-                                            FontAttributes="Bold"
-                                            FontSize="20"
-                                            Text=" GitHub"
-                                            TextColor="{StaticResource PrimaryDark}"
-                                            TextDecorations="None">
-                                            <Span.GestureRecognizers>
-                                                <TapGestureRecognizer Command="{Binding TapCommand}" CommandParameter="https://github.com/IgrisModz" />
-                                            </Span.GestureRecognizers>
-                                        </Span>
-                                    </FormattedString>
-                                </Label.FormattedText>
-                            </Label>
-                        </VerticalStackLayout>
-
-                    </VerticalStackLayout>
-                </Border>
-            </Grid>
-        </ScrollView>
-    </Grid>
-</controls:PageBase>
+<controls:InfoPage x:Class="Scan_Manga.Pages.AboutPage"
+                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:controls="clr-namespace:Scan_Manga.Controls"
+                   xmlns:local="clr-namespace:Scan_Manga.Pages"
+                   xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
+                   Title="À propos"
+                   x:DataType="local:AboutPage">
+    
+    <VerticalStackLayout Spacing="10">
+        
+        <Label FontSize="24"
+               Style="{StaticResource Headline}"
+               Text="À propos" />
+        
+        <Label>
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="Cette application est open-source et gratuite. Développée par " />
+                    <Span FontAttributes="Bold" Text="IgrisModz" />
+                    <Span Text=". Aucune donnée personnelle n’est collectée." />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+        
+        <Label FontAttributes="Bold"
+               FontSize="18"
+               Style="{StaticResource SubHeadline}"
+               Text="Code source" />
+        
+        <VerticalStackLayout Spacing="8">
+            
+            <Label Text="Le code source est disponible sur" />
+            
+            <Label>
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="{mi:FontAwesomeBrands Icon=Github, Size=28, Color={StaticResource PrimaryDark}}">
+                            <Span.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding TapCommand}" CommandParameter="https://github.com/IgrisModz" />
+                            </Span.GestureRecognizers>
+                        </Span>
+                        <Span FontAttributes="Bold"
+                              FontSize="20"
+                              Text=" GitHub"
+                              TextColor="{StaticResource PrimaryDark}"
+                              TextDecorations="None">
+                            <Span.GestureRecognizers>
+                                <TapGestureRecognizer Command="{Binding TapCommand}" CommandParameter="https://github.com/IgrisModz" />
+                            </Span.GestureRecognizers>
+                        </Span>
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            
+        </VerticalStackLayout>
+        
+    </VerticalStackLayout>
+    
+</controls:InfoPage>

@@ -1,38 +1,27 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<controls:PageBase
-    x:Class="Scan_Manga.Pages.TermsOfUsePage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:controls="clr-namespace:Scan_Manga.Controls"
-    Title="Conditions d’utilisation">
+<controls:InfoPage x:Class="Scan_Manga.Pages.TermsOfUsePage"
+                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:controls="clr-namespace:Scan_Manga.Controls"
+                   xmlns:pages="clr-namespace:Scan_Manga.Pages"
+                   x:DataType="pages:TermsOfUsePage"
+                   Title="Conditions d’utilisation">
+    
+    <VerticalStackLayout Spacing="10">
 
-    <Grid RowDefinitions="Auto,*">
-        <controls:PageHeader />
-        <ScrollView Grid.Row="1">
-            <Grid>
-                <Border
-                    Margin="20"
-                    Shadow="{StaticResource BubbleShadow}"
-                    VerticalOptions="Start">
-                    <VerticalStackLayout Padding="25" Spacing="10">
+        <Label FontSize="24"
+               Style="{StaticResource Headline}"
+               Text="Conditions générales d’utilisation" />
 
-                        <Label
-                            FontSize="24"
-                            Style="{StaticResource Headline}"
-                            Text="Conditions générales d’utilisation" />
+        <Label Style="{StaticResource SubHeadline}" Text="Utilisation de l’application" />
+        <Label Text="L'application affiche uniquement un site externe dans un WebView." />
 
-                        <Label Style="{StaticResource SubHeadline}" Text="Utilisation de l’application" />
-                        <Label Text="L'application affiche uniquement un site externe dans un WebView." />
+        <Label Style="{StaticResource SubHeadline}" Text="Responsabilité" />
+        <Label Text="Le développeur n’est pas responsable du contenu du site externe ni de ses changements." />
 
-                        <Label Style="{StaticResource SubHeadline}" Text="Responsabilité" />
-                        <Label Text="Le développeur n’est pas responsable du contenu du site externe ni de ses changements." />
+        <Label Style="{StaticResource SubHeadline}" Text="Modifications" />
+        <Label Text="L'auteur peut modifier l'application à tout moment sans préavis." />
 
-                        <Label Style="{StaticResource SubHeadline}" Text="Modifications" />
-                        <Label Text="L'auteur peut modifier l'application à tout moment sans préavis." />
-
-                    </VerticalStackLayout>
-                </Border>
-            </Grid>
-        </ScrollView>
-    </Grid>
-</controls:PageBase>
+    </VerticalStackLayout>
+    
+</controls:InfoPage>

@@ -96,7 +96,7 @@ public static class WebErrorHelper
         };
     }
 #elif IOS
-    private static readonly Dictionary<int, WebErrorInfo> IosErrorMap = new()
+    static readonly Dictionary<int, WebErrorInfo> iosErrorMap = new()
     {
         [-1000] = new("URL invalide (-1000)", "L'adresse de la page est incorrecte."),
         [-1001] = new("Délai dépassé (-1001)", "Le serveur met trop de temps à répondre."),
@@ -117,13 +117,13 @@ public static class WebErrorHelper
 
     public static WebErrorInfo GetErrorMessage(int errorCode)
     {
-        return IosErrorMap.TryGetValue(errorCode, out var errorInfo)
+        return iosErrorMap.TryGetValue(errorCode, out var errorInfo)
             ? errorInfo
             : new($"Erreur de chargement ({errorCode})", "Une erreur inconnue est survenue lors du chargement de la page.");
     }
 #endif
 
-    private static readonly Dictionary<int, WebErrorInfo> HttpErrorMap = new()
+    static readonly Dictionary<int, WebErrorInfo> httpErrorMap = new()
     {
         [400] = new("Requête incorrecte", "La requête envoyée au serveur est invalide."),
         [401] = new("Non autorisé", "Vous devez être authentifié pour accéder à cette page."),
@@ -169,7 +169,7 @@ public static class WebErrorHelper
 
     public static WebErrorInfo GetHttpErrorInfo(int statusCode)
     {
-        return HttpErrorMap.TryGetValue(statusCode, out var errorInfo)
+        return httpErrorMap.TryGetValue(statusCode, out var errorInfo)
             ? errorInfo
             : new($"Erreur HTTP {statusCode}", "Une erreur HTTP inconnue est survenue.");
     }

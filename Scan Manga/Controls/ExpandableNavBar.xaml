@@ -5,7 +5,8 @@
       xmlns:controls="clr-namespace:Scan_Manga.Controls"
       xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
       InputTransparent="True"
-      CascadeInputTransparent="False">
+      CascadeInputTransparent="False"
+      x:DataType="controls:ExpandableNavBar">
 
     <!--  Overlay  -->
     <Grid x:Name="ClickOutsideOverlay" BackgroundColor="#40000000" IsVisible="False" InputTransparent="False">
@@ -17,18 +18,17 @@
     </Grid>
 
     <!--  Barre + contenu  -->
-    <Border
-        x:Name="NavBar"
-        Margin="15"
-        Padding="5,3,5,5"
-        Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}"
-        HeightRequest="50"
-        HorizontalOptions="End"
-        StrokeShape="RoundRectangle 25"
-        StrokeThickness="0"
-        VerticalOptions="End"
-        WidthRequest="50"
-        InputTransparent="False">
+    <Border x:Name="NavBar"
+            Margin="15"
+            Padding="5,3,5,5"
+            Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}"
+            HeightRequest="50"
+            HorizontalOptions="End"
+            StrokeShape="RoundRectangle 25"
+            StrokeThickness="0"
+            VerticalOptions="End"
+            WidthRequest="50"
+            InputTransparent="False">
         <Border.Shadow>
             <Shadow Brush="{AppThemeBinding Light={StaticResource Primary},Dark={StaticResource PrimaryDark}}" Opacity="0.8" Radius="10" Offset="0,2" />
         </Border.Shadow>

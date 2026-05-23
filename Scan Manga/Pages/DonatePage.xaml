@@ -1,50 +1,39 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<controls:PageBase
-    x:Class="Scan_Manga.Pages.DonatePage"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:controls="clr-namespace:Scan_Manga.Controls"
-    xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
-    Title="Faire un don">
+<controls:InfoPage x:Class="Scan_Manga.Pages.DonatePage"
+                   xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:controls="clr-namespace:Scan_Manga.Controls"
+                   xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
+                   xmlns:pages="clr-namespace:Scan_Manga.Pages"
+                   x:DataType="pages:DonatePage"
+                   Title="Faire un don">
+    
+    <VerticalStackLayout Spacing="10">
 
-    <Grid RowDefinitions="Auto,*">
-        <controls:PageHeader />
-        <ScrollView Grid.Row="1">
-            <Grid>
-                <Border
-                    Margin="20"
-                    Shadow="{StaticResource BubbleShadow}"
-                    VerticalOptions="Start">
-                    <VerticalStackLayout Padding="25" Spacing="10">
+        <Label FontSize="24"
+               Style="{StaticResource Headline}"
+               Text="Faire un don" />
 
-                        <Label
-                            FontSize="24"
-                            Style="{StaticResource Headline}"
-                            Text="Faire un don" />
+        <Label Text="Vous pouvez soutenir le développment de l'application en effctuant un don. Les dons sont entièrement volontaires." />
+        <Label Text="Les transactions sont gérées par des services tiers sécurisés (ex. Paypal, Patreon)." />
+        <Label Text="L'application n'a aucun accès à vos informations de paiement." />
 
-                        <Label Text="Vous pouvez soutenir le développment de l'application en effctuant un don. Les dons sont entièrement volontaires." />
-                        <Label Text="Les transactions sont gérées par des services tiers sécurisés (ex. Paypal, Patreon)." />
-                        <Label Text="L'application n'a aucun accès à vos informations de paiement." />
-
-                        <Button
-                            x:Name="PaypalBtn"
-                            Clicked="OnPaypalClicked"
-                            ImageSource="{mi:FontAwesomeBrands Icon=Paypal}"
-                            MaximumHeightRequest="48"
-                            Text="Faire un don via Paypal" />
-                        <Button
-                            Clicked="OnPatreonClicked"
-                            ImageSource="{mi:FontAwesomeBrands Icon=Patreon}"
-                            MaximumHeightRequest="48"
-                            Text="Faire un don via Patreon" />
-                        <Button
-                            Clicked="OnKofiClicked"
-                            ImageSource="kofi_symbol.svg"
-                            MaximumHeightRequest="48"
-                            Text="Partager un Ko-fi" />
-                    </VerticalStackLayout>
-                </Border>
-            </Grid>
-        </ScrollView>
-    </Grid>
-</controls:PageBase>
+        <Button x:Name="PaypalBtn"
+                Clicked="OnPaypalClicked"
+                ImageSource="{mi:FontAwesomeBrands Icon=Paypal}"
+                MaximumHeightRequest="48"
+                Text="Faire un don via Paypal" />
+        
+        <Button Clicked="OnPatreonClicked"
+                ImageSource="{mi:FontAwesomeBrands Icon=Patreon}"
+                MaximumHeightRequest="48"
+                Text="Faire un don via Patreon" />
+        
+        <Button Clicked="OnKofiClicked"
+                ImageSource="kofi_symbol.svg"
+                MaximumHeightRequest="48"
+                Text="Partager un Ko-fi" />
+        
+    </VerticalStackLayout>
+    
+</controls:InfoPage>

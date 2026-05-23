@@ -64,7 +64,7 @@ public partial class MainPage : PageBase, IDisposable
         else
         {
             isNavigating = false;
-            OnHandlerChanged();
+            // OnHandlerChanged();
         }
 
         visitedUrls = settingsService.IsHistoryEnabled() ? settingsService.GetVisitedUrls() : [];
@@ -133,6 +133,9 @@ public partial class MainPage : PageBase, IDisposable
 
     async void OnWebViewNavigated(object? sender, WebNavigatedEventArgs e)
     {
+        var ua = await MainWebView.EvaluateJavaScriptAsync("navigator.userAgent");
+        System.Diagnostics.Debug.WriteLine(ua);
+
         if (BindingContext is MainViewModel viewModel)
         {
             if (viewModel.IsRefreshing)
@@ -177,10 +180,12 @@ public partial class MainPage : PageBase, IDisposable
 
         if (visitedUrls.Add(url))
         {
-            if (visitedUrls.Count > 2000)
-                visitedUrls = [.. visitedUrls.Skip(visitedUrls.Count - 2000)];
+			if (visitedUrls.Count > 2000)
+			{
+				visitedUrls = [.. visitedUrls.Skip(visitedUrls.Count - 2000)];
+			}
 
-            settingsService.SetVisitedUrls(visitedUrls);
+			settingsService.SetVisitedUrls(visitedUrls);
         }
     }
 
@@ -264,9 +269,6 @@ public partial class MainPage : PageBase, IDisposable
         var modeString = Preferences.Get(nameof(SettingsViewModel.SelectedFullScreenMode), FullScreenMode.ReadingOnly.ToString());
 
         var result = Enum.TryParse<FullScreenMode>(modeString, out var mode);
-        if (!result || mode == FullScreenMode.Disabled)
-            return false;
-
         return result && mode != FullScreenMode.Disabled && mode switch
         {
             FullScreenMode.AllPages => true,
