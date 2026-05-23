@@ -1,6 +1,6 @@
 ﻿namespace Scan_Manga.Controls;
 
-public class CustomWebView : WebView
+public partial class CustomWebView : WebView
 {
     public static string DefaultUrl { get; private set; } = GetDefaultUrl();
 
@@ -37,7 +37,7 @@ public class CustomWebView : WebView
     public string? LastErrorCode { get; private set; }
     public string? LastErrorMessage { get; private set; }
 
-    private static void OnProgressChanged(BindableObject bindable, object oldValue, object newValue)
+    static void OnProgressChanged(BindableObject bindable, object oldValue, object newValue)
     {
         if (bindable is CustomWebView webView)
         {
@@ -66,12 +66,11 @@ public class CustomWebView : WebView
 #if ANDROID || IOS
         return "https://m.scan-manga.com/?po";
 #else
-		return "https://www.scan-manga.com/?home";
+        return "https://www.scan-manga.com/?home";
 #endif
     }
 }
 
-// Classe d’arguments pour l’événement
 public class WebViewErrorEventArgs(string title, string message) : EventArgs
 {
     public string Title { get; } = title;
