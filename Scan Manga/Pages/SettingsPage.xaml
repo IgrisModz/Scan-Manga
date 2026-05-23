@@ -9,12 +9,11 @@
                    Title="Paramètres">
     <Grid>
         
-        <VerticalStackLayout Padding="20" Spacing="5">
+        <VerticalStackLayout Spacing="8">
             
             <Label Text="Paramètres" FontSize="28" FontAttributes="Bold" Margin="0,0,0,10"/>
 
-            <VerticalStackLayout Spacing="15">
-                <Label Text="APPARENCE" FontSize="14" TextColor="{StaticResource PrimaryDark}" FontAttributes="Bold" />
+            <controls:SettingsSection Title="APPARENCE">
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
 
                     <mi:MaterialSymbolsRoundedIcon Icon="Palette" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
@@ -26,10 +25,9 @@
                                                          Options="{Binding ThemeOptions}"
                                                          SelectedOption="{Binding SelectedAppTheme}"/>
                 </Grid>
-            </VerticalStackLayout>
+            </controls:SettingsSection>
 
-            <VerticalStackLayout Spacing="15">
-                <Label Text="AFFICHAGE" FontSize="14" TextColor="{StaticResource PrimaryDark}" FontAttributes="Bold"/>
+            <controls:SettingsSection Title="AFFICHAGE">
                 <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
                     <mi:MaterialSymbolsRoundedIcon Icon="Fullscreen" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
                     <Label Grid.Column="1" Text="Mode plein écran" VerticalOptions="Center" FontAttributes="Bold" />
@@ -40,60 +38,60 @@
                                              Options="{Binding FullScreenOptions}"
                                              SelectedOption="{Binding SelectedFullScreenMode}"/>
                 </Grid>
-            </VerticalStackLayout>
+            </controls:SettingsSection>
 
-            <VerticalStackLayout Spacing="15">
-                <Label Text="CONFORT DE LECTURE" FontSize="14" TextColor="{StaticResource PrimaryDark}" FontAttributes="Bold"/>
+            <controls:SettingsSection Title="CONFORT DE LECTURE">
+                <VerticalStackLayout Spacing="15">
+                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
+                        <mi:MaterialSymbolsRoundedIcon Icon="Lightbulb" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
+                        <Label Grid.Column="1" Text="Garder l'écran allumé" VerticalOptions="Center" FontAttributes="Bold"/>
+                        <controls:MaterialPicker Grid.Column="2"
+                                                 VerticalOptions="Center"
+                                                 Variant="Filled"
+                                                 WidthRequest="150"
+                                                 Options="{Binding KeepScreenOnOptions}"
+                                                 SelectedOption="{Binding SelectedKeepScreenOnMode}"/>
+                    </Grid>
 
-                <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
-                    <mi:MaterialSymbolsRoundedIcon Icon="Lightbulb" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
-                    <Label Grid.Column="1" Text="Garder l'écran allumé" VerticalOptions="Center" FontAttributes="Bold"/>
-                    <controls:MaterialPicker Grid.Column="2"
-                                             VerticalOptions="Center"
-                                             Variant="Filled"
-                                             WidthRequest="150"
-                                             Options="{Binding KeepScreenOnOptions}"
-                                             SelectedOption="{Binding SelectedKeepScreenOnMode}"/>
-                </Grid>
+                    <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#EEE, Dark=#333}"/>
 
-                <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#EEE, Dark=#333}"/>
+                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
+                        <mi:MaterialSymbolsRoundedIcon Icon="DoNotDisturb" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
+                        <Label Grid.Column="1" Text="Bloqueur de publicités" VerticalOptions="Center" FontAttributes="Bold"/>
+                        <Switch Grid.Column="2" IsToggled="{Binding IsAdBlockerEnabled}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </controls:SettingsSection>
 
-                <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
-                    <mi:MaterialSymbolsRoundedIcon Icon="DoNotDisturb" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
-                    <Label Grid.Column="1" Text="Bloqueur de publicités" VerticalOptions="Center" FontAttributes="Bold"/>
-                    <Switch Grid.Column="2" IsToggled="{Binding IsAdBlockerEnabled}" />
-                </Grid>
-            </VerticalStackLayout>
+            <controls:SettingsSection Title="NAVIGATION ET DONNÉES">
+                <VerticalStackLayout>
+                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
+                        <mi:MaterialSymbolsRoundedIcon Icon="PlayCircle" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
 
-            <VerticalStackLayout Spacing="15">
-                <Label Text="NAVIGATION ET DONNÉES" FontSize="14" TextColor="{StaticResource PrimaryDark}" FontAttributes="Bold"/>
+                        <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
+                            <Label Grid.Column="1" Text="Reprendre la lecture" VerticalOptions="Center" FontAttributes="Bold"/>
 
-                <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
-                    <mi:MaterialSymbolsRoundedIcon Icon="PlayCircle" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
+                            <mi:MaterialSymbolsRoundedIcon Grid.Column="2" 
+                                                         Icon="Info"
+                                                         FontSize="18"
+                                                         TextColor="Gray"
+                                                         VerticalOptions="Center">
+                                <mi:MaterialSymbolsRoundedIcon.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding ShowRestoreHelpCommand}"/>
+                                </mi:MaterialSymbolsRoundedIcon.GestureRecognizers>
+                            </mi:MaterialSymbolsRoundedIcon>
+                        </HorizontalStackLayout>
 
-                    <HorizontalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
-                        <Label Grid.Column="1" Text="Reprendre la lecture" VerticalOptions="Center" FontAttributes="Bold"/>
+                        <Switch Grid.Column="2" IsToggled="{Binding LoadLastUrlOnStartup}" />
+                    </Grid>
 
-                        <mi:MaterialSymbolsRoundedIcon Grid.Column="2" 
-                                                     Icon="Info"
-                                                     FontSize="18"
-                                                     TextColor="Gray"
-                                                     VerticalOptions="Center">
-                            <mi:MaterialSymbolsRoundedIcon.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding ShowRestoreHelpCommand}"/>
-                            </mi:MaterialSymbolsRoundedIcon.GestureRecognizers>
-                        </mi:MaterialSymbolsRoundedIcon>
-                    </HorizontalStackLayout>
-
-                    <Switch Grid.Column="2" IsToggled="{Binding LoadLastUrlOnStartup}" />
-                </Grid>
-
-                <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
-                    <mi:MaterialSymbolsRoundedIcon Icon="History" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
-                    <Label Grid.Column="1" Text="Enregistrer l'historique" VerticalOptions="Center" FontAttributes="Bold"/>
-                    <Switch Grid.Column="2" IsToggled="{Binding IsHistoryEnabled}" />
-                </Grid>
-            </VerticalStackLayout>
+                    <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
+                        <mi:MaterialSymbolsRoundedIcon Icon="History" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
+                        <Label Grid.Column="1" Text="Enregistrer l'historique" VerticalOptions="Center" FontAttributes="Bold"/>
+                        <Switch Grid.Column="2" IsToggled="{Binding IsHistoryEnabled}" />
+                    </Grid>
+                </VerticalStackLayout>
+            </controls:SettingsSection>
 
             <BoxView HeightRequest="1" Color="{AppThemeBinding Light=#EEE, Dark=#333}" Margin="0,10"/>
 
@@ -127,12 +125,5 @@
             </Grid>
 
         </VerticalStackLayout>
-
-        <controls:CustomOverlay Title="{Binding Overlay.Title}"
-                                Message="{Binding Overlay.Message}"
-                                ConfirmText="{Binding Overlay.ConfirmText}"
-                                CancelText="{Binding Overlay.CancelText}"
-                                IsOpen="{Binding Overlay.IsVisible, Mode=TwoWay}"
-                                ResponseCommand="{Binding OverlayResultCommand}"/>
     </Grid>
 </controls:InfoPage>

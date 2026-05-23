@@ -45,6 +45,17 @@ public partial class InfoPage : PageBase
 			rootGrid.Children.Add(header);
 			rootGrid.Children.Add(scrollView);
 
+			var customOverlay = new CustomOverlay();
+			Grid.SetRowSpan(customOverlay, 2);
+			customOverlay.SetBinding(CustomOverlay.TitleProperty, new Binding("BindingContext.Overlay.Title", source: RelativeBindingSource.TemplatedParent));
+			customOverlay.SetBinding(CustomOverlay.MessageProperty, new Binding("BindingContext.Overlay.Message", source: RelativeBindingSource.TemplatedParent));
+			customOverlay.SetBinding(CustomOverlay.ConfirmTextProperty, new Binding("BindingContext.Overlay.ConfirmText", source: RelativeBindingSource.TemplatedParent));
+			customOverlay.SetBinding(CustomOverlay.CancelTextProperty, new Binding("BindingContext.Overlay.CancelText", source: RelativeBindingSource.TemplatedParent));
+			customOverlay.SetBinding(CustomOverlay.IsOpenProperty, new Binding("BindingContext.Overlay.IsVisible", mode: BindingMode.TwoWay, source: RelativeBindingSource.TemplatedParent));
+			customOverlay.SetBinding(CustomOverlay.ResponseCommandProperty, new Binding("BindingContext.OverlayResultCommand", source: RelativeBindingSource.TemplatedParent));
+
+			rootGrid.Children.Add(customOverlay);
+
 			return rootGrid;
 		});
 	}
