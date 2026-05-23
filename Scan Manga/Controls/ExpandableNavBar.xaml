@@ -19,7 +19,7 @@
     <!--  Barre + contenu  -->
     <Border
         x:Name="NavBar"
-        Margin="10"
+        Margin="15"
         Padding="5,3,5,5"
         Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}"
         HeightRequest="50"
@@ -76,8 +76,8 @@
                     <controls:IconButton x:Name="SettingsButton" Grid.Column="3" Icon="Settings" Text="Réglages" VerticalOptions="Center" RotateIconOnClick="True" Clicked="OnSettingsClicked"/>
                 </Grid>
 
-                <Grid x:Name="ExpandBtnContainer" Grid.Column="1" Margin="0,0,0,8" VerticalOptions="End" WidthRequest="40">
-                    <Label x:Name="ExpandBtn" Text="{mi:MaterialSymbolsRounded Icon=Notes}" FontSize="24" HorizontalOptions="Center" VerticalOptions="Center"
+                <Grid x:Name="ExpandBtnContainer" Grid.Column="1" Margin="0,0,0,5" VerticalOptions="End" WidthRequest="40">
+                    <Label x:Name="ExpandBtn" Text="{mi:MaterialSymbolsRounded Icon=Notes}" FontSize="27" HorizontalOptions="Center" VerticalOptions="Center"
                            TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
                 </Grid>
             </Grid>
