@@ -126,14 +126,14 @@ public partial class ExpandableNavBar : Grid
     }
 
     async void OnOverlayTapped(object? sender, TappedEventArgs e) => await CloseNavBarInternal();
-    async void OnOverlayPan(object sender, PanUpdatedEventArgs e) => await CloseNavBarInternal();
-    async void OnOverlayPinch(object sender, PinchGestureUpdatedEventArgs e) => await CloseNavBarInternal();
-    void IgnoreOnOverlayTapped(object sender, TappedEventArgs e) { }
+    async void OnOverlayPan(object? sender, PanUpdatedEventArgs e) => await CloseNavBarInternal();
+    async void OnOverlayPinch(object? sender, PinchGestureUpdatedEventArgs e) => await CloseNavBarInternal();
+    void IgnoreOnOverlayTapped(object? sender, TappedEventArgs e) { }
 
-    async void OnNoticesClicked(object sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(LegalNoticesPage)));
-    async void OnPrivacyClicked(object sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(PrivacyPolicyPage)));
-    async void OnTermsClicked(object sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(TermsOfUsePage)));
-    async void OnAboutClicked(object sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(AboutPage)));
+    async void OnNoticesClicked(object? sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(LegalNoticesPage)));
+    async void OnPrivacyClicked(object? sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(PrivacyPolicyPage)));
+    async void OnTermsClicked(object? sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(TermsOfUsePage)));
+    async void OnAboutClicked(object? sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(AboutPage)));
 
     async void OnDonateClicked(object? sender, EventArgs e) => await ButtonTap(async () => await Shell.Current.GoToAsync(nameof(DonatePage)));
     async void OnRefreshClicked(object? sender, EventArgs e) => await ButtonTap(() => RefreshClicked?.Invoke(this, EventArgs.Empty));

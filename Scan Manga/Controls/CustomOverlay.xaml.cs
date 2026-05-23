@@ -75,8 +75,8 @@ public partial class CustomOverlay : ContentView
         InputTransparent = true;
     }
 
-    void OnConfirmClicked(object sender, EventArgs e) => HandleResponse(true);
-    void OnCancelClicked(object sender, EventArgs e) => HandleResponse(false);
+    void OnConfirmClicked(object? sender, EventArgs e) => HandleResponse(true);
+    void OnCancelClicked(object? sender, EventArgs e) => HandleResponse(false);
 
     void HandleResponse(bool result)
     {
@@ -99,12 +99,12 @@ public partial class CustomOverlay : ContentView
         }
     }
 
-    void OnBackgroundTapped(object sender, TappedEventArgs e)
+    void OnBackgroundTapped(object? sender, TappedEventArgs e)
     {
         IsOpen = false;
     }
 
-    void OnBorderTapped(object sender, TappedEventArgs e)
+    void OnBorderTapped(object? sender, TappedEventArgs e)
     {
     }
 }

@@ -9,7 +9,7 @@ namespace Scan_Manga.Platforms.iOS;
 
 public class CustomWebViewHandler : WebViewHandler
 {
-    IDisposable? _progressObserver;
+    IDisposable? progressObserver;
 
     public static IPropertyMapper<CustomWebView, CustomWebViewHandler> CustomMapper { get; } =
         new PropertyMapper<CustomWebView, CustomWebViewHandler>(Mapper);
@@ -24,7 +24,7 @@ public class CustomWebViewHandler : WebViewHandler
             if (handler.PlatformView != null && view is CustomWebView custom)
             {
                 // callback correct avec 2 arguments
-                _progressObserver = handler.PlatformView.AddObserver(
+                progressObserver = handler.PlatformView.AddObserver(
                     "estimatedProgress",
                     NSKeyValueObservingOptions.New,
                     change =>
@@ -34,8 +34,10 @@ public class CustomWebViewHandler : WebViewHandler
                             MainThread.BeginInvokeOnMainThread(() =>
                             {
                                 if (handler.PlatformView != null)
-                                    custom.Progress = handler.PlatformView.EstimatedProgress;
-                            });
+								{
+									custom.Progress = handler.PlatformView.EstimatedProgress;
+								}
+							});
                         }
                     });
             }
@@ -46,19 +48,21 @@ public class CustomWebViewHandler : WebViewHandler
     {
         base.ConnectHandler(platformView);
         if (VirtualView is CustomWebView customWebView)
-        platformView.NavigationDelegate = new ExternalOnlyNavigationDelegate(customWebView);
-    }
+		{
+			platformView.NavigationDelegate = new ExternalOnlyNavigationDelegate(customWebView);
+		}
+	}
 
     protected override void DisconnectHandler(WKWebView platformView)
     {
-        _progressObserver?.Dispose();
-        _progressObserver = null;
+        progressObserver?.Dispose();
+        progressObserver = null;
         base.DisconnectHandler(platformView);
     }
 
-    private class ExternalOnlyNavigationDelegate(CustomWebView customWebView) : WKNavigationDelegate, IWKUIDelegate
+    class ExternalOnlyNavigationDelegate(CustomWebView customWebView) : WKNavigationDelegate, IWKUIDelegate
     {
-        private readonly CustomWebView _customWebView = customWebView;
+        readonly CustomWebView customWebView = customWebView;
 
         [Export("webView:createWebViewWithConfiguration:forNavigationAction:windowFeatures:")]
         public WKWebView? CreateWebView(WKWebView webView, WKWebViewConfiguration configuration, WKNavigationAction navigationAction, WKWindowFeatures windowFeatures)
@@ -121,7 +125,7 @@ public class CustomWebViewHandler : WebViewHandler
                 if (statusCode >= 400)
                 {
                     var errorInfo = WebErrorHelper.GetHttpErrorInfo(statusCode);
-                    _customWebView.RaiseError($"{errorInfo.Title} ({statusCode})", errorInfo.Message);
+                    customWebView.RaiseError($"{errorInfo.Title} ({statusCode})", errorInfo.Message);
                 }
             }
             decisionHandler(WKNavigationResponsePolicy.Allow);
@@ -131,22 +135,28 @@ public class CustomWebViewHandler : WebViewHandler
 
         public override void DidFailNavigation(WKWebView webView, WKNavigation navigation, NSError error) => HandleError(error);
 
-        private static bool IsInternal(string? host)
+        static bool IsInternal(string? host)
         {
-            if (string.IsNullOrEmpty(host)) return false;
-            host = host.ToLowerInvariant();
+            if (string.IsNullOrEmpty(host))
+			{
+				return false;
+			}
+
+			host = host.ToLowerInvariant();
             return host == "scan-manga.com" || host.EndsWith(".scan-manga.com");
         }
 
-        private void HandleError(NSError error)
+        void HandleError(NSError error)
         {
             // On ignore les erreurs d'annulation (quand on ouvre un lien externe par exemple)
             if (error.Domain == "NSURLErrorDomain" && error.Code == -999)
-                return;
+			{
+				return;
+			}
 
-            var errorInfo = WebErrorHelper.GetErrorMessage((int)error.Code);
+			var errorInfo = WebErrorHelper.GetErrorMessage((int)error.Code);
 
-            _customWebView.RaiseError(errorInfo.Title, errorInfo.Message);
+            customWebView.RaiseError(errorInfo.Title, errorInfo.Message);
         }
     }
 }

@@ -10,9 +10,6 @@ using Microsoft.Maui.Handlers;
 using Scan_Manga.Controls;
 using Scan_Manga.Helpers;
 
-using Scan_Manga.Controls;
-using Scan_Manga.Helpers;
-
 using AndroidApp = Android.App;
 using AndroidNet = Android.Net;
 using Webkit = Android.Webkit;
