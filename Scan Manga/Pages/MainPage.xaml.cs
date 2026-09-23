@@ -116,7 +116,7 @@ public partial class MainPage : PageBase, IDisposable
 
         try
         {
-            await Task.Delay(80, fullScreenCts.Token);
+            await Task.Delay(80, fullScreenCts.Token).ConfigureAwait(true);
 
             if (!isNavigating && !fullScreenCts.Token.IsCancellationRequested)
             {
@@ -133,42 +133,49 @@ public partial class MainPage : PageBase, IDisposable
 
     async void OnWebViewNavigated(object? sender, WebNavigatedEventArgs e)
     {
-        var ua = await MainWebView.EvaluateJavaScriptAsync("navigator.userAgent");
-        System.Diagnostics.Debug.WriteLine(ua);
+		try
+		{
+			var ua = await MainWebView.EvaluateJavaScriptAsync("navigator.userAgent").ConfigureAwait(true);
+			System.Diagnostics.Debug.WriteLine(ua);
 
-        if (BindingContext is MainViewModel viewModel)
-        {
-            if (viewModel.IsRefreshing)
-            {
-                viewModel.IsRefreshing = false;
-            }
-        }
+			if (BindingContext is MainViewModel viewModel)
+			{
+				if (viewModel.IsRefreshing)
+				{
+					viewModel.IsRefreshing = false;
+				}
+			}
 
-        if (MainWebView.HasError)
-        {
-            OfflineOverlay.IsVisible = true;
-            return;
-        }
+			if (MainWebView.HasError)
+			{
+				OfflineOverlay.IsVisible = true;
+				return;
+			}
 
-        if (string.IsNullOrEmpty(e.Url))
-        {
-            return;
-        }
+			if (string.IsNullOrEmpty(e.Url))
+			{
+				return;
+			}
 
-        OfflineOverlay.IsVisible = false;
+			OfflineOverlay.IsVisible = false;
 
-        var enableFullScreen = ShouldEnableFullScreen(e.Url);
-        Window?.SetFullScreen(enableFullScreen);
-        ApplySafeArea(enableFullScreen);
+			var enableFullScreen = ShouldEnableFullScreen(e.Url);
+			Window?.SetFullScreen(enableFullScreen);
+			ApplySafeArea(enableFullScreen);
 
-        UpdateKeepScreenOn(e.Url);
+			UpdateKeepScreenOn(e.Url);
 
-        lastUrl = e.Url;
-        settingsService.SetLastUrl(lastUrl);
+			lastUrl = e.Url;
+			settingsService.SetLastUrl(lastUrl);
 
-        HandleHistory(e.Url);
+			HandleHistory(e.Url);
 
-        await InjectScriptWithVisitedLinksAsync();
+			await InjectScriptWithVisitedLinksAsync().ConfigureAwait(true);
+		}
+		catch (Exception)
+		{
+			// TODO: Log exception
+		}
     }
 
     void HandleHistory(string url)
@@ -212,15 +219,15 @@ public partial class MainPage : PageBase, IDisposable
         {
             var visitedJoined = JsonSerializer.Serialize(visitedUrls);
 
-            using var stream = await FileSystem.OpenAppPackageFileAsync("adsRemover.js");
+            using var stream = await FileSystem.OpenAppPackageFileAsync("adsRemover.js").ConfigureAwait(true);
             using var reader = new StreamReader(stream);
-            var jsContent = await reader.ReadToEndAsync();
+            var jsContent = await reader.ReadToEndAsync().ConfigureAwait(true);
 
             jsContent = jsContent.Replace("{isAdBlockEnabled}", isAdBlockActive.ToString().ToLower());
             jsContent = jsContent.Replace("{isHistoryEnabled}", isHistoryActive.ToString().ToLower());
             jsContent = jsContent.Replace("{visitedJoined}", visitedJoined);
 
-            await MainWebView.EvaluateJavaScriptAsync(jsContent);
+            await MainWebView.EvaluateJavaScriptAsync(jsContent).ConfigureAwait(true);
         }
         catch (Exception ex)
         {
@@ -307,7 +314,7 @@ public partial class MainPage : PageBase, IDisposable
         return base.OnBackButtonPressed();
     }
 
-    void OnHomeClicked(object sender, EventArgs e) => MainWebView.Source = CustomWebView.DefaultUrl;
+    void OnHomeClicked(object? sender, EventArgs e) => MainWebView.Source = CustomWebView.DefaultUrl;
 
     #endregion
 

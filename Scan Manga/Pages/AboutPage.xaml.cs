@@ -5,7 +5,7 @@ namespace Scan_Manga.Pages;
 
 public partial class AboutPage : InfoPage
 {
-    public ICommand TapCommand => new Command<string>(async (url) => await Launcher.OpenAsync(url));
+    public ICommand TapCommand => new Command<string>(async (url) => await Launcher.OpenAsync(url).ConfigureAwait(true));
 
     public AboutPage()
 	{
