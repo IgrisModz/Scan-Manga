@@ -9,78 +9,177 @@
       x:DataType="controls:ExpandableNavBar">
 
     <!--  Overlay  -->
-    <Grid x:Name="ClickOutsideOverlay" BackgroundColor="#40000000" IsVisible="False" InputTransparent="False">
+    <Grid x:Name="ClickOutsideOverlay"
+          BackgroundColor="#40000000"
+          IsVisible="False"
+          InputTransparent="False">
         <Grid.GestureRecognizers>
             <TapGestureRecognizer Tapped="OnOverlayTapped" />
             <PanGestureRecognizer PanUpdated="OnOverlayPan" />
             <PinchGestureRecognizer PinchUpdated="OnOverlayPinch" />
         </Grid.GestureRecognizers>
     </Grid>
+    <!-- Floating menu host -->
+    <Grid x:Name="MenuHost"
+          Margin="15"
+          HorizontalOptions="End"
+          VerticalOptions="End"
+          InputTransparent="False">
 
-    <!--  Barre + contenu  -->
-    <Border x:Name="NavBar"
-            Margin="15"
-            Padding="5,3,5,5"
-            Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}"
-            HeightRequest="50"
-            HorizontalOptions="End"
-            StrokeShape="RoundRectangle 25"
-            StrokeThickness="0"
-            VerticalOptions="End"
-            WidthRequest="50"
-            InputTransparent="False">
-        <Border.Shadow>
-            <Shadow Brush="{AppThemeBinding Light={StaticResource Primary},Dark={StaticResource PrimaryDark}}" Opacity="0.8" Radius="10" Offset="0,2" />
-        </Border.Shadow>
+        <!--Extra options -->
+        <Grid x:Name="ExtraOptionsContainer"
+              HeightRequest="235"
+              HorizontalOptions="Fill"
+              VerticalOptions="End"
+              IsVisible="False"
+              Opacity="0">
 
-        <Grid x:Name="NavBarRoot" RowDefinitions="Auto, *, 80">
-            <Grid.GestureRecognizers>
-                <TapGestureRecognizer Tapped="IgnoreOnOverlayTapped" />
-            </Grid.GestureRecognizers>
-            <Grid Grid.Row="0" x:Name="MoreBtnContainer" IsVisible="False" HeightRequest="30">
-                <Label x:Name="MoreIcon" 
-                       Text="{mi:MaterialSymbolsRounded Icon=KeyboardArrowUp}" 
-                       FontSize="30" 
-                       HorizontalOptions="Center" 
-                       VerticalOptions="Center"
-                       TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}">
-                    <Label.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnMoreTapped"/>
-                    </Label.GestureRecognizers>
-                </Label>
-            </Grid>
+            <Border Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}"
+                    StrokeShape="RoundRectangle 25"
+                    StrokeThickness="0"
+                    VerticalOptions="Start"
+                    Padding="15,5,15,12">
 
-            <VerticalStackLayout x:Name="ExtraOptionsContainer" 
-                                 Grid.Row="1" 
-                                 IsVisible="False"
-                                 Opacity="0"
-                                 Spacing="15"
-                                 Padding="0,10">
+                <Border.Shadow>
+                    <Shadow Brush="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" Opacity="0.8" Radius="10" Offset="0,2" />
+                </Border.Shadow>
 
-                <Label Text="INFORMATIONS" FontSize="10" FontAttributes="Bold" HorizontalOptions="Center" Opacity="0.6"/>
+                <VerticalStackLayout Padding="0,5"
+                                 Spacing="10">
 
-                <Grid ColumnDefinitions="*, *, *, *" RowDefinitions="Auto">
-                    <controls:IconButton x:Name="NoticesButton" Grid.Column="0" Icon="Gavel" Text="Légal" Clicked="OnNoticesClicked"/>
-                    <controls:IconButton x:Name="TermsButton" Grid.Column="1" Icon="Description" Text="CGU" Clicked="OnTermsClicked"/>
-                    <controls:IconButton x:Name="PrivacyButton" Grid.Column="2" Icon="Lock" Text="Privé" Clicked="OnPrivacyClicked"/>
-                    <controls:IconButton x:Name="AboutButton" Grid.Column="3" Icon="HelpCenter" Text="À Propos" Clicked="OnAboutClicked"/>
-                </Grid>
-            </VerticalStackLayout>
+                    <Label Text="INFORMATIONS"
+                       FontSize="10"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       Opacity="0.6" />
 
-            <Grid Grid.Row="2" ColumnDefinitions="*, Auto">
+                    <Grid ColumnDefinitions="*,*,*,*"
+                      ColumnSpacing="10">
 
-                <Grid x:Name="NavBarContent" IsVisible="False" ColumnDefinitions="*, *, *, *">
-                    <controls:IconButton x:Name="DonateButton" Grid.Column="0" Icon="Money" Text="Soutenir" VerticalOptions="Center" Clicked="OnDonateClicked"/>
-                    <controls:IconButton x:Name="RefreshButton" Grid.Column="1" Icon="Refresh" Text="Actualiser" VerticalOptions="Center" RotateIconOnClick="True" Clicked="OnRefreshClicked"/>
-                    <controls:IconButton x:Name="HomeButton" Grid.Column="2" Icon="Home" Text="Accueil" VerticalOptions="Center" Clicked="OnHomeClicked"/>
-                    <controls:IconButton x:Name="SettingsButton" Grid.Column="3" Icon="Settings" Text="Réglages" VerticalOptions="Center" RotateIconOnClick="True" Clicked="OnSettingsClicked"/>
-                </Grid>
+                        <controls:IconButton x:Name="NoticesButton" 
+                                         Grid.Column="0"
+                                         Icon="Gavel"
+                                         Text="Légal"
+                                         Clicked="OnNoticesClicked" />
 
-                <Grid x:Name="ExpandBtnContainer" Grid.Column="1" Margin="0,0,0,5" VerticalOptions="End" WidthRequest="40">
-                    <Label x:Name="ExpandBtn" Text="{mi:MaterialSymbolsRounded Icon=Notes}" FontSize="27" HorizontalOptions="Center" VerticalOptions="Center"
-                           TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
-                </Grid>
-            </Grid>
+                        <controls:IconButton x:Name="TermsButton" 
+                                         Grid.Column="1"
+                                         Icon="Description"
+                                         Text="CGU"
+                                         Clicked="OnTermsClicked" />
+
+                        <controls:IconButton x:Name="PrivacyButton" 
+                                         Grid.Column="2"
+                                         Icon="Lock"
+                                         Text="Privé"
+                                         Clicked="OnPrivacyClicked" />
+
+                        <controls:IconButton x:Name="AboutButton" 
+                                         Grid.Column="3"
+                                         Icon="HelpCenter"
+                                         Text="À Propos"
+                                         Clicked="OnAboutClicked" />
+
+                    </Grid>
+
+                </VerticalStackLayout>
+                
+            </Border>
+
         </Grid>
-    </Border>
+
+        <!-- Main navigation bar -->
+        <Border x:Name="NavBar"
+                WidthRequest="50"
+                HeightRequest="50"
+                HorizontalOptions="End"
+                VerticalOptions="End"
+                Padding="5,3,5,5"
+                Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}"
+                StrokeShape="RoundRectangle 25"
+                StrokeThickness="0">
+            
+            <Border.Shadow>
+                <Shadow Brush="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" Opacity="0.8" Radius="10" Offset="0,2" />
+            </Border.Shadow>
+
+            <Grid RowDefinitions="30,80">
+                
+                <!-- More -->
+                <Grid x:Name="MoreBtnContainer"
+                      Grid.Row="0"
+                      IsVisible="False">
+
+                    <Label x:Name="MoreIcon"
+                           Text="{mi:MaterialSymbolsRounded Icon=KeyboardArrowUp}"
+                           FontSize="30"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}">
+                        
+                        <Label.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnMoreTapped" />
+                        </Label.GestureRecognizers>
+                        
+                    </Label>
+
+                </Grid>
+                
+                <!-- Navigation buttons -->
+                <Grid x:Name="NavBarContent" Grid.Row="1" ColumnDefinitions="*,*,*,*" IsVisible="False">
+                    
+                    <controls:IconButton x:Name="DonateButton"
+                                         Grid.Column="0"
+                                         Icon="Money"
+                                         Text="Soutenir"
+                                         Clicked="OnDonateClicked" />
+                    
+                    <controls:IconButton x:Name="RefreshButton"
+                                         Grid.Column="1"
+                                         Icon="Refresh"
+                                         Text="Actualiser"
+                                         RotateIconOnClick="True"
+                                         Clicked="OnRefreshClicked" />
+                    
+                    <controls:IconButton x:Name="HomeButton"
+                                         Grid.Column="2"
+                                         Icon="Home"
+                                         Text="Accueil"
+                                         Clicked="OnHomeClicked" />
+                    
+                    <controls:IconButton x:Name="SettingsButton"
+                                         Grid.Column="3"
+                                         Icon="Settings"
+                                         Text="Réglages"
+                                         RotateIconOnClick="True"
+                                         Clicked="OnSettingsClicked" />
+                    
+                </Grid>
+
+                <Grid x:Name="ExpandBtnContainer"
+                      Grid.Row="0"
+                      Grid.RowSpan="2"
+                      IsVisible="True"
+                      VerticalOptions="Start"
+                      HorizontalOptions="End">
+
+                    <Label x:Name="ExpandBtn"
+                           Text="{mi:MaterialSymbolsRounded Icon=Notes}"
+                           Margin="0,6,6,0"
+                           FontSize="27"
+                           HorizontalOptions="Center"
+                           VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}"/>
+                </Grid>
+
+            </Grid>
+            
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="IgnoreOnOverlayTapped" />
+            </Border.GestureRecognizers>
+
+        </Border>
+
+    </Grid>
+    
 </Grid>
