@@ -1,6 +1,5 @@
 using Scan_Manga.Constants;
 using Scan_Manga.Controls;
-using Scan_Manga.ViewModels;
 using System.Text.Json;
 
 namespace Scan_Manga.Services;

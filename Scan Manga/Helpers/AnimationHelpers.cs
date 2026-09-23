@@ -2,35 +2,60 @@ namespace Scan_Manga.Helpers;
 
 public static class AnimationHelpers
 {
-    public static Task<bool> AnimateWidthAsync(this VisualElement view, double from, double to, uint length = 250)
-        => AnimatePropertyAsync(view, "AnimateWidth", v => view.WidthRequest = v, from, to, length);
+	public static Task<bool> AnimateWidthAsync(this VisualElement view, double from, double to, uint length = 250, CancellationToken cancellationToken = default) =>
+		AnimatePropertyAsync(view, "AnimateWidth", value => view.WidthRequest = value, from, to, length, cancellationToken);
 
-    public static Task<bool> AnimateHeightAsync(this VisualElement view, double from, double to, uint length = 250)
-        => AnimatePropertyAsync(view, "AnimateHeight", v => view.HeightRequest = v, from, to, length);
+	public static Task<bool> AnimateHeightAsync(this VisualElement view, double from, double to, uint length = 250, CancellationToken cancellationToken = default) =>
+		AnimatePropertyAsync(view, "AnimateHeight", value => view.HeightRequest = value, from, to, length, cancellationToken);
 
-    static Task<bool> AnimatePropertyAsync(VisualElement view, string name, Action<double> callback, double from, double to, uint length)
-    {
-        var tcs = new TaskCompletionSource<bool>();
-        var animation = new Animation(callback, from, to, Easing.CubicInOut);
-        animation.Commit(view, name, 16, length, finished: (v, c) => tcs.SetResult(true));
-        return tcs.Task;
-    }
+	static Task<bool> AnimatePropertyAsync(VisualElement view, string name, Action<double> callback, double start, double end, uint length, CancellationToken cancellationToken)
+	{
+		cancellationToken.ThrowIfCancellationRequested();
 
-    public static Task RotateToSafe(this VisualElement view, double to, uint length = 250, Easing? easing = null)
-    {
-        easing ??= Easing.CubicInOut;
-        return view.RotateToAsync(to, length, easing);
-    }
+		view.AbortAnimation(name);
 
-    public static Task FadeToSafe(this VisualElement view, double to, uint length = 250, Easing? easing = null)
-    {
-        easing ??= Easing.CubicInOut;
-        return view.FadeToAsync(to, length, easing);
-    }
+		var taskSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    public static Task ScaleToSafe(this VisualElement view, double to, uint length = 250, Easing? easing = null)
-    {
-        easing ??= Easing.CubicInOut;
-        return view.ScaleToAsync(to, length, easing);
-    }
+		var animation = new Animation(callback, start, end, Easing.CubicInOut);
+
+		using var registration = cancellationToken.Register(() =>
+		{
+			MainThread.BeginInvokeOnMainThread(() =>
+			{
+				view.AbortAnimation(name);
+				taskSource.TrySetCanceled(cancellationToken);
+			});
+		});
+
+		animation.Commit(view, name, 16, length, finished: (_, cancelled) =>
+		{
+			if (cancelled)
+			{
+				taskSource.TrySetCanceled(cancellationToken);
+				return;
+			}
+
+			taskSource.TrySetResult(true);
+		});
+
+		return taskSource.Task;
+	}
+
+	public static Task<bool> RotateToSafe(this VisualElement view, double rotation, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default) =>
+		WaitForCancellationAsync(view.RotateToAsync(rotation, length, easing ?? Easing.CubicInOut), cancellationToken);
+	
+	public static Task<bool> FadeToSafe(this VisualElement view, double opacity, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default) =>
+		WaitForCancellationAsync(view.FadeToAsync(opacity, length, easing ?? Easing.CubicInOut), cancellationToken);
+	
+	public static Task<bool> ScaleToSafe(this VisualElement view, double scale, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default) =>
+		WaitForCancellationAsync(view.ScaleToAsync(scale, length, easing ?? Easing.CubicInOut), cancellationToken);
+
+	public static Task<bool> TranslateToSafe(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default) =>
+		WaitForCancellationAsync(view.TranslateToAsync(x, y, length, easing ?? Easing.CubicInOut), cancellationToken);
+
+	static Task<bool> WaitForCancellationAsync(Task<bool> animationTask, CancellationToken cancellationToken)
+	{
+		return animationTask.WaitAsync(cancellationToken);
+	}
+	sealed record AnimationState(VisualElement View, string Name, TaskCompletionSource<bool> TaskSource, CancellationToken CancellationToken);
 }
