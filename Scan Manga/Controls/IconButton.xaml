@@ -6,14 +6,21 @@
              x:Class="Scan_Manga.Controls.IconButton"
              x:Name="Root"
              x:DataType="controls:IconButton">
-    <VerticalStackLayout Spacing="{Binding Spacing}" BindingContext="{x:Reference Root}">
+    
+    <Grid x:Name="ButtonContainer"
+          RowDefinitions="Auto,Auto"
+          RowSpacing="{Binding Spacing}"
+          BindingContext="{x:Reference Root}">
+        
         <mi:MaterialSymbolsRoundedIcon x:Name="IconBtn"
+                                       Grid.Row="0"
                                        FontSize="{Binding IconSize}"
                                        HorizontalOptions="Center"
                                        Icon="{Binding Icon}"
                                        TextColor="{Binding IconColor}"/>
 
-        <Label FontSize="{Binding FontSize}"
+        <Label Grid.Row="1"
+               FontSize="{Binding FontSize}"
                FontAttributes="{Binding FontAttributes}"
                HorizontalTextAlignment="Center"
                LineBreakMode="TailTruncation"
@@ -22,8 +29,9 @@
                TextColor="{Binding TextColor}"
                Text="{Binding Text}" />
 
-        <VerticalStackLayout.GestureRecognizers>
+        <Grid.GestureRecognizers>
             <TapGestureRecognizer Tapped="OnButtonTapped" />
-        </VerticalStackLayout.GestureRecognizers>
-    </VerticalStackLayout>
+        </Grid.GestureRecognizers>
+        
+    </Grid>
 </ContentView>
