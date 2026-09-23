@@ -38,11 +38,11 @@ public partial class CustomOverlay : ContentView
         {
             if (open)
             {
-                await control.AnimateIn();
+                await control.AnimateIn().ConfigureAwait(true);
             }
             else
             {
-                await control.AnimateOut();
+                await control.AnimateOut().ConfigureAwait(true);
             }
         }
     }
@@ -61,7 +61,7 @@ public partial class CustomOverlay : ContentView
             BackgroundOverlay.FadeToSafe(1, 250),
             Container.FadeToSafe(1, 200),
             Container.ScaleToSafe(1, 400, Easing.SpringOut)
-        );
+        ).ConfigureAwait(true);
     }
 
     async Task AnimateOut()
@@ -70,7 +70,7 @@ public partial class CustomOverlay : ContentView
             BackgroundOverlay.FadeToSafe(0, 200),
             Container.FadeToSafe(0, 200),
             Container.ScaleToSafe(0.8, 200, Easing.CubicIn)
-        );
+        ).ConfigureAwait(true);
         IsVisible = false;
         InputTransparent = true;
     }
