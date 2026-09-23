@@ -36,10 +36,10 @@ public partial class SelectionPopup : Popup<SelectOption>
             clickedOption.IsSelected = true;
 
             // Optionnel : Un petit délai pour que l'utilisateur voie le "flash" bleu avant la fermeture
-            await Task.Delay(50);
+            await Task.Delay(50).ConfigureAwait(true);
 
             // 4. On ferme et on renvoie l'unique item sélectionné
-            await CloseAsync(clickedOption);
+            await CloseAsync(clickedOption).ConfigureAwait(true);
         }
     }
 }

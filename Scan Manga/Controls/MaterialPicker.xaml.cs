@@ -74,7 +74,7 @@ public partial class MaterialPicker : ContentView
         SetActiveState(true);
 
         var popup = new SelectionPopup(Options, SelectedOption);
-        var result = await Shell.Current.CurrentPage.ShowPopupAsync<SelectOption>(popup);
+        var result = await Shell.Current.CurrentPage.ShowPopupAsync<SelectOption>(popup).ConfigureAwait(true);
 
         if (result.Result is SelectOption selected)
         {
