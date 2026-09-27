@@ -76,6 +76,29 @@ public partial class ExpandableNavBar : Grid, IDisposable
 		}
 	}
 
+	// Fires an async operation from a non-async event handler while safely observing any exception,
+	// avoiding the need for a try/catch block in every "async void" handler.
+	static void SafeFireAndForget(Func<CancellationToken, Task> taskFactory, CancellationToken cancellationToken = default)
+	{
+		_ = SafeFireAndForgetAsync(taskFactory, cancellationToken);
+	}
+
+	static async Task SafeFireAndForgetAsync(Func<CancellationToken, Task> taskFactory, CancellationToken cancellationToken)
+	{
+		try
+		{
+			await taskFactory(cancellationToken).ConfigureAwait(true);
+		}
+		catch (OperationCanceledException)
+		{
+			// Execution cancelled intentionally
+		}
+		catch (Exception)
+		{
+			// TODO: Log exception
+		}
+	}
+
 	async Task OnExpandClickedAsync(CancellationToken cancellationToken)
 	{
 		if (!navBarExpanded)
@@ -145,26 +168,17 @@ public partial class ExpandableNavBar : Grid, IDisposable
 
 	#region Extra Options Animations
 
-	async void OnMoreTapped(object? sender, TappedEventArgs e)
-	{
-		try
+	void OnMoreTapped(object? sender, TappedEventArgs e)
+		=> SafeFireAndForget(outerToken => ExecuteSafelyAsync(async cancellationToken =>
 		{
-			await ExecuteSafelyAsync(async cancellationToken =>
+			if (!isVerticalExpanded)
 			{
-				if (!isVerticalExpanded)
-				{
-					await ShowExtraOptionsAsync(cancellationToken).ConfigureAwait(true);
-					return;
-				}
+				await ShowExtraOptionsAsync(cancellationToken).ConfigureAwait(true);
+				return;
+			}
 
-				await CloseVerticalMenuAsync(cancellationToken).ConfigureAwait(true);
-			}, CancellationToken.None).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
-	}
+			await CloseVerticalMenuAsync(cancellationToken).ConfigureAwait(true);
+		}, outerToken));
 
 	async Task ShowExtraOptionsAsync(CancellationToken cancellationToken)
 	{
@@ -257,41 +271,14 @@ public partial class ExpandableNavBar : Grid, IDisposable
 	
 	#region Navigation & Overlay Handlers
 
-	async void OnOverlayTapped(object? sender, TappedEventArgs e)
-	{
-		try
-		{
-			await ExecuteSafelyAsync(CloseNavBarAsync, CancellationToken.None).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
-	}
+	void OnOverlayTapped(object? sender, TappedEventArgs e)
+		=> SafeFireAndForget(cancellationToken => ExecuteSafelyAsync(CloseNavBarAsync, cancellationToken));
 
-	async void OnOverlayPan(object? sender, PanUpdatedEventArgs e)
-	{
-		try
-		{
-			await ExecuteSafelyAsync(CloseNavBarAsync, CancellationToken.None).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
-	}
+	void OnOverlayPan(object? sender, PanUpdatedEventArgs e)
+		=> SafeFireAndForget(cancellationToken => ExecuteSafelyAsync(CloseNavBarAsync, cancellationToken));
 
-	async void OnOverlayPinch(object? sender, PinchGestureUpdatedEventArgs e)
-	{
-		try
-		{
-			await ExecuteSafelyAsync(CloseNavBarAsync, CancellationToken.None).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
-	}
+	void OnOverlayPinch(object? sender, PinchGestureUpdatedEventArgs e)
+		=> SafeFireAndForget(cancellationToken => ExecuteSafelyAsync(CloseNavBarAsync, cancellationToken));
 
 	void IgnoreOnOverlayTapped(object? sender, TappedEventArgs e) { }
 
@@ -300,154 +287,47 @@ public partial class ExpandableNavBar : Grid, IDisposable
 		await CloseNavBarInternalAsync(cancellationToken).ConfigureAwait(true);
 	}
 
-	async void OnNoticesClicked(object? sender, EventArgs e)
+	void OnNoticesClicked(object? sender, EventArgs e)
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(LegalNoticesPage), cancellationToken));
+
+	void OnPrivacyClicked(object? sender, EventArgs e)
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(PrivacyPolicyPage), cancellationToken));
+
+	void OnTermsClicked(object? sender, EventArgs e)
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(TermsOfUsePage), cancellationToken));
+
+	void OnAboutClicked(object? sender, EventArgs e)
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(AboutPage), cancellationToken));
+
+	void OnDonateClicked(object? sender, EventArgs e)
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(DonatePage), cancellationToken));
+
+	void OnSettingsClicked(object? sender, EventArgs e)
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(SettingsPage), cancellationToken));
+
+	void OnRefreshClicked(object? sender, EventArgs e)
+		=> SafeFireAndForget(cancellationToken => RaiseButtonTapEventAsync(RefreshClicked, cancellationToken));
+
+	void OnHomeClicked(object? sender, EventArgs e)
+		=> SafeFireAndForget(cancellationToken => RaiseButtonTapEventAsync(HomeClicked, cancellationToken));
+
+	Task NavigateToAsync(string route, CancellationToken cancellationToken)
 	{
-		try
-		{
-			await ExecuteSafelyAsync(
-				cancellationToken =>
-					ButtonTapAsync(
-						() => Shell.Current.GoToAsync(nameof(LegalNoticesPage)),
-						cancellationToken),
-				CancellationToken.None
-			).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
+		return ExecuteSafelyAsync(
+			innerToken => ButtonTapAsync(() => Shell.Current.GoToAsync(route), innerToken),
+			cancellationToken);
 	}
 
-	async void OnPrivacyClicked(object? sender, EventArgs e)
+	Task RaiseButtonTapEventAsync(EventHandler? eventHandler, CancellationToken cancellationToken)
 	{
-		try
-		{
-			await ExecuteSafelyAsync(
-				cancellationToken =>
-					ButtonTapAsync(
-						() => Shell.Current.GoToAsync(nameof(PrivacyPolicyPage)),
-						cancellationToken),
-				CancellationToken.None
-			).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
-	}
-
-	async void OnTermsClicked(object? sender, EventArgs e)
-	{
-		try
-		{
-			await ExecuteSafelyAsync(
-				cancellationToken =>
-					ButtonTapAsync(
-						() => Shell.Current.GoToAsync(nameof(TermsOfUsePage)),
-						cancellationToken),
-				CancellationToken.None
-			).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
-	}
-
-	async void OnAboutClicked(object? sender, EventArgs e)
-	{
-		try
-		{
-			await ExecuteSafelyAsync(
-				cancellationToken =>
-					ButtonTapAsync(
-						() => Shell.Current.GoToAsync(nameof(AboutPage)),
-						cancellationToken),
-				CancellationToken.None
-			).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
-	}
-
-	async void OnDonateClicked(object? sender, EventArgs e)
-	{
-		try
-		{
-			await ExecuteSafelyAsync(
-				cancellationToken =>
-					ButtonTapAsync(
-						() => Shell.Current.GoToAsync(nameof(DonatePage)),
-						cancellationToken),
-				CancellationToken.None
-			).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
-	}
-
-	async void OnSettingsClicked(object? sender, EventArgs e)
-	{
-		try
-		{
-			await ExecuteSafelyAsync(
-				cancellationToken =>
-					ButtonTapAsync(
-						() => Shell.Current.GoToAsync(nameof(SettingsPage)),
-						cancellationToken),
-				CancellationToken.None
-			).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
-	}
-
-	async void OnRefreshClicked(object? sender, EventArgs e)
-	{
-		try
-		{
-			await ExecuteSafelyAsync(
-				cancellationToken =>
-					ButtonTapAsync(() =>
-					{
-						RefreshClicked?.Invoke(this, EventArgs.Empty);
-						return Task.CompletedTask;
-					},
-					cancellationToken),
-				CancellationToken.None
-			).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
-	}
-
-	async void OnHomeClicked(object? sender, EventArgs e)
-	{
-		try
-		{
-			await ExecuteSafelyAsync(
-				cancellationToken =>
-					ButtonTapAsync(() =>
-					{
-						HomeClicked?.Invoke(this, EventArgs.Empty);
-						return Task.CompletedTask;
-					},
-					cancellationToken),
-				CancellationToken.None
-			).ConfigureAwait(true);
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
-		}
+		return ExecuteSafelyAsync(
+			innerToken => ButtonTapAsync(() =>
+			{
+				eventHandler?.Invoke(this, EventArgs.Empty);
+				return Task.CompletedTask;
+			},
+			innerToken),
+			cancellationToken);
 	}
 
 	async Task ButtonTapAsync(Func<Task> action, CancellationToken cancellationToken)

@@ -180,3 +180,8 @@ dotnet_diagnostic.MVMTK0042.severity = error
 
 # XC0045: Binding Property not found
 dotnet_diagnostic.XC0045.severity = error
+
+# CRR0039: The cancellation token should be passed into the await expression.
+# False positive with fire-and-forget helpers (e.g. SafeFireAndForget) where the token is
+# forwarded to a delegate that is awaited in a deeper call, not in the immediate await expression.
+dotnet_diagnostic.CRR0039.severity = none
