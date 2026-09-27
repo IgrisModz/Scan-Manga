@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:behaviors="clr-namespace:Scan_Manga.Behaviors"
              xmlns:controls="clr-namespace:Scan_Manga.Controls"
              x:DataType="controls:CustomOverlay"
              x:Class="Scan_Manga.Controls.CustomOverlay"
@@ -22,10 +23,12 @@
                 <FlexLayout JustifyContent="End" Direction="Row">
                     <Button Grid.Column="1" Text="{Binding CancelText, Source={x:Reference thisRoot}}"
                             IsVisible="{Binding IsCancelVisible, Source={x:Reference thisRoot}}"
+                            behaviors:CursorBehavior.Cursor="Hand"
                             Margin="0,0,6,0"
                             Clicked="OnCancelClicked" BackgroundColor="Transparent" TextColor="Gray"/>
                     <Button Text="{Binding ConfirmText, Source={x:Reference thisRoot}}" Padding="0"
                             MinimumWidthRequest="55"
+                            behaviors:CursorBehavior.Cursor="Hand"
                             Clicked="OnConfirmClicked" />
                 </FlexLayout>
             </VerticalStackLayout>
