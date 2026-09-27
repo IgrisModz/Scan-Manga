@@ -34,20 +34,31 @@ public partial class CustomOverlay : ContentView
 
     static async void OnIsOpenChanged(BindableObject bindable, object oldValue, object newValue)
     {
-        if (bindable is CustomOverlay control && newValue is bool open)
-        {
-            if (open)
-            {
-                await control.AnimateIn().ConfigureAwait(true);
-            }
-            else
-            {
-                await control.AnimateOut().ConfigureAwait(true);
-            }
-        }
+		try
+		{
+			if (bindable is CustomOverlay control && newValue is bool open)
+			{
+				if (open)
+				{
+					await control.AnimateIn().ConfigureAwait(true);
+				}
+				else
+				{
+					await control.AnimateOut().ConfigureAwait(true);
+				}
+			}
+		}
+		catch (OperationCanceledException)
+		{
+			// Animation or execution cancelled intentionally
+		}
+		catch (Exception)
+		{
+			// TODO: Log the exception.
+		}
     }
 
-    async Task AnimateIn()
+    async Task AnimateIn(CancellationToken cancellationToken = default)
     {
         IsVisible = true;
         InputTransparent = false;
@@ -58,18 +69,18 @@ public partial class CustomOverlay : ContentView
         Container.Opacity = 0;
 
         await Task.WhenAll(
-            BackgroundOverlay.FadeToSafe(1, 250),
-            Container.FadeToSafe(1, 200),
-            Container.ScaleToSafe(1, 400, Easing.SpringOut)
+            BackgroundOverlay.FadeToSafe(1, 250, cancellationToken: cancellationToken),
+            Container.FadeToSafe(1, 200, cancellationToken: cancellationToken),
+            Container.ScaleToSafe(1, 400, Easing.SpringOut, cancellationToken)
         ).ConfigureAwait(true);
     }
 
-    async Task AnimateOut()
+    async Task AnimateOut(CancellationToken cancellationToken = default)
     {
         await Task.WhenAll(
-            BackgroundOverlay.FadeToSafe(0, 200),
-            Container.FadeToSafe(0, 200),
-            Container.ScaleToSafe(0.8, 200, Easing.CubicIn)
+            BackgroundOverlay.FadeToSafe(0, 200, cancellationToken: cancellationToken),
+            Container.FadeToSafe(0, 200, cancellationToken: cancellationToken),
+            Container.ScaleToSafe(0.8, 200, Easing.CubicIn, cancellationToken)
         ).ConfigureAwait(true);
         IsVisible = false;
         InputTransparent = true;
