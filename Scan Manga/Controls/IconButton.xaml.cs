@@ -134,28 +134,39 @@ public partial class IconButton : ContentView
 
 	async void OnButtonTapped(object? sender, TappedEventArgs e)
 	{
-		Task<bool>? rotationTask = null;
-
-		if (RotateIconOnClick)
+		try
 		{
-			IconBtn.Rotation = 0;
-			rotationTask = IconBtn.RotateToAsync(360, 500);
-		}
+			Task<bool>? rotationTask = null;
+
+			if (RotateIconOnClick)
+			{
+				IconBtn.Rotation = 0;
+				rotationTask = IconBtn.RotateToAsync(360, 500);
+			}
 
 		await ButtonContainer.ScaleToSafe(.7, 100);
 		await ButtonContainer.ScaleToSafe(1, 100);
 
-		if (rotationTask is not null)
-		{
-			await rotationTask;
+			if (rotationTask is not null)
+			{
+				await rotationTask;
+			}
+
+			Clicked?.Invoke(this, e);
+
+			var cmd = Command;
+			if (cmd != null && cmd.CanExecute(CommandParameter))
+			{
+				cmd.Execute(CommandParameter);
+			}
 		}
-
-		Clicked?.Invoke(this, e);
-
-		var cmd = Command;
-		if (cmd != null && cmd.CanExecute(CommandParameter))
+		catch (OperationCanceledException)
 		{
-			cmd.Execute(CommandParameter);
+			// Handle cancellation if needed
+		}
+		catch (Exception)
+		{
+			// TODO: Log the exception.
 		}
 	}
 }

@@ -71,18 +71,29 @@ public partial class MaterialPicker : ContentView
 
     async void OnPickerTapped(object? sender, TappedEventArgs e)
     {
-        SetActiveState(true);
+		try
+		{
+			SetActiveState(true);
 
-        var popup = new SelectionPopup(Options, SelectedOption);
-        var result = await Shell.Current.CurrentPage.ShowPopupAsync<SelectOption>(popup).ConfigureAwait(true);
+			var popup = new SelectionPopup(Options, SelectedOption);
+			var result = await Shell.Current.CurrentPage.ShowPopupAsync<SelectOption>(popup).ConfigureAwait(true);
 
-        if (result.Result is SelectOption selected)
-        {
-            SelectedOption = selected;
-        }
+			if (result.Result is SelectOption selected)
+			{
+				SelectedOption = selected;
+			}
 
-        SetActiveState(false);
-    }
+			SetActiveState(false);
+		}
+		catch (OperationCanceledException)
+		{
+			SetActiveState(false);
+		}
+		catch (Exception)
+		{
+			// TODO: Log the exception.
+		}
+	}
 
     void SetActiveState(bool active)
     {
