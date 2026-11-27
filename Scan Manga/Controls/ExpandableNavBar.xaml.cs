@@ -1,5 +1,6 @@
 using MauiIcons.Core.Extensions;
 using MauiIcons.MaterialSymbols.Rounded;
+using Microsoft.Extensions.DependencyInjection;
 using Scan_Manga.Helpers;
 using Scan_Manga.Pages;
 
@@ -283,22 +284,22 @@ public partial class ExpandableNavBar : Grid, IDisposable
 	}
 
 	void OnNoticesClicked(object? sender, EventArgs e)
-		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(LegalNoticesPage), cancellationToken));
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync<LegalNoticesPage>(cancellationToken));
 
 	void OnPrivacyClicked(object? sender, EventArgs e)
-		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(PrivacyPolicyPage), cancellationToken));
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync<PrivacyPolicyPage>(cancellationToken));
 
 	void OnTermsClicked(object? sender, EventArgs e)
-		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(TermsOfUsePage), cancellationToken));
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync<TermsOfUsePage>(cancellationToken));
 
 	void OnAboutClicked(object? sender, EventArgs e)
-		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(AboutPage), cancellationToken));
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync<AboutPage>(cancellationToken));
 
 	void OnDonateClicked(object? sender, EventArgs e)
-		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(DonatePage), cancellationToken));
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync<DonatePage>(cancellationToken));
 
 	void OnSettingsClicked(object? sender, EventArgs e)
-		=> SafeFireAndForget(cancellationToken => NavigateToAsync(nameof(SettingsPage), cancellationToken));
+		=> SafeFireAndForget(cancellationToken => NavigateToAsync<SettingsPage>(cancellationToken));
 
 	void OnRefreshClicked(object? sender, EventArgs e)
 		=> SafeFireAndForget(cancellationToken => RaiseButtonTapEventAsync(RefreshClicked, cancellationToken));
@@ -306,10 +307,23 @@ public partial class ExpandableNavBar : Grid, IDisposable
 	void OnHomeClicked(object? sender, EventArgs e)
 		=> SafeFireAndForget(cancellationToken => RaiseButtonTapEventAsync(HomeClicked, cancellationToken));
 
-	Task NavigateToAsync(string route, CancellationToken cancellationToken)
+	Task NavigateToAsync<TPage>(CancellationToken cancellationToken) where TPage : InfoPage
 	{
 		return ExecuteSafelyAsync(
-			innerToken => ButtonTapAsync(() => Shell.Current.GoToAsync(route, false), innerToken),
+			innerToken => ButtonTapAsync(async () =>
+			{
+				var services = Handler?.MauiContext?.Services
+					?? throw new InvalidOperationException("Navigation services are unavailable.");
+				var page = services.GetRequiredService<TPage>();
+#if WINDOWS
+				var window = Window ?? throw new InvalidOperationException("Navigation window is unavailable.");
+				page.PrepareModalOpening(window.Height);
+#endif
+				await Navigation.PushModalAsync(page, true);
+#if WINDOWS
+				await page.AnimateModalOpeningAsync();
+#endif
+			}, innerToken),
 			cancellationToken);
 	}
 

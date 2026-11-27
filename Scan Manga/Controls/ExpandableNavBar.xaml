@@ -67,10 +67,10 @@
                                Opacity="0.6" />
 
                         <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
-                            <controls:IconButton x:Name="NoticesButton" Grid.Column="0" Icon="Gavel" Text="Légal" Clicked="OnNoticesClicked" />
-                            <controls:IconButton x:Name="TermsButton" Grid.Column="1" Icon="Description" Text="CGU" Clicked="OnTermsClicked" />
-                            <controls:IconButton x:Name="PrivacyButton" Grid.Column="2" Icon="Lock" Text="Privé" Clicked="OnPrivacyClicked" />
-                            <controls:IconButton x:Name="AboutButton" Grid.Column="3" Icon="HelpCenter" Text="À Propos" Clicked="OnAboutClicked" />
+                            <controls:IconButton x:Name="NoticesButton" Grid.Column="0" Icon="Gavel" Text="Légal" behaviors:CursorBehavior.Cursor="Hand" Clicked="OnNoticesClicked" />
+                            <controls:IconButton x:Name="TermsButton" Grid.Column="1" Icon="Description" Text="CGU" behaviors:CursorBehavior.Cursor="Hand" Clicked="OnTermsClicked" />
+                            <controls:IconButton x:Name="PrivacyButton" Grid.Column="2" Icon="Lock" Text="Privé" behaviors:CursorBehavior.Cursor="Hand" Clicked="OnPrivacyClicked" />
+                            <controls:IconButton x:Name="AboutButton" Grid.Column="3" Icon="HelpCenter" Text="À Propos" behaviors:CursorBehavior.Cursor="Hand" Clicked="OnAboutClicked" />
                         </Grid>
                     </VerticalStackLayout>
                 </ScrollView>
@@ -88,6 +88,7 @@
                            FontSize="30"
                            HorizontalOptions="Center"
                            VerticalOptions="Center"
+                           behaviors:CursorBehavior.Cursor="Hand"
                            TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}">
                         
                         <Label.GestureRecognizers>
@@ -105,6 +106,7 @@
                                          Grid.Column="0"
                                          Icon="Money"
                                          Text="Soutenir"
+                                         behaviors:CursorBehavior.Cursor="Hand"
                                          Clicked="OnDonateClicked" />
                     
                     <controls:IconButton x:Name="RefreshButton"
@@ -112,12 +114,14 @@
                                          Icon="Refresh"
                                          Text="Actualiser"
                                          RotateIconOnClick="True"
+                                         behaviors:CursorBehavior.Cursor="Hand"
                                          Clicked="OnRefreshClicked" />
                     
                     <controls:IconButton x:Name="HomeButton"
                                          Grid.Column="2"
                                          Icon="Home"
                                          Text="Accueil"
+                                         behaviors:CursorBehavior.Cursor="Hand"
                                          Clicked="OnHomeClicked" />
                     
                     <controls:IconButton x:Name="SettingsButton"
@@ -125,6 +129,7 @@
                                          Icon="Settings"
                                          Text="Réglages"
                                          RotateIconOnClick="True"
+                                         behaviors:CursorBehavior.Cursor="Hand"
                                          Clicked="OnSettingsClicked" />
                     
                 </Grid>

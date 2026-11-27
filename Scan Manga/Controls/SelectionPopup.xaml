@@ -18,9 +18,13 @@
                 Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}">
             <CollectionView x:Name="ListOptions"
                             SelectionMode="None">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="4" />
+                </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:SelectOption">
-                        <Border StrokeShape="RoundRectangle 8"
+                        <Border x:Name="OptionBorder"
+                                StrokeShape="RoundRectangle 8"
                                 StrokeThickness="0"
                                 Margin="2"
                                 Padding="0">
@@ -36,12 +40,13 @@
                                 </Style>
                             </Border.Style>
 
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer Tapped="OnItemTapped" 
-                                                      CommandParameter="{Binding .}" />
-                            </Border.GestureRecognizers>
-
                             <Grid ColumnDefinitions="40,*" Padding="12" ColumnSpacing="8">
+                                <Grid.Behaviors>
+                                    <toolkit:TouchBehavior HoveredBackgroundColor="{AppThemeBinding Light=#1A2196F3, Dark=#3390CAF9}"
+                                                           PressedBackgroundColor="{AppThemeBinding Light=#402196F3, Dark=#6690CAF9}"
+                                                           CommandParameter="{Binding BindingContext, Source={x:Reference OptionBorder}, x:DataType=Border}"
+                                                           TouchGestureCompleted="OnItemTapped" />
+                                </Grid.Behaviors>
                                 <mi:MaterialSymbolsRoundedIcon Icon="{Binding Icon}" 
                                                                TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
                                                                FontSize="26" />
@@ -54,7 +59,7 @@
                                             <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
                                             <Style.Triggers>
                                                 <DataTrigger TargetType="Label" Binding="{Binding IsSelected}" Value="True">
-                                                    <Setter Property="TextColor" Value="{StaticResource White}" />
+                                                    <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>

@@ -1,3 +1,4 @@
+using CommunityToolkit.Maui.Core;
 using CommunityToolkit.Maui.Views;
 using Scan_Manga.Models;
 
@@ -19,15 +20,15 @@ public partial class SelectionPopup : Popup<SelectOption>
         ListOptions.ItemsSource = options;
     }
 
-    async void OnItemTapped(object? sender, TappedEventArgs e)
+    async void OnItemTapped(object? sender, TouchGestureCompletedEventArgs e)
     {
         if (isClosing)
         {
             return;
         }
 
-        isClosing = e.Parameter is SelectOption;
-        if (e.Parameter is SelectOption clickedOption)
+        isClosing = e.TouchCommandParameter is SelectOption;
+        if (e.TouchCommandParameter is SelectOption clickedOption)
         {
             // 2. Logique "Single Selection" : On décoche tout le monde sauf celui cliqué
             var allItems = ListOptions.ItemsSource.Cast<SelectOption>();

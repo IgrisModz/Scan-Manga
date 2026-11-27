@@ -77,12 +77,6 @@ public partial class SettingsViewModel : ObservableObject
     partial void OnIsHistoryEnabledChanged(bool value) => settingsService.SetHistoryEnabled(value);
 
     [RelayCommand]
-    static async Task GoBack()
-    {
-        await Shell.Current.GoToAsync("..");
-    }
-
-    [RelayCommand]
     async Task ClearHistory()
     {
         currentContext = OverlayContext.ClearHistory;

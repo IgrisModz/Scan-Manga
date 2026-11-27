@@ -1,22 +1,23 @@
-﻿using Scan_Manga.Helpers;
+﻿#if WINDOWS
+using Scan_Manga.Helpers;
+#endif
 
 namespace Scan_Manga.Controls;
 
 public partial class InfoPage : PageBase
 {
-	const uint openingAnimationDuration = 250;
-	const double openingOffset = 16;
-
-	Grid? templateRoot;
-	CancellationTokenSource? openingAnimation;
-	bool isAppearing;
-	bool openingStarted;
+	bool isClosing;
+#if WINDOWS
+	const uint modalAnimationDuration = 350;
+	bool isOpening;
+#endif
 
 	public InfoPage()
 	{
 		ControlTemplate = new ControlTemplate(() =>
 		{
-			var header = new PageHeader();
+			var header = new PageHeader { ShowBackButton = true };
+			header.BackClicked += OnBackClicked;
 
 			var contentPresenter = new ContentPresenter();
 
@@ -45,16 +46,12 @@ public partial class InfoPage : PageBase
 
 			var rootGrid = new Grid
 			{
-				Opacity = 0,
-				TranslationY = openingOffset,
 				RowDefinitions =
 				[
 					new RowDefinition(GridLength.Auto),
 					new RowDefinition(GridLength.Star)
 				]
 			};
-			templateRoot = rootGrid;
-			rootGrid.Loaded += OnTemplateLoaded;
 
 			rootGrid.Children.Add(header);
 			rootGrid.Children.Add(scrollView);
@@ -74,75 +71,66 @@ public partial class InfoPage : PageBase
 		});
 	}
 
-	protected override void OnAppearing()
+#if WINDOWS
+	internal void PrepareModalOpening(double height)
 	{
-		base.OnAppearing();
-		isAppearing = true;
-
-		if (templateRoot?.IsLoaded == true)
-		{
-			StartOpeningAnimation(templateRoot);
-		}
+		isOpening = true;
+		TranslationY = Math.Max(height, 1);
 	}
 
-	protected override void OnDisappearing()
+	internal async Task AnimateModalOpeningAsync()
 	{
-		isAppearing = false;
-		openingStarted = false;
-		var cancellation = openingAnimation;
-		openingAnimation = null;
-		cancellation?.Cancel();
-		if (templateRoot is not null)
+		try
 		{
-			templateRoot.Opacity = 1;
-			templateRoot.TranslationY = 0;
+			await this.TranslateToSafe(0, 0, modalAnimationDuration, Easing.CubicOut);
 		}
-		base.OnDisappearing();
-	}
-
-	void OnTemplateLoaded(object? sender, EventArgs e)
-	{
-		if (isAppearing && sender is Grid root)
+		finally
 		{
-			StartOpeningAnimation(root);
+			TranslationY = 0;
+			isOpening = false;
 		}
 	}
+#endif
 
-	async void StartOpeningAnimation(Grid root)
+	protected override bool OnBackButtonPressed()
 	{
-		if (openingStarted)
+#if WINDOWS
+		OnBackClicked(this, EventArgs.Empty);
+		return true;
+#else
+		return isClosing || base.OnBackButtonPressed();
+#endif
+	}
+
+	protected async void OnBackClicked(object? sender, EventArgs e)
+	{
+		if (isClosing
+#if WINDOWS
+			|| isOpening
+#endif
+			)
 		{
 			return;
 		}
 
-		openingStarted = true;
-		using var cancellation = new CancellationTokenSource();
-		openingAnimation = cancellation;
-		root.Opacity = 0;
-		root.TranslationY = openingOffset;
-
+		isClosing = true;
 		try
 		{
-			await Task.WhenAll(
-				root.FadeToSafe(1, openingAnimationDuration, Easing.CubicOut, cancellation.Token),
-				root.TranslateToSafe(0, 0, openingAnimationDuration, Easing.CubicOut, cancellation.Token)
-			).ConfigureAwait(true);
-		}
-		catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
-		{
+#if WINDOWS
+			await this.TranslateToSafe(0, Math.Max(Height, Window?.Height ?? 0), modalAnimationDuration, Easing.CubicIn);
+#endif
+			await Navigation.PopModalAsync(true);
 		}
 		catch (Exception ex)
 		{
-			System.Diagnostics.Trace.TraceError($"Page opening animation error: {ex}");
+#if WINDOWS
+			TranslationY = 0;
+#endif
+			System.Diagnostics.Trace.TraceError($"Modal navigation error: {ex}");
 		}
 		finally
 		{
-			if (openingAnimation == cancellation)
-			{
-				root.Opacity = 1;
-				root.TranslationY = 0;
-				openingAnimation = null;
-			}
+			isClosing = false;
 		}
 	}
 }

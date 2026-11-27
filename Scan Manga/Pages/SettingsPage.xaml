@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <controls:InfoPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                   xmlns:behaviors="clr-namespace:Scan_Manga.Behaviors"
                    xmlns:controls="clr-namespace:Scan_Manga.Controls"
                    xmlns:mi="http://www.igrismodz.com/dotnet/2026/maui/icons"
                    xmlns:vm="clr-namespace:Scan_Manga.ViewModels"
@@ -58,7 +59,7 @@
                     <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
                         <mi:MaterialSymbolsRoundedIcon Icon="DoNotDisturb" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
                         <Label Grid.Column="1" Text="Bloqueur de publicités" VerticalOptions="Center" FontAttributes="Bold"/>
-                        <Switch Grid.Column="2" IsToggled="{Binding IsAdBlockerEnabled}" />
+                        <Switch Grid.Column="2" IsToggled="{Binding IsAdBlockerEnabled}" behaviors:CursorBehavior.Cursor="Hand" />
                     </Grid>
                 </VerticalStackLayout>
             </controls:SettingsSection>
@@ -82,13 +83,13 @@
                             </mi:MaterialSymbolsRoundedIcon>
                         </HorizontalStackLayout>
 
-                        <Switch Grid.Column="2" IsToggled="{Binding LoadLastUrlOnStartup}" />
+                        <Switch Grid.Column="2" IsToggled="{Binding LoadLastUrlOnStartup}" behaviors:CursorBehavior.Cursor="Hand" />
                     </Grid>
 
                     <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="10">
                         <mi:MaterialSymbolsRoundedIcon Icon="History" FontSize="26" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" VerticalOptions="Center"/>
                         <Label Grid.Column="1" Text="Enregistrer l'historique" VerticalOptions="Center" FontAttributes="Bold"/>
-                        <Switch Grid.Column="2" IsToggled="{Binding IsHistoryEnabled}" />
+                        <Switch Grid.Column="2" IsToggled="{Binding IsHistoryEnabled}" behaviors:CursorBehavior.Cursor="Hand" />
                     </Grid>
                 </VerticalStackLayout>
             </controls:SettingsSection>
@@ -107,6 +108,7 @@
                                      IconColor="#ff453a"
                                      Icon="DeleteForever"
                                      Text="Vider l'historique"
+                                     behaviors:CursorBehavior.Cursor="Hand"
                                      Command="{Binding ClearHistoryCommand}" />
 
                 <controls:IconButton x:Name="GoBackLayout"
@@ -120,8 +122,9 @@
                                      IconColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}"
                                      Icon="ArrowBack"
                                      Text="Retour"
-                                     Command="{Binding GoBackCommand}"/>
-                
+                                     behaviors:CursorBehavior.Cursor="Hand"
+                                     Clicked="OnBackClicked"/>
+
             </Grid>
 
         </VerticalStackLayout>

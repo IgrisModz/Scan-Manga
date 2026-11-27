@@ -1,9 +1,21 @@
-﻿using Microsoft.Maui.Controls.Shapes;
+﻿using MauiIcons.MaterialSymbols.Rounded;
+using Microsoft.Maui.Controls.Shapes;
+using Scan_Manga.Behaviors;
 
 namespace Scan_Manga.Controls;
 
 public partial class PageHeader : Grid
 {
+    readonly Grid backButtonContainer;
+
+    public event EventHandler? BackClicked;
+
+    public bool ShowBackButton
+    {
+        get => backButtonContainer.IsVisible;
+        set => backButtonContainer.IsVisible = value;
+    }
+
     public PageHeader()
     {
         // Resources (équivalent StaticResource)
@@ -37,6 +49,65 @@ public partial class PageHeader : Grid
         // Layout horizontal
         var layout = new HorizontalStackLayout();
 
+        backButtonContainer = new Grid
+        {
+            WidthRequest = 48,
+            HeightRequest = 48,
+            VerticalOptions = LayoutOptions.Center,
+            IsVisible = false
+        };
+        var backButton = new Button
+        {
+            Padding = 0,
+            BackgroundColor = Colors.Transparent,
+            CornerRadius = 24
+        };
+        var states = new VisualStateGroup { Name = "CommonStates" };
+        states.States.Add(new VisualState { Name = "Normal" });
+        states.States.Add(new VisualState
+        {
+            Name = "PointerOver",
+            Setters = { new Setter { Property = BackgroundColorProperty, Value = Color.FromArgb("#1A808080") } }
+        });
+        states.States.Add(new VisualState
+        {
+            Name = "Pressed",
+            Setters = { new Setter { Property = BackgroundColorProperty, Value = Color.FromArgb("#40808080") } }
+        });
+        states.States.Add(new VisualState
+        {
+            Name = "Focused",
+            Setters = { new Setter { Property = BackgroundColorProperty, Value = Color.FromArgb("#26808080") } }
+        });
+        states.States.Add(new VisualState
+        {
+            Name = "Disabled",
+            Setters = { new Setter { Property = BackgroundColorProperty, Value = Colors.Transparent } }
+        });
+		VisualStateManager.SetVisualStateGroups(backButton, [states]);
+        SemanticProperties.SetDescription(backButton, "Retour");
+        backButton.Clicked += (sender, args) => BackClicked?.Invoke(sender, args);
+		CursorBehavior.SetCursor(backButton, CursorIcon.Hand);
+
+        var backIcon = new MaterialSymbolsRoundedIcon
+        {
+            Icon = MaterialSymbolsRoundedIcons.ArrowBack,
+            FontSize = 24,
+            HorizontalOptions = LayoutOptions.Center,
+            VerticalOptions = LayoutOptions.Center,
+            InputTransparent = true
+        };
+        backIcon.SetAppThemeColor(Label.TextColorProperty, primary, Application.Current?.Resources["PrimaryDark"] as Color);
+        backButton.PropertyChanged += (_, args) =>
+        {
+            if (args.PropertyName == nameof(IsEnabled))
+            {
+                backIcon.Opacity = backButton.IsEnabled ? 1 : 0.4;
+            }
+        };
+        backButtonContainer.Children.Add(backButton);
+        backButtonContainer.Children.Add(backIcon);
+
         //Image
         var image = new Image
         {
@@ -57,6 +128,7 @@ public partial class PageHeader : Grid
         };
 
         // Ajout des enfants
+        layout.Children.Add(backButtonContainer);
         layout.Children.Add(image);
         layout.Children.Add(label);
 
