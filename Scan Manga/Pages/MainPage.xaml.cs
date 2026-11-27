@@ -25,6 +25,7 @@ public partial class MainPage : PageBase, IDisposable
         this.settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
 
         InitializeComponent();
+        ConfigureWebViewContainer();
 
         this.chargingService.ChargingStateChanged += OnChargingChanged;
         MainWebView.Navigated += OnWebViewNavigated;
@@ -33,6 +34,8 @@ public partial class MainPage : PageBase, IDisposable
 
         BindingContext = new MainViewModel(MainWebView.ReloadPage);
     }
+
+    partial void ConfigureWebViewContainer();
 
     #region Lifecycle
 
@@ -61,7 +64,7 @@ public partial class MainPage : PageBase, IDisposable
             var fullScreen = ShouldEnableFullScreen(lastUrl);
             Window.SetFullScreen(fullScreen);
             ApplySafeArea(fullScreen);
-    }
+        }
     }
 
     protected override void OnDisappearing()
@@ -79,9 +82,6 @@ public partial class MainPage : PageBase, IDisposable
         {
             settingsService.SetVisitedUrls(visitedUrls);
         }
-
-        fullScreenCts?.Cancel();
-        isNavigating = true;
 
         base.OnDisappearing();
     }
@@ -120,7 +120,7 @@ public partial class MainPage : PageBase, IDisposable
         }
         catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
-    }
+        }
         catch (Exception ex)
         {
             System.Diagnostics.Trace.TraceError($"Full-screen transition error: {ex}");
@@ -136,7 +136,7 @@ public partial class MainPage : PageBase, IDisposable
 
     #endregion
 
-    #region WebView
+	#region WebView
 
 	void OnHttpErrorOccurred(object? sender, WebViewErrorEventArgs e)
 	{
@@ -145,7 +145,7 @@ public partial class MainPage : PageBase, IDisposable
 	}
 
 	void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
-    {
+	{
 		if (e.NetworkAccess == NetworkAccess.Internet && MainWebView.HasError)
 		{
 			MainWebView.ReloadPage();
@@ -154,13 +154,10 @@ public partial class MainPage : PageBase, IDisposable
 
 	async void OnWebViewNavigated(object? sender, WebNavigatedEventArgs e)
 	{
-			if (BindingContext is MainViewModel viewModel)
-			{
-				if (viewModel.IsRefreshing)
-				{
-					viewModel.IsRefreshing = false;
-				}
-			}
+		if (BindingContext is MainViewModel viewModel)
+		{
+			viewModel.IsRefreshing = false;
+		}
 
 		try
 		{
@@ -180,10 +177,10 @@ public partial class MainPage : PageBase, IDisposable
 			if (!isNavigating)
 			{
 				fullScreenCts?.Cancel();
-			var enableFullScreen = ShouldEnableFullScreen(e.Url);
-			Window?.SetFullScreen(enableFullScreen);
-			ApplySafeArea(enableFullScreen);
-			UpdateKeepScreenOn(e.Url);
+				var enableFullScreen = ShouldEnableFullScreen(e.Url);
+				Window?.SetFullScreen(enableFullScreen);
+				ApplySafeArea(enableFullScreen);
+				UpdateKeepScreenOn(e.Url);
 			}
 
 			lastUrl = e.Url;
@@ -197,7 +194,7 @@ public partial class MainPage : PageBase, IDisposable
 		{
 			System.Diagnostics.Debug.WriteLine($"WebView navigation error: {ex}");
 		}
-    }
+	}
 
     void HandleHistory(string url)
     {
@@ -352,8 +349,6 @@ public partial class MainPage : PageBase, IDisposable
                 Connectivity.Current.ConnectivityChanged -= OnConnectivityChanged;
 
                 fullScreenCts?.Cancel();
-                fullScreenCts?.Dispose();
-                fullScreenCts = null;
             }
 
             disposed = true;
