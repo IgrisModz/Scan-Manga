@@ -207,8 +207,8 @@ public partial class MainPage : PageBase, IDisposable
             return;
         }
 
-        var isAdBlockActive = Preferences.Get(nameof(SettingsViewModel.IsAdBlockerEnabled), true);
-        var isHistoryActive = Preferences.Get(nameof(SettingsViewModel.IsHistoryEnabled), true);
+        var isAdBlockActive = settingsService.IsAdBlockerEnabled();
+        var isHistoryActive = settingsService.IsHistoryEnabled();
 
         if (!isAdBlockActive && !isHistoryActive)
         {
@@ -251,11 +251,9 @@ public partial class MainPage : PageBase, IDisposable
 
     bool ShouldKeepScreenOn(string? url)
     {
-        var modeString = Preferences.Get(nameof(SettingsViewModel.SelectedKeepScreenOnMode), KeepScreenOnMode.Disabled.ToString());
+        var mode = settingsService.GetKeepScreenOnMode();
 
-        var result = Enum.TryParse<KeepScreenOnMode>(modeString, out var mode);
-
-        if (!result || mode == KeepScreenOnMode.Disabled)
+        if (mode == KeepScreenOnMode.Disabled)
         {
             return false;
         }
@@ -271,12 +269,9 @@ public partial class MainPage : PageBase, IDisposable
         };
     }
 
-    static bool ShouldEnableFullScreen(string url)
+    bool ShouldEnableFullScreen(string url)
     {
-        var modeString = Preferences.Get(nameof(SettingsViewModel.SelectedFullScreenMode), FullScreenMode.ReadingOnly.ToString());
-
-        var result = Enum.TryParse<FullScreenMode>(modeString, out var mode);
-        return result && mode != FullScreenMode.Disabled && mode switch
+        return settingsService.GetFullScreenMode() switch
         {
             FullScreenMode.AllPages => true,
             FullScreenMode.ReadingOnly => IsLecturePage(url) ?? false,

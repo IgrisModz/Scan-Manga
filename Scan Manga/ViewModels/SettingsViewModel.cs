@@ -1,7 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MauiIcons.MaterialSymbols.Rounded;
-using Scan_Manga.Constants;
 using Scan_Manga.Models;
 using Scan_Manga.Services;
 
@@ -125,7 +124,7 @@ public partial class SettingsViewModel : ObservableObject
         switch (currentContext)
         {
             case OverlayContext.ClearHistory:
-                Preferences.Remove(PreferenceKeys.VisitedUrls);
+                settingsService.ClearVisitedUrls();
                 currentContext = OverlayContext.None;
                 ShowSuccessAlert("L'historique a été vidé.");
                 break;
