@@ -10,17 +10,19 @@ public partial class ExpandableNavBar : Grid, IDisposable
 	const double minWidth = 50;
 	const double minHeight = 50;
 	const double maxHeight = 110;
-	const double animationOffset = 50;
+	const double extraOptionsOffset = 8;
+	const double extraOptionsSpacing = 8;
 
 	const uint heightAnimationDuration = 300;
 	const uint widthAnimationDuration = 200;
 	const uint rotationAnimationDuration = 500;
+	const uint contentAnimationDuration = 120;
 	const uint extraOptionsAnimationDuration = 180;
-	const uint extraOptionsAnimationDelay = 45;
 
 	bool navBarExpanded;
 	bool isVerticalExpanded;
 	bool disposedValue;
+	bool isTransitioning;
 
 	CancellationTokenSource? animationCancellation;
 	TapGestureRecognizer? expandButtonGesture;
@@ -28,51 +30,48 @@ public partial class ExpandableNavBar : Grid, IDisposable
 	public event EventHandler? RefreshClicked;
 	public event EventHandler? HomeClicked;
 
-	IconButton[] ExtraOptionButtons => [NoticesButton, TermsButton, PrivacyButton, AboutButton];
-
 	public ExpandableNavBar()
 	{
 		InitializeComponent();
 
 		expandButtonGesture = new TapGestureRecognizer
 		{
-			Command = new Command(async () => await ExecuteSafelyAsync(OnExpandClickedAsync, CancellationToken.None ).ConfigureAwait(true))
+			Command = new Command(() => SafeFireAndForget(token => ExecuteSafelyAsync(OnExpandClickedAsync, token)))
 		};
 
 		ExpandBtn.GestureRecognizers.Add(expandButtonGesture);
+		SizeChanged += OnSizeChanged;
 		SafeAreaEdges = SafeAreaEdges.None;
 	}
 
 	#region State & Animation Core
 
-	CancellationToken CreateAnimationCancellationToken()
-	{
-		animationCancellation?.Cancel();
-		animationCancellation?.Dispose();
-		animationCancellation = new CancellationTokenSource();
-
-		return animationCancellation.Token;
-	}
-
-
-
 	async Task ExecuteSafelyAsync(Func<CancellationToken, Task> action, CancellationToken cancellationToken)
 	{
-		using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-			CreateAnimationCancellationToken(),
-			cancellationToken);
+		if (isTransitioning || disposedValue)
+		{
+			return;
+		}
+
+		isTransitioning = true;
+		using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+		animationCancellation = linkedCts;
 
 		try
 		{
 			await action(linkedCts.Token).ConfigureAwait(true);
 		}
-		catch (OperationCanceledException)
+		catch (OperationCanceledException) when (linkedCts.IsCancellationRequested)
 		{
-			// Animation or execution cancelled intentionally
 		}
-		catch (Exception)
+		finally
 		{
-			// TODO: Log the exception.
+			animationCancellation = null;
+			isTransitioning = false;
+			if (navBarExpanded && !disposedValue)
+			{
+				UpdateExpandedSize();
+			}
 		}
 	}
 
@@ -89,13 +88,9 @@ public partial class ExpandableNavBar : Grid, IDisposable
 		{
 			await taskFactory(cancellationToken).ConfigureAwait(true);
 		}
-		catch (OperationCanceledException)
+		catch (Exception ex)
 		{
-			// Execution cancelled intentionally
-		}
-		catch (Exception)
-		{
-			// TODO: Log exception
+			System.Diagnostics.Trace.TraceError($"Navigation menu error: {ex}");
 		}
 	}
 
@@ -110,13 +105,45 @@ public partial class ExpandableNavBar : Grid, IDisposable
 		await CloseNavBarInternalAsync(cancellationToken).ConfigureAwait(true);
 	}
 
-	async Task OpenNavBarAsync(CancellationToken cancellationToken)
+	void OnSizeChanged(object? sender, EventArgs e)
+	{
+		if (navBarExpanded && !isTransitioning && !disposedValue)
+		{
+			UpdateExpandedSize();
+		}
+	}
+
+	double GetExpandedWidth()
 	{
 		var screenWidth = Width > 0
 			? Width
 			: DeviceDisplay.MainDisplayInfo.Width / DeviceDisplay.MainDisplayInfo.Density;
 
-		var maxWidth = Math.Min(screenWidth - 30, 400);
+		return Math.Max(minWidth, Math.Min(screenWidth - MenuHost.Margin.HorizontalThickness, 400));
+	}
+
+	double GetExpandedHeight(double width)
+	{
+		var contentWidth = Math.Max(0, width - NavBar.Padding.HorizontalThickness - ExtraOptionsContainer.Margin.HorizontalThickness);
+		var contentHeight = ExtraOptionsContent.Measure(contentWidth, double.PositiveInfinity).Height;
+		var screenHeight = Height > 0
+			? Height
+			: DeviceDisplay.MainDisplayInfo.Height / DeviceDisplay.MainDisplayInfo.Density;
+		var availableHeight = Math.Max(0, screenHeight - MenuHost.Margin.VerticalThickness - maxHeight - extraOptionsSpacing);
+		ExtraOptionsContainer.HeightRequest = Math.Min(contentHeight, availableHeight);
+		return maxHeight + extraOptionsSpacing + ExtraOptionsContainer.HeightRequest;
+	}
+
+	void UpdateExpandedSize()
+	{
+		var width = GetExpandedWidth();
+		NavBar.WidthRequest = width;
+		NavBar.HeightRequest = isVerticalExpanded ? GetExpandedHeight(width) : maxHeight;
+	}
+
+	async Task OpenNavBarAsync(CancellationToken cancellationToken)
+	{
+		var maxWidth = GetExpandedWidth();
 
 		ClickOutsideOverlay.IsVisible = true;
 		ExpandBtn.Rotation = 0;
@@ -129,29 +156,35 @@ public partial class ExpandableNavBar : Grid, IDisposable
 		await rotationTask.ConfigureAwait(true);
 		cancellationToken.ThrowIfCancellationRequested();
 
-		ExpandBtn.Text = MaterialSymbolsRoundedIcons.Close.GetGlyph();
-		ExpandBtnContainer.IsVisible = false;
 		NavBarContent.IsVisible = true;
 		MoreBtnContainer.IsVisible = true;
+		await Task.WhenAll(
+			ExpandBtnContainer.FadeToSafe(0, contentAnimationDuration, cancellationToken: cancellationToken),
+			NavBarContent.FadeToSafe(1, contentAnimationDuration, cancellationToken: cancellationToken),
+			MoreBtnContainer.FadeToSafe(1, contentAnimationDuration, cancellationToken: cancellationToken)
+		).ConfigureAwait(true);
+		ExpandBtnContainer.IsVisible = false;
 
 		navBarExpanded = true;
 	}
 
 	async Task CloseNavBarInternalAsync(CancellationToken cancellationToken)
 	{
-		ClickOutsideOverlay.IsVisible = false;
-
 		if (isVerticalExpanded)
 		{
 			await CloseVerticalMenuAsync(cancellationToken).ConfigureAwait(true);
 		}
 
+		ExpandBtnContainer.IsVisible = true;
+		await Task.WhenAll(
+			ExpandBtnContainer.FadeToSafe(1, contentAnimationDuration, cancellationToken: cancellationToken),
+			NavBarContent.FadeToSafe(0, contentAnimationDuration, cancellationToken: cancellationToken),
+			MoreBtnContainer.FadeToSafe(0, contentAnimationDuration, cancellationToken: cancellationToken)
+		).ConfigureAwait(true);
 		NavBarContent.IsVisible = false;
 		MoreBtnContainer.IsVisible = false;
-		ExpandBtnContainer.IsVisible = true;
 
 		ExpandBtn.Rotation = 360;
-
 		var rotationTask = ExpandBtn.RotateToSafe(0, rotationAnimationDuration, cancellationToken: cancellationToken);
 
 		await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, minHeight, heightAnimationDuration, cancellationToken).ConfigureAwait(true);
@@ -160,7 +193,7 @@ public partial class ExpandableNavBar : Grid, IDisposable
 		await rotationTask.ConfigureAwait(true);
 		cancellationToken.ThrowIfCancellationRequested();
 
-		ExpandBtn.Text = MaterialSymbolsRoundedIcons.Notes.GetGlyph();
+		ClickOutsideOverlay.IsVisible = false;
 		navBarExpanded = false;
 	}
 
@@ -186,49 +219,18 @@ public partial class ExpandableNavBar : Grid, IDisposable
 
 		ExtraOptionsContainer.IsVisible = true;
 		ExtraOptionsContainer.Opacity = 0;
-		ExtraOptionsContainer.TranslationY = 20;
+		ExtraOptionsContainer.TranslationY = extraOptionsOffset;
 
-		var buttons = ExtraOptionButtons;
+		var expandedHeight = GetExpandedHeight(GetExpandedWidth());
+		await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, expandedHeight, heightAnimationDuration, cancellationToken).ConfigureAwait(true);
 
-		foreach (var button in buttons)
-		{
-			button.Opacity = 0;
-			button.TranslationX = animationOffset;
-		}
-
-		var containerTask = Task.WhenAll(
+		await Task.WhenAll(
 			ExtraOptionsContainer.FadeToSafe(1, extraOptionsAnimationDuration, Easing.CubicOut, cancellationToken),
 			ExtraOptionsContainer.TranslateToSafe(0, 0, extraOptionsAnimationDuration, Easing.CubicOut, cancellationToken)
-		);
-
-		var buttonsTask = AnimateButtonsInAsync(buttons, cancellationToken);
-
-		await Task.WhenAll(containerTask, buttonsTask).ConfigureAwait(true);
+		).ConfigureAwait(true);
 		cancellationToken.ThrowIfCancellationRequested();
 
 		isVerticalExpanded = true;
-	}
-
-	static async Task AnimateButtonsInAsync(IReadOnlyList<IconButton> buttons, CancellationToken cancellationToken)
-	{
-		// Reverse the visual order so the buttons appear from right to left.
-		var animations = buttons
-			.Reverse()
-			.Select((button, index) =>
-				AnimateButtonInAsync(button, index, cancellationToken))
-			.ToArray();
-
-		await Task.WhenAll(animations).ConfigureAwait(true);
-	}
-
-	static async Task AnimateButtonInAsync(IconButton button, int index, CancellationToken cancellationToken)
-	{
-		await Task.Delay(index * (int)extraOptionsAnimationDelay, cancellationToken).ConfigureAwait(true);
-
-		await Task.WhenAll(
-			button.TranslateToSafe(0, 0, extraOptionsAnimationDuration, Easing.CubicOut, cancellationToken),
-			button.FadeToSafe(1, extraOptionsAnimationDuration, Easing.CubicOut, cancellationToken)
-		).ConfigureAwait(true);
 	}
 
 	async Task CloseVerticalMenuAsync(CancellationToken cancellationToken)
@@ -240,31 +242,14 @@ public partial class ExpandableNavBar : Grid, IDisposable
 
 		MoreIcon.Text = MaterialSymbolsRoundedIcons.KeyboardArrowUp.GetGlyph();
 
-		var buttons = ExtraOptionButtons;
-
-		var animations = buttons
-			.Select((button, index) => AnimateButtonOutAsync(button, index, cancellationToken))
-			.ToArray();
-
-		var containerTask = Task.WhenAll(
-			ExtraOptionsContainer.FadeToSafe(0, 150, Easing.CubicIn, cancellationToken),
-			ExtraOptionsContainer.TranslateToSafe(20, 0, 150, Easing.CubicIn, cancellationToken)
-		);
-
-		await Task.WhenAll(containerTask, Task.WhenAll(animations)).ConfigureAwait(true);
+		await Task.WhenAll(
+			ExtraOptionsContainer.FadeToSafe(0, extraOptionsAnimationDuration, Easing.CubicIn, cancellationToken),
+			ExtraOptionsContainer.TranslateToSafe(0, extraOptionsOffset, extraOptionsAnimationDuration, Easing.CubicIn, cancellationToken)
+		).ConfigureAwait(true);
 
 		ExtraOptionsContainer.IsVisible = false;
+		await AnimationHelpers.AnimateHeightAsync(NavBar, NavBar.Height, maxHeight, heightAnimationDuration, cancellationToken).ConfigureAwait(true);
 		isVerticalExpanded = false;
-	}
-
-	static async Task AnimateButtonOutAsync(IconButton button, int index, CancellationToken cancellationToken)
-	{
-		await Task.Delay(index * (int)extraOptionsAnimationDelay, cancellationToken).ConfigureAwait(true);
-
-		await Task.WhenAll(
-			button.TranslateToSafe(-animationOffset, 0, 150, Easing.CubicIn, cancellationToken),
-			button.FadeToSafe(0, 150, Easing.CubicIn, cancellationToken)
-		).ConfigureAwait(true);
 	}
 
 	#endregion
@@ -275,10 +260,20 @@ public partial class ExpandableNavBar : Grid, IDisposable
 		=> SafeFireAndForget(cancellationToken => ExecuteSafelyAsync(CloseNavBarAsync, cancellationToken));
 
 	void OnOverlayPan(object? sender, PanUpdatedEventArgs e)
-		=> SafeFireAndForget(cancellationToken => ExecuteSafelyAsync(CloseNavBarAsync, cancellationToken));
+	{
+		if (e.StatusType == GestureStatus.Started)
+		{
+			SafeFireAndForget(cancellationToken => ExecuteSafelyAsync(CloseNavBarAsync, cancellationToken));
+		}
+	}
 
 	void OnOverlayPinch(object? sender, PinchGestureUpdatedEventArgs e)
-		=> SafeFireAndForget(cancellationToken => ExecuteSafelyAsync(CloseNavBarAsync, cancellationToken));
+	{
+		if (e.Status == GestureStatus.Started)
+		{
+			SafeFireAndForget(cancellationToken => ExecuteSafelyAsync(CloseNavBarAsync, cancellationToken));
+		}
+	}
 
 	void IgnoreOnOverlayTapped(object? sender, TappedEventArgs e) { }
 
@@ -352,10 +347,8 @@ public partial class ExpandableNavBar : Grid, IDisposable
 
 		if (disposing)
 		{
-			// Cancel and dispose any running animation.
 			animationCancellation?.Cancel();
-			animationCancellation?.Dispose();
-			animationCancellation = null;
+			SizeChanged -= OnSizeChanged;
 
 			// Remove gesture recognizers created manually.
 			if (expandButtonGesture is not null)

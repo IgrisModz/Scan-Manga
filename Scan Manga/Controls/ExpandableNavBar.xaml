@@ -38,68 +38,6 @@
                 </On>
             </OnPlatform>
         </Grid.Margin>
-        <!--Extra options -->
-        <Grid x:Name="ExtraOptionsContainer"
-              HeightRequest="235"
-              HorizontalOptions="Fill"
-              VerticalOptions="End"
-              IsVisible="False"
-              Opacity="0">
-
-            <Border Background="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray950}}"
-                    StrokeShape="RoundRectangle 25"
-                    StrokeThickness="0"
-                    VerticalOptions="Start"
-                    Padding="15,5,15,12">
-
-                <Border.Shadow>
-                    <Shadow Brush="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" Opacity="0.8" Radius="10" Offset="0,2" />
-                </Border.Shadow>
-
-                <VerticalStackLayout Padding="0,5"
-                                 Spacing="10">
-
-                    <Label Text="INFORMATIONS"
-                       FontSize="10"
-                       FontAttributes="Bold"
-                       HorizontalOptions="Center"
-                       Opacity="0.6" />
-
-                    <Grid ColumnDefinitions="*,*,*,*"
-                      ColumnSpacing="10">
-
-                        <controls:IconButton x:Name="NoticesButton" 
-                                         Grid.Column="0"
-                                         Icon="Gavel"
-                                         Text="Légal"
-                                         Clicked="OnNoticesClicked" />
-
-                        <controls:IconButton x:Name="TermsButton" 
-                                         Grid.Column="1"
-                                         Icon="Description"
-                                         Text="CGU"
-                                         Clicked="OnTermsClicked" />
-
-                        <controls:IconButton x:Name="PrivacyButton" 
-                                         Grid.Column="2"
-                                         Icon="Lock"
-                                         Text="Privé"
-                                         Clicked="OnPrivacyClicked" />
-
-                        <controls:IconButton x:Name="AboutButton" 
-                                         Grid.Column="3"
-                                         Icon="HelpCenter"
-                                         Text="À Propos"
-                                         Clicked="OnAboutClicked" />
-
-                    </Grid>
-
-                </VerticalStackLayout>
-                
-            </Border>
-
-        </Grid>
-
         <!-- Main navigation bar -->
         <Border x:Name="NavBar"
                 WidthRequest="50"
@@ -112,15 +50,38 @@
                 StrokeThickness="0">
             
             <Border.Shadow>
-                <Shadow Brush="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" Opacity="0.8" Radius="10" Offset="0,2" />
+                <Shadow Brush="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" Opacity="0.5" Radius="10" Offset="0,2" />
             </Border.Shadow>
 
-            <Grid RowDefinitions="30,80">
-                
+            <Grid>
+                <ScrollView x:Name="ExtraOptionsContainer"
+                            Margin="10,0"
+                            VerticalOptions="Start"
+                            IsVisible="False"
+                            Opacity="0">
+                    <VerticalStackLayout x:Name="ExtraOptionsContent" Padding="0,5" Spacing="10">
+                        <Label Text="INFORMATIONS"
+                               FontSize="10"
+                               FontAttributes="Bold"
+                               HorizontalOptions="Center"
+                               Opacity="0.6" />
+
+                        <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="10">
+                            <controls:IconButton x:Name="NoticesButton" Grid.Column="0" Icon="Gavel" Text="Légal" Clicked="OnNoticesClicked" />
+                            <controls:IconButton x:Name="TermsButton" Grid.Column="1" Icon="Description" Text="CGU" Clicked="OnTermsClicked" />
+                            <controls:IconButton x:Name="PrivacyButton" Grid.Column="2" Icon="Lock" Text="Privé" Clicked="OnPrivacyClicked" />
+                            <controls:IconButton x:Name="AboutButton" Grid.Column="3" Icon="HelpCenter" Text="À Propos" Clicked="OnAboutClicked" />
+                        </Grid>
+                    </VerticalStackLayout>
+                </ScrollView>
+
                 <!-- More -->
                 <Grid x:Name="MoreBtnContainer"
-                      Grid.Row="0"
-                      IsVisible="False">
+                      HeightRequest="30"
+                      Margin="0,0,0,72"
+                      VerticalOptions="End"
+                      IsVisible="False"
+                      Opacity="0">
 
                     <Label x:Name="MoreIcon"
                            Text="{mi:MaterialSymbolsRounded Icon=KeyboardArrowUp}"
@@ -138,8 +99,8 @@
                 </Grid>
                 
                 <!-- Navigation buttons -->
-                <Grid x:Name="NavBarContent" Grid.Row="1" ColumnDefinitions="*,*,*,*" IsVisible="False">
-                    
+                <Grid x:Name="NavBarContent" HeightRequest="72" VerticalOptions="End" ColumnDefinitions="*,*,*,*" IsVisible="False" Opacity="0">
+
                     <controls:IconButton x:Name="DonateButton"
                                          Grid.Column="0"
                                          Icon="Money"
@@ -169,16 +130,15 @@
                 </Grid>
 
                 <Grid x:Name="ExpandBtnContainer"
-                      Grid.Row="0"
-                      Grid.RowSpan="2"
+                      WidthRequest="40"
+                      HeightRequest="42"
                       IsVisible="True"
-                      VerticalOptions="Start"
+                      VerticalOptions="End"
                       HorizontalOptions="End">
 
                     <Label x:Name="ExpandBtn"
                            Text="{mi:MaterialSymbolsRounded Icon=Notes}"
                            behaviors:CursorBehavior.Cursor="Hand"
-                           Margin="0,6,6,0"
                            FontSize="27"
                            HorizontalOptions="Center"
                            VerticalOptions="Center"

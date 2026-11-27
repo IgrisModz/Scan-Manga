@@ -2,60 +2,55 @@ namespace Scan_Manga.Helpers;
 
 public static class AnimationHelpers
 {
-	public static Task<bool> AnimateWidthAsync(this VisualElement view, double from, double to, uint length = 250, CancellationToken cancellationToken = default) =>
-		AnimatePropertyAsync(view, "AnimateWidth", value => view.WidthRequest = value, from, to, length, cancellationToken);
+	public static Task AnimateWidthAsync(this VisualElement view, double from, double to, uint length = 250, CancellationToken cancellationToken = default) =>
+		AnimateAsync(view, new Animation(value => view.WidthRequest = value, from, to, Easing.CubicInOut), length, cancellationToken);
 
-	public static Task<bool> AnimateHeightAsync(this VisualElement view, double from, double to, uint length = 250, CancellationToken cancellationToken = default) =>
-		AnimatePropertyAsync(view, "AnimateHeight", value => view.HeightRequest = value, from, to, length, cancellationToken);
+	public static Task AnimateHeightAsync(this VisualElement view, double from, double to, uint length = 250, CancellationToken cancellationToken = default) =>
+		AnimateAsync(view, new Animation(value => view.HeightRequest = value, from, to, Easing.CubicInOut), length, cancellationToken);
 
-	static Task<bool> AnimatePropertyAsync(VisualElement view, string name, Action<double> callback, double start, double end, uint length, CancellationToken cancellationToken)
+	public static Task RotateToSafe(this VisualElement view, double rotation, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default) =>
+		AnimateAsync(view, new Animation(value => view.Rotation = value, view.Rotation, rotation, easing ?? Easing.CubicInOut), length, cancellationToken);
+
+	public static Task FadeToSafe(this VisualElement view, double opacity, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default) =>
+		AnimateAsync(view, new Animation(value => view.Opacity = value, view.Opacity, opacity, easing ?? Easing.CubicInOut), length, cancellationToken);
+
+	public static Task ScaleToSafe(this VisualElement view, double scale, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default) =>
+		AnimateAsync(view, new Animation(value => view.Scale = value, view.Scale, scale, easing ?? Easing.CubicInOut), length, cancellationToken);
+
+	public static Task TranslateToSafe(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default)
+	{
+		var animation = new Animation
+		{
+			{ 0, 1, new Animation(value => view.TranslationX = value, view.TranslationX, x, easing ?? Easing.CubicInOut) },
+			{ 0, 1, new Animation(value => view.TranslationY = value, view.TranslationY, y, easing ?? Easing.CubicInOut) }
+		};
+		return AnimateAsync(view, animation, length, cancellationToken);
+	}
+
+	static async Task AnimateAsync(VisualElement view, Animation animation, uint length, CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
-
-		view.AbortAnimation(name);
-
-		var taskSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-		var animation = new Animation(callback, start, end, Easing.CubicInOut);
-
-		using var registration = cancellationToken.Register(() =>
-		{
-			MainThread.BeginInvokeOnMainThread(() =>
-			{
-				view.AbortAnimation(name);
-				taskSource.TrySetCanceled(cancellationToken);
-			});
-		});
+		var name = $"ScanMangaAnimation-{Guid.NewGuid():N}";
+		var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
 		animation.Commit(view, name, 16, length, finished: (_, cancelled) =>
 		{
 			if (cancelled)
 			{
-				taskSource.TrySetCanceled(cancellationToken);
-				return;
+				completion.TrySetCanceled();
 			}
-
-			taskSource.TrySetResult(true);
+			else
+			{
+				completion.TrySetResult();
+			}
 		});
 
-		return taskSource.Task;
+		using var registration = cancellationToken.Register(() => MainThread.BeginInvokeOnMainThread(() =>
+		{
+			view.AbortAnimation(name);
+			completion.TrySetCanceled(cancellationToken);
+		}));
+
+		await completion.Task.ConfigureAwait(true);
 	}
-
-	public static Task<bool> RotateToSafe(this VisualElement view, double rotation, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default) =>
-		WaitForCancellationAsync(view.RotateToAsync(rotation, length, easing ?? Easing.CubicInOut), cancellationToken);
-	
-	public static Task<bool> FadeToSafe(this VisualElement view, double opacity, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default) =>
-		WaitForCancellationAsync(view.FadeToAsync(opacity, length, easing ?? Easing.CubicInOut), cancellationToken);
-	
-	public static Task<bool> ScaleToSafe(this VisualElement view, double scale, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default) =>
-		WaitForCancellationAsync(view.ScaleToAsync(scale, length, easing ?? Easing.CubicInOut), cancellationToken);
-
-	public static Task<bool> TranslateToSafe(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null, CancellationToken cancellationToken = default) =>
-		WaitForCancellationAsync(view.TranslateToAsync(x, y, length, easing ?? Easing.CubicInOut), cancellationToken);
-
-	static Task<bool> WaitForCancellationAsync(Task<bool> animationTask, CancellationToken cancellationToken)
-	{
-		return animationTask.WaitAsync(cancellationToken);
-	}
-	sealed record AnimationState(VisualElement View, string Name, TaskCompletionSource<bool> TaskSource, CancellationToken CancellationToken);
 }
