@@ -1,7 +1,17 @@
-﻿namespace Scan_Manga.Controls;
+﻿using Scan_Manga.Helpers;
+
+namespace Scan_Manga.Controls;
 
 public partial class InfoPage : PageBase
 {
+	const uint openingAnimationDuration = 250;
+	const double openingOffset = 16;
+
+	Grid? templateRoot;
+	CancellationTokenSource? openingAnimation;
+	bool isAppearing;
+	bool openingStarted;
+
 	public InfoPage()
 	{
 		ControlTemplate = new ControlTemplate(() =>
@@ -35,12 +45,16 @@ public partial class InfoPage : PageBase
 
 			var rootGrid = new Grid
 			{
+				Opacity = 0,
+				TranslationY = openingOffset,
 				RowDefinitions =
 				[
 					new RowDefinition(GridLength.Auto),
 					new RowDefinition(GridLength.Star)
 				]
 			};
+			templateRoot = rootGrid;
+			rootGrid.Loaded += OnTemplateLoaded;
 
 			rootGrid.Children.Add(header);
 			rootGrid.Children.Add(scrollView);
@@ -58,5 +72,77 @@ public partial class InfoPage : PageBase
 
 			return rootGrid;
 		});
+	}
+
+	protected override void OnAppearing()
+	{
+		base.OnAppearing();
+		isAppearing = true;
+
+		if (templateRoot?.IsLoaded == true)
+		{
+			StartOpeningAnimation(templateRoot);
+		}
+	}
+
+	protected override void OnDisappearing()
+	{
+		isAppearing = false;
+		openingStarted = false;
+		var cancellation = openingAnimation;
+		openingAnimation = null;
+		cancellation?.Cancel();
+		if (templateRoot is not null)
+		{
+			templateRoot.Opacity = 1;
+			templateRoot.TranslationY = 0;
+		}
+		base.OnDisappearing();
+	}
+
+	void OnTemplateLoaded(object? sender, EventArgs e)
+	{
+		if (isAppearing && sender is Grid root)
+		{
+			StartOpeningAnimation(root);
+		}
+	}
+
+	async void StartOpeningAnimation(Grid root)
+	{
+		if (openingStarted)
+		{
+			return;
+		}
+
+		openingStarted = true;
+		using var cancellation = new CancellationTokenSource();
+		openingAnimation = cancellation;
+		root.Opacity = 0;
+		root.TranslationY = openingOffset;
+
+		try
+		{
+			await Task.WhenAll(
+				root.FadeToSafe(1, openingAnimationDuration, Easing.CubicOut, cancellation.Token),
+				root.TranslateToSafe(0, 0, openingAnimationDuration, Easing.CubicOut, cancellation.Token)
+			).ConfigureAwait(true);
+		}
+		catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+		{
+		}
+		catch (Exception ex)
+		{
+			System.Diagnostics.Trace.TraceError($"Page opening animation error: {ex}");
+		}
+		finally
+		{
+			if (openingAnimation == cancellation)
+			{
+				root.Opacity = 1;
+				root.TranslationY = 0;
+				openingAnimation = null;
+			}
+		}
 	}
 }

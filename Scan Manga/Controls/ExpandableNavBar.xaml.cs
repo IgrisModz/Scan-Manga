@@ -309,7 +309,7 @@ public partial class ExpandableNavBar : Grid, IDisposable
 	Task NavigateToAsync(string route, CancellationToken cancellationToken)
 	{
 		return ExecuteSafelyAsync(
-			innerToken => ButtonTapAsync(() => Shell.Current.GoToAsync(route), innerToken),
+			innerToken => ButtonTapAsync(() => Shell.Current.GoToAsync(route, false), innerToken),
 			cancellationToken);
 	}
 
