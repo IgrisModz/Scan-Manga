@@ -28,19 +28,8 @@ public partial class MainPage : PageBase, IDisposable
 
         this.chargingService.ChargingStateChanged += OnChargingChanged;
         MainWebView.Navigated += OnWebViewNavigated;
-        MainWebView.HttpErrorOccurred += (s, e) =>
-        {
-            ErrorTitleLabel.Text = e.Title;
-            ErrorMessageLabel.Text = e.Message;
-        };
-
-        Connectivity.Current.ConnectivityChanged += (s, args) =>
-        {
-            if (args.NetworkAccess == NetworkAccess.Internet && MainWebView.HasError)
-            {
-                MainWebView.ReloadPage();
-            }
-        };
+        MainWebView.HttpErrorOccurred += OnHttpErrorOccurred;
+        Connectivity.Current.ConnectivityChanged += OnConnectivityChanged;
 
         BindingContext = new MainViewModel(MainWebView.ReloadPage);
     }
@@ -50,6 +39,7 @@ public partial class MainPage : PageBase, IDisposable
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        isNavigating = false;
 
         if (isFirstAppearance)
         {
@@ -61,21 +51,24 @@ public partial class MainPage : PageBase, IDisposable
 
             MainWebView.Source = lastUrl;
         }
-        else
-        {
-            isNavigating = false;
-            // OnHandlerChanged();
-        }
 
         visitedUrls = settingsService.IsHistoryEnabled() ? settingsService.GetVisitedUrls() : [];
-
-        // 🔑 recalcul systématique KeepScreenOn
         UpdateKeepScreenOn(lastUrl);
+
+        if (lastUrl is not null && Window is not null)
+        {
+            fullScreenCts?.Cancel();
+            var fullScreen = ShouldEnableFullScreen(lastUrl);
+            Window.SetFullScreen(fullScreen);
+            ApplySafeArea(fullScreen);
+    }
     }
 
     protected override void OnDisappearing()
     {
-        UpdateKeepScreenOn(null);
+        isNavigating = true;
+        fullScreenCts?.Cancel();
+        DeviceDisplay.KeepScreenOn = false;
 
         if (lastUrl != null)
         {
@@ -96,8 +89,9 @@ public partial class MainPage : PageBase, IDisposable
     protected override async void OnHandlerChanged()
     {
         base.OnHandlerChanged();
+        fullScreenCts?.Cancel();
 
-        if (Handler?.MauiContext is null || lastUrl is null)
+        if (Handler?.MauiContext is null || lastUrl is null || isNavigating)
         {
             return;
         }
@@ -111,33 +105,55 @@ public partial class MainPage : PageBase, IDisposable
             return;
         }
 
-        fullScreenCts?.Cancel();
-        fullScreenCts = new CancellationTokenSource();
+        using var cancellation = new CancellationTokenSource();
+        fullScreenCts = cancellation;
 
         try
         {
-            await Task.Delay(80, fullScreenCts.Token).ConfigureAwait(true);
+            await Task.Delay(80, cancellation.Token).ConfigureAwait(true);
 
-            if (!isNavigating && !fullScreenCts.Token.IsCancellationRequested)
+            if (!isNavigating && !cancellation.IsCancellationRequested)
             {
                 Window?.EnableFullScreen();
                 ApplySafeArea(true);
             }
         }
-        catch (TaskCanceledException) { /* Ignore */ }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+        {
+    }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Trace.TraceError($"Full-screen transition error: {ex}");
+        }
+        finally
+        {
+            if (fullScreenCts == cancellation)
+            {
+                fullScreenCts = null;
+            }
+        }
     }
 
     #endregion
 
     #region WebView
 
-    async void OnWebViewNavigated(object? sender, WebNavigatedEventArgs e)
-    {
-		try
-		{
-			var ua = await MainWebView.EvaluateJavaScriptAsync("navigator.userAgent").ConfigureAwait(true);
-			System.Diagnostics.Debug.WriteLine(ua);
+	void OnHttpErrorOccurred(object? sender, WebViewErrorEventArgs e)
+	{
+		ErrorTitleLabel.Text = e.Title;
+		ErrorMessageLabel.Text = e.Message;
+	}
 
+	void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
+    {
+		if (e.NetworkAccess == NetworkAccess.Internet && MainWebView.HasError)
+		{
+			MainWebView.ReloadPage();
+		}
+	}
+
+	async void OnWebViewNavigated(object? sender, WebNavigatedEventArgs e)
+	{
 			if (BindingContext is MainViewModel viewModel)
 			{
 				if (viewModel.IsRefreshing)
@@ -146,6 +162,8 @@ public partial class MainPage : PageBase, IDisposable
 				}
 			}
 
+		try
+		{
 			if (MainWebView.HasError)
 			{
 				OfflineOverlay.IsVisible = true;
@@ -159,11 +177,14 @@ public partial class MainPage : PageBase, IDisposable
 
 			OfflineOverlay.IsVisible = false;
 
+			if (!isNavigating)
+			{
+				fullScreenCts?.Cancel();
 			var enableFullScreen = ShouldEnableFullScreen(e.Url);
 			Window?.SetFullScreen(enableFullScreen);
 			ApplySafeArea(enableFullScreen);
-
 			UpdateKeepScreenOn(e.Url);
+			}
 
 			lastUrl = e.Url;
 			settingsService.SetLastUrl(lastUrl);
@@ -172,9 +193,9 @@ public partial class MainPage : PageBase, IDisposable
 
 			await InjectScriptWithVisitedLinksAsync().ConfigureAwait(true);
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
-			// TODO: Log exception
+			System.Diagnostics.Debug.WriteLine($"WebView navigation error: {ex}");
 		}
     }
 
@@ -241,7 +262,13 @@ public partial class MainPage : PageBase, IDisposable
 
     void OnChargingChanged(object? _, bool isCharging)
     {
-        MainThread.BeginInvokeOnMainThread(() => UpdateKeepScreenOn(lastUrl));
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            if (!isNavigating && !disposed)
+            {
+                UpdateKeepScreenOn(lastUrl);
+            }
+        });
     }
 
     void UpdateKeepScreenOn(string? url)
@@ -321,6 +348,8 @@ public partial class MainPage : PageBase, IDisposable
             {
                 chargingService.ChargingStateChanged -= OnChargingChanged;
                 MainWebView.Navigated -= OnWebViewNavigated;
+                MainWebView.HttpErrorOccurred -= OnHttpErrorOccurred;
+                Connectivity.Current.ConnectivityChanged -= OnConnectivityChanged;
 
                 fullScreenCts?.Cancel();
                 fullScreenCts?.Dispose();

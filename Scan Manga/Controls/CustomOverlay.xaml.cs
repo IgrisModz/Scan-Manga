@@ -25,6 +25,8 @@ public partial class CustomOverlay : ContentView
 
     public bool IsCancelVisible => !string.IsNullOrEmpty(CancelText);
 
+    CancellationTokenSource? transitionCancellation;
+
     public CustomOverlay()
     {
         InitializeComponent();
@@ -32,41 +34,51 @@ public partial class CustomOverlay : ContentView
         InputTransparent = true;
     }
 
-    static async void OnIsOpenChanged(BindableObject bindable, object oldValue, object newValue)
-    {
+	static async void OnIsOpenChanged(BindableObject bindable, object oldValue, object newValue)
+	{
+		var control = (CustomOverlay)bindable;
+		control.transitionCancellation?.Cancel();
+		using var cancellation = new CancellationTokenSource();
+		control.transitionCancellation = cancellation;
+
 		try
 		{
-			if (bindable is CustomOverlay control && newValue is bool open)
+			if ((bool)newValue)
 			{
-				if (open)
-				{
-					await control.AnimateIn().ConfigureAwait(true);
-				}
-				else
-				{
-					await control.AnimateOut().ConfigureAwait(true);
-				}
+				await control.AnimateIn(cancellation.Token).ConfigureAwait(true);
+			}
+			else if (control.IsVisible)
+			{
+				await control.AnimateOut(cancellation.Token).ConfigureAwait(true);
 			}
 		}
-		catch (OperationCanceledException)
+		catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
 		{
-			// Animation or execution cancelled intentionally
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
-			// TODO: Log the exception.
+			System.Diagnostics.Trace.TraceError($"Overlay transition error: {ex}");
 		}
-    }
+		finally
+		{
+			if (control.transitionCancellation == cancellation)
+			{
+				control.transitionCancellation = null;
+			}
+		}
+	}
 
     async Task AnimateIn(CancellationToken cancellationToken = default)
     {
+        if (!IsVisible)
+        {
+            BackgroundOverlay.Opacity = 0;
+            Container.Scale = 0.8;
+            Container.Opacity = 0;
+        }
+
         IsVisible = true;
         InputTransparent = false;
-
-        // Reset visuel
-        BackgroundOverlay.Opacity = 0;
-        Container.Scale = 0.8;
-        Container.Opacity = 0;
 
         await Task.WhenAll(
             BackgroundOverlay.FadeToSafe(1, 250, cancellationToken: cancellationToken),
@@ -82,6 +94,7 @@ public partial class CustomOverlay : ContentView
             Container.FadeToSafe(0, 200, cancellationToken: cancellationToken),
             Container.ScaleToSafe(0.8, 200, Easing.CubicIn, cancellationToken)
         ).ConfigureAwait(true);
+        cancellationToken.ThrowIfCancellationRequested();
         IsVisible = false;
         InputTransparent = true;
     }

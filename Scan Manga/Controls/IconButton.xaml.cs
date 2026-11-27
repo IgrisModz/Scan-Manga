@@ -6,6 +6,8 @@ namespace Scan_Manga.Controls;
 
 public partial class IconButton : ContentView
 {
+	bool isProcessingTap;
+
 	public event EventHandler? Clicked;
 
 	public static readonly BindableProperty IconProperty =
@@ -134,18 +136,24 @@ public partial class IconButton : ContentView
 
 	async void OnButtonTapped(object? sender, TappedEventArgs e)
 	{
+		if (isProcessingTap)
+		{
+			return;
+		}
+
+		isProcessingTap = true;
 		try
 		{
-			Task<bool>? rotationTask = null;
+			Task? rotationTask = null;
 
 			if (RotateIconOnClick)
 			{
 				IconBtn.Rotation = 0;
-				rotationTask = IconBtn.RotateToAsync(360, 500);
+				rotationTask = IconBtn.RotateToSafe(360, 500);
 			}
 
-		await ButtonContainer.ScaleToSafe(.7, 100);
-		await ButtonContainer.ScaleToSafe(1, 100);
+			await ButtonContainer.ScaleToSafe(.7, 100);
+			await ButtonContainer.ScaleToSafe(1, 100);
 
 			if (rotationTask is not null)
 			{
@@ -160,13 +168,13 @@ public partial class IconButton : ContentView
 				cmd.Execute(CommandParameter);
 			}
 		}
-		catch (OperationCanceledException)
+		catch (Exception ex)
 		{
-			// Handle cancellation if needed
+			System.Diagnostics.Trace.TraceError($"Button interaction error: {ex}");
 		}
-		catch (Exception)
+		finally
 		{
-			// TODO: Log the exception.
+			isProcessingTap = false;
 		}
 	}
 }

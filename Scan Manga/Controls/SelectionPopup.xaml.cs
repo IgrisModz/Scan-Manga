@@ -5,6 +5,8 @@ namespace Scan_Manga.Controls;
 
 public partial class SelectionPopup : Popup<SelectOption>
 {
+    bool isClosing;
+
     public SelectionPopup(IList<SelectOption> options, SelectOption? currentSelected)
     {
         InitializeComponent();
@@ -19,6 +21,12 @@ public partial class SelectionPopup : Popup<SelectOption>
 
     async void OnItemTapped(object? sender, TappedEventArgs e)
     {
+        if (isClosing)
+        {
+            return;
+        }
+
+        isClosing = e.Parameter is SelectOption;
         if (e.Parameter is SelectOption clickedOption)
         {
             // 2. Logique "Single Selection" : On décoche tout le monde sauf celui cliqué

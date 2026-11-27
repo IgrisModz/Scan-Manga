@@ -4,6 +4,8 @@ using Android.Webkit;
 
 namespace Scan_Manga.Helpers;
 
+public sealed record WebErrorInfo(string Title, string Message);
+
 public static class WebErrorHelper
 {
 #if ANDROID

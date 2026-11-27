@@ -6,11 +6,13 @@ namespace Scan_Manga.Controls;
 
 public partial class MaterialPicker : ContentView
 {
+    bool isPopupOpen;
+
     public static readonly BindableProperty SelectedOptionProperty =
         BindableProperty.Create(nameof(SelectedOption), typeof(SelectOption), typeof(MaterialPicker), null, BindingMode.TwoWay);
 
     public static readonly BindableProperty OptionsProperty =
-        BindableProperty.Create(nameof(Options), typeof(IList<SelectOption>), typeof(MaterialPicker), new List<SelectOption>());
+        BindableProperty.Create(nameof(Options), typeof(IList<SelectOption>), typeof(MaterialPicker), defaultValueCreator: _ => new List<SelectOption>());
 
     public static readonly BindableProperty VariantProperty =
         BindableProperty.Create(nameof(Variant), typeof(PickerVariant), typeof(MaterialPicker), PickerVariant.Outlined,
@@ -69,12 +71,17 @@ public partial class MaterialPicker : ContentView
         }
     }
 
-    async void OnPickerTapped(object? sender, TappedEventArgs e)
-    {
+	async void OnPickerTapped(object? sender, TappedEventArgs e)
+	{
+		if (isPopupOpen)
+		{
+			return;
+		}
+
+		isPopupOpen = true;
 		try
 		{
 			SetActiveState(true);
-
 			var popup = new SelectionPopup(Options, SelectedOption);
 			var result = await Shell.Current.CurrentPage.ShowPopupAsync<SelectOption>(popup).ConfigureAwait(true);
 
@@ -82,16 +89,15 @@ public partial class MaterialPicker : ContentView
 			{
 				SelectedOption = selected;
 			}
-
-			SetActiveState(false);
 		}
-		catch (OperationCanceledException)
+		catch (Exception ex)
+		{
+			System.Diagnostics.Trace.TraceError($"Picker error: {ex}");
+		}
+		finally
 		{
 			SetActiveState(false);
-		}
-		catch (Exception)
-		{
-			// TODO: Log the exception.
+			isPopupOpen = false;
 		}
 	}
 
