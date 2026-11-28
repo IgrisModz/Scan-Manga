@@ -15,6 +15,10 @@ public partial class PageBase : ContentPage
     static readonly Color darkFallback = Color.FromArgb("#1F1F1F");
     static readonly Color lightFallback = Colors.White;
 
+#if ANDROID
+    bool isAppearing;
+#endif
+
     public static readonly BindableProperty CustomStatusBarColorProperty =
         BindableProperty.Create(nameof(CustomStatusBarColor), typeof(Color), typeof(PageBase), null);
 
@@ -31,54 +35,103 @@ public partial class PageBase : ContentPage
     {
         get => (Color?)GetValue(CustomNavigationBarColorProperty);
         set => SetValue(CustomNavigationBarColorProperty, value);
-    }
+	}
 
-    protected override void OnAppearing()
+	public virtual bool NavigationBarContrastEnforced { get; set; }
+
+	protected override void OnAppearing()
     {
         base.OnAppearing();
 
         Application.Current?.RequestedThemeChanged += OnThemeChanged;
 
+#if ANDROID
+        isAppearing = true;
+        Application.Current?.ModalPushed += OnModalPushed;
+        Application.Current?.ModalPopped += OnModalPopped;
+
+        Window?.DisableFullScreen();
+        UpdateSystemBars();
+#else
         UpdateSystemBars();
         Window?.DisableFullScreen();
+#endif
     }
 
     protected override void OnDisappearing()
     {
         Application.Current?.RequestedThemeChanged -= OnThemeChanged;
+#if ANDROID
+        isAppearing = false;
+        Application.Current?.ModalPushed -= OnModalPushed;
+        Application.Current?.ModalPopped -= OnModalPopped;
+#endif
 
         base.OnDisappearing();
     }
 
     void OnThemeChanged(object? sender, AppThemeChangedEventArgs e) => UpdateSystemBars();
 
+#if ANDROID
+    void OnModalPushed(object? sender, ModalPushedEventArgs e)
+    {
+        if (e.Modal == this)
+        {
+            UpdateSystemBars();
+        }
+    }
+
+    void OnModalPopped(object? sender, ModalPoppedEventArgs e)
+    {
+        // Dismiss() est asynchrone : attendre que le fragment Android quitte sa fenêtre.
+        Dispatcher.Dispatch(() =>
+        {
+            if (isAppearing && !FullScreenHelper.IsFullscreen)
+            {
+                UpdateSystemBars();
+            }
+        });
+    }
+#endif
+
     void UpdateSystemBars()
     {
         var isDarkMode = Application.Current?.RequestedTheme == AppTheme.Dark;
 
-        var finalStatusBarColor = GetThemedColor(CustomStatusBarColor, isDarkMode);
-        var finalNavBarColor = GetThemedColor(CustomNavigationBarColor, isDarkMode);
+		var finalStatusBarColor = GetThemedColor(CustomStatusBarColor, isDarkMode);
+		var finalNavBarColor = GetThemedColor(CustomNavigationBarColor, isDarkMode);
 
-        // Update Navigation bar style and color
+		if (OperatingSystem.IsAndroidVersionAtLeast(23) || OperatingSystem.IsIOSVersionAtLeast(15))
+		{
+			StatusBar.SetColor(finalStatusBarColor);
+			StatusBar.SetStyle(GetStatusBarStyle(finalStatusBarColor));
+		}
+
 #if ANDROID
         if (OperatingSystem.IsAndroidVersionAtLeast(23))
         {
-            var navPlatform = On<Microsoft.Maui.Controls.PlatformConfiguration.Android>();
-            navPlatform.SetColor(finalNavBarColor);
-            // Calcul du style spécifiquement pour la barre de navigation
-            navPlatform.SetStyle(GetNavigationBarStyle(finalNavBarColor));
+			NavigationBar.SetColor(this, finalNavBarColor);
+			NavigationBar.SetStyle(this, GetNavigationBarStyle(finalNavBarColor));
+
+            // Une valeur inchangée ne déclenche pas le mapper sur une nouvelle fenêtre.
+            Handler?.UpdateValue(NavigationBar.ColorProperty.PropertyName);
+            Handler?.UpdateValue(NavigationBar.StyleProperty.PropertyName);
+		}
+
+        // Désactive le scrim de contraste Android (blanc semi-transparent) que le système
+        // applique sur la barre de navigation en mode edge-to-edge. Le contraste est déjà
+        // assuré par SetStyle (DarkContent/LightContent) ci-dessus.
+        if (OperatingSystem.IsAndroidVersionAtLeast(29))
+        {
+            if (Platform.CurrentActivity?.Window is Android.Views.Window nativeWindow)
+            {
+                nativeWindow.NavigationBarContrastEnforced = NavigationBarContrastEnforced;
+            }
         }
 #endif
+	}
 
-        if (OperatingSystem.IsAndroidVersionAtLeast(23) || OperatingSystem.IsIOSVersionAtLeast(15))
-        {
-            // Update Status bar style and color
-            StatusBar.SetColor(finalStatusBarColor);
-            StatusBar.SetStyle(GetStatusBarStyle(finalStatusBarColor));
-        }
-    }
-
-    static Color GetThemedColor(Color? customColor, bool isDark)
+	static Color GetThemedColor(Color? customColor, bool isDark)
     {
 		// Si une couleur custom est définie, on la prend
 		if (customColor != null)
@@ -105,7 +158,7 @@ public partial class PageBase : ContentPage
     }
 
 #if ANDROID
-    static NavigationBarStyle GetNavigationBarStyle(Color color)
+	static NavigationBarStyle GetNavigationBarStyle(Color color)
     {
         return color.GetLuminosity() > 0.5 ? NavigationBarStyle.DarkContent : NavigationBarStyle.LightContent;
     }

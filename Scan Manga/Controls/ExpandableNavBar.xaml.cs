@@ -1,6 +1,5 @@
 using MauiIcons.Core.Extensions;
 using MauiIcons.MaterialSymbols.Rounded;
-using Microsoft.Extensions.DependencyInjection;
 using Scan_Manga.Helpers;
 using Scan_Manga.Pages;
 
